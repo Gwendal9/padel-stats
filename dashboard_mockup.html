@@ -8,6 +8,7 @@
 <!-- Tailwind + Charts + Map + Icons + Font -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -405,40 +406,7 @@
             <div class="font-semibold">Plus grosses progressions</div>
             <a href="#" data-view="movers" class="text-xs text-teal-600 hover:underline">Voir tout</a>
           </div>
-          <div class="space-y-3 text-sm">
-            <div class="flex items-center gap-3">
-              <div class="avatar av-sm bg-teal-600">JD</div>
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">Julien DUPONT</div>
-                <div class="text-xs text-slate-500">#2 450 (était #5 870)</div>
-              </div>
-              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>3 420</div>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="avatar av-sm bg-amber-500">MR</div>
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">Marc ROCHE</div>
-                <div class="text-xs text-slate-500">#1 220 (était #4 080)</div>
-              </div>
-              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>2 860</div>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="avatar av-sm bg-pink-500">SL</div>
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">Sophie LEROY</div>
-                <div class="text-xs text-slate-500">#385 F (était #2 100 F)</div>
-              </div>
-              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 715</div>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="avatar av-sm bg-indigo-600">AT</div>
-              <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">Antoine TARDIEU</div>
-                <div class="text-xs text-slate-500">#5 805 (était #7 200)</div>
-              </div>
-              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 395</div>
-            </div>
-          </div>
+          <div class="space-y-2 text-sm" id="dash-movers-mini"><div class="skeleton sk-text" style="height:44px;border-radius:8px"></div></div>
         </div>
       </div>
 
@@ -449,79 +417,16 @@
             <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Top 5 Hommes</div>
             <a href="#" data-view="leaderboard" class="text-xs text-teal-600 hover:underline">Voir tout →</a>
           </div>
-          <div class="space-y-2">
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-gold w-7 text-center">1</div>
-              <div class="avatar av-sm bg-teal-600">MM</div>
-              <div class="flex-1 font-medium text-sm">Maxime MOREAU</div>
-              <div class="text-xs text-slate-500">PADEL HORIZON</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">2</div>
-              <div class="avatar av-sm bg-emerald-600">BB</div>
-              <div class="flex-1 font-medium text-sm">Bastien BLANQUÉ</div>
-              <div class="text-xs text-slate-500">CASA PADEL</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-bronze w-7 text-center">3</div>
-              <div class="avatar av-sm bg-indigo-600">AM</div>
-              <div class="flex-1 font-medium text-sm">Adrien MAIGRET</div>
-              <div class="text-xs text-slate-500">4PADEL TOULOUSE</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">4</div>
-              <div class="avatar av-sm bg-purple-600">TL</div>
-              <div class="flex-1 font-medium text-sm">Thomas LEYGUE</div>
-              <div class="text-xs text-slate-500">PADEL CLUB MARSEILLE</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">5</div>
-              <div class="avatar av-sm bg-rose-600">JS</div>
-              <div class="flex-1 font-medium text-sm">Jérémy SCATENA</div>
-              <div class="text-xs text-slate-500">PADEL HORIZON</div>
-            </div>
-          </div>
+          <div class="space-y-2" id="dash-top5-h"><div class="skeleton sk-text" style="height:44px;border-radius:8px"></div></div>
         </div>
         <div class="card p-5">
           <div class="flex justify-between items-center mb-4">
             <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Top 5 Femmes</div>
             <a href="#" data-view="leaderboard" class="text-xs text-teal-600 hover:underline">Voir tout →</a>
           </div>
-          <div class="space-y-2">
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-gold w-7 text-center">1</div>
-              <div class="avatar av-sm bg-pink-500">AC</div>
-              <div class="flex-1 font-medium text-sm">Alix COLLOMBON</div>
-              <div class="text-xs text-slate-500">CASA PADEL</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">2</div>
-              <div class="avatar av-sm bg-fuchsia-500">JG</div>
-              <div class="flex-1 font-medium text-sm">Jessica GINIER</div>
-              <div class="text-xs text-slate-500">PADEL HORIZON</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-bronze w-7 text-center">3</div>
-              <div class="avatar av-sm bg-rose-500">LG</div>
-              <div class="flex-1 font-medium text-sm">Léa GODALLIER</div>
-              <div class="text-xs text-slate-500">CASA PADEL</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">4</div>
-              <div class="avatar av-sm bg-purple-500">MM</div>
-              <div class="flex-1 font-medium text-sm">Mélissa MARTIN</div>
-              <div class="text-xs text-slate-500">4PADEL LYON</div>
-            </div>
-            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <div class="badge badge-silver w-7 text-center">5</div>
-              <div class="avatar av-sm bg-violet-500">AC</div>
-              <div class="flex-1 font-medium text-sm">Audrey CASANOVA</div>
-              <div class="text-xs text-slate-500">CASA PADEL</div>
-            </div>
-          </div>
+          <div class="space-y-2" id="dash-top5-f"><div class="skeleton sk-text" style="height:44px;border-radius:8px"></div></div>
         </div>
       </div>
-
     </section>
 
     <!-- ═════ LEADERBOARD ══════════════════════════════════════════════ -->
@@ -564,83 +469,13 @@
             </tr>
           </thead>
           <tbody id="lb-tbody">
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="py-3 px-4"><span class="badge badge-gold">1</span></td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-teal-600">MM</div><span class="font-medium">Maxime MOREAU</span></div></td>
-              <td class="py-3 px-4 text-slate-600">PADEL HORIZON</td>
-              <td class="py-3 px-4 text-slate-600">Cabriès</td>
-              <td class="py-3 px-4 text-right text-slate-500">#1</td>
-              <td class="py-3 px-4 text-right">148</td>
-              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
-            </tr>
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="py-3 px-4"><span class="badge badge-silver">2</span></td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-emerald-600">BB</div><span class="font-medium">Bastien BLANQUÉ</span></div></td>
-              <td class="py-3 px-4 text-slate-600">CASA PADEL</td>
-              <td class="py-3 px-4 text-slate-600">Villepinte</td>
-              <td class="py-3 px-4 text-right text-slate-500">#2</td>
-              <td class="py-3 px-4 text-right">132</td>
-              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1</span></td>
-            </tr>
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="py-3 px-4"><span class="badge badge-bronze">3</span></td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-indigo-600">AM</div><span class="font-medium">Adrien MAIGRET</span></div></td>
-              <td class="py-3 px-4 text-slate-600">4PADEL TOULOUSE</td>
-              <td class="py-3 px-4 text-slate-600">Toulouse</td>
-              <td class="py-3 px-4 text-right text-slate-500">#3</td>
-              <td class="py-3 px-4 text-right">119</td>
-              <td class="py-3 px-4 text-right"><span class="trend delta-down"><i data-lucide="arrow-down" class="w-3 h-3"></i>1</span></td>
-            </tr>
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="py-3 px-4 text-slate-500">4</td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-purple-600">TL</div><span class="font-medium">Thomas LEYGUE</span></div></td>
-              <td class="py-3 px-4 text-slate-600">PADEL CLUB MARSEILLE</td>
-              <td class="py-3 px-4 text-slate-600">Marseille</td>
-              <td class="py-3 px-4 text-right text-slate-500">#4</td>
-              <td class="py-3 px-4 text-right">125</td>
-              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
-            </tr>
-            <tr class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer" data-view="player">
-              <td class="py-3 px-4 text-slate-500">15</td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-cyan-600">AL</div><span class="font-medium">Aurélien LESCALLIER</span></div></td>
-              <td class="py-3 px-4 text-slate-600">CASA PADEL</td>
-              <td class="py-3 px-4 text-slate-600">Villepinte</td>
-              <td class="py-3 px-4 text-right text-slate-500">#12</td>
-              <td class="py-3 px-4 text-right">135</td>
-              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>3</span></td>
-            </tr>
-            <tr class="row-me" id="row-me">
-              <td class="py-3 px-4 text-slate-700 font-medium">14 335</td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-amber-500">GR</div><span class="font-medium">Gwendal ROLLAND</span><span class="badge badge-gold">toi</span></div></td>
-              <td class="py-3 px-4 text-slate-600">TC LES LILAS</td>
-              <td class="py-3 px-4 text-slate-600">Les Lilas</td>
-              <td class="py-3 px-4 text-right text-slate-500">#12 655</td>
-              <td class="py-3 px-4 text-right">38</td>
-              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 320</span></td>
-            </tr>
-            <tr class="border-t border-slate-100 hover:bg-slate-50 italic text-slate-500">
-              <td class="py-3 px-4">66 167</td>
-              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-slate-400"><i data-lucide="user-x" class="w-4 h-4"></i></div><span>Anonyme</span></div></td>
-              <td class="py-3 px-4">RC PORTO-VECCHIO</td>
-              <td class="py-3 px-4">—</td>
-              <td class="py-3 px-4 text-right">#51 238</td>
-              <td class="py-3 px-4 text-right">1</td>
-              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
-            </tr>
-            <tr id="lb-sentinel-row" class="lb-loading"><td id="lb-sentinel" colspan="7" class="py-2 text-center text-xs text-slate-400"></td></tr>
+                        <tr id="lb-sentinel-row" class="lb-loading"><td id="lb-sentinel" colspan="7" class="py-2 text-center text-xs text-slate-400"></td></tr>
           </tbody>
         </table>
         </div><!-- /leaderboard-scroll -->
         <div class="flex justify-between items-center px-4 py-3 border-t border-slate-100 text-sm text-slate-500">
-          <div>Page <strong class="text-slate-900">1</strong> sur 1 198 · 119 124 résultats</div>
-          <div class="flex gap-1">
-            <button class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-            <button class="px-3 py-1 rounded-lg btn-primary">1</button>
-            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">2</button>
-            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">3</button>
-            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">…</button>
-            <button class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-          </div>
+          <div id="lb-counter">Chargement…</div>
+          <div class="text-xs text-slate-400">Scroll pour charger plus</div>
         </div>
       </div>
     </section>
@@ -658,83 +493,16 @@
         <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Hommes & Femmes</option><option>Hommes</option><option>Femmes</option></select>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4" id="movers-grid">
         <div class="card p-5">
-          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Plus grosses progressions (3 mois)</div>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-              <div class="avatar av-md bg-teal-600">JD</div>
-              <div class="flex-1">
-                <div class="font-medium">Julien DUPONT</div>
-                <div class="text-xs text-slate-500">CASA PADEL · #2 450 (était #5 870)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>3 420</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-              <div class="avatar av-md bg-amber-500">MR</div>
-              <div class="flex-1">
-                <div class="font-medium">Marc ROCHE</div>
-                <div class="text-xs text-slate-500">PADEL HORIZON · #1 220 (était #4 080)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>2 860</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-              <div class="avatar av-md bg-pink-500">SL</div>
-              <div class="flex-1">
-                <div class="font-medium">Sophie LEROY</div>
-                <div class="text-xs text-slate-500">4PADEL LYON · #385 F (était #2 100 F)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>1 715</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-              <div class="avatar av-md bg-indigo-600">AT</div>
-              <div class="flex-1">
-                <div class="font-medium">Antoine TARDIEU</div>
-                <div class="text-xs text-slate-500">TC LES LILAS · #5 805 (était #7 200)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>1 395</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-          </div>
+          <div class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Au sommet de leur carrière</div>
+          <div class="text-xs text-slate-400 mb-4">Joueurs actuellement à leur meilleur classement historique</div>
+          <div class="space-y-3" id="movers-hausse"><div class="skeleton sk-text" style="height:56px;border-radius:8px"></div></div>
         </div>
-
         <div class="card p-5">
-          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i> Plus grosses régressions (3 mois)</div>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50/40">
-              <div class="avatar av-md bg-slate-500">ND</div>
-              <div class="flex-1">
-                <div class="font-medium">Nicolas DUVAL</div>
-                <div class="text-xs text-slate-500">CASA PADEL · #4 850 (était #1 200)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-down text-base"><i data-lucide="arrow-down" class="w-4 h-4"></i>3 650</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50/40">
-              <div class="avatar av-md bg-stone-500">FL</div>
-              <div class="flex-1">
-                <div class="font-medium">François LAMBERT</div>
-                <div class="text-xs text-slate-500">PADEL HORIZON · #3 200 (était #850)</div>
-              </div>
-              <div class="text-right">
-                <div class="trend delta-down text-base"><i data-lucide="arrow-down" class="w-4 h-4"></i>2 350</div>
-                <div class="text-[10px] text-slate-400">places</div>
-              </div>
-            </div>
-          </div>
+          <div class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i> Plus grosses chutes de carrière</div>
+          <div class="text-xs text-slate-400 mb-4">Écart le plus important entre classement actuel et meilleur historique</div>
+          <div class="space-y-3" id="movers-baisse"><div class="skeleton sk-text" style="height:56px;border-radius:8px"></div></div>
         </div>
       </div>
     </section>
@@ -794,108 +562,12 @@
 
     <!-- ═════ TOURNAMENT ═══════════════════════════════════════════════ -->
     <section class="view" id="view-tournament">
-      <div class="bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-        <div class="relative flex gap-6 items-start">
-          <div class="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center"><i data-lucide="medal" class="w-12 h-12"></i></div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><i data-lucide="trophy" class="w-3 h-3"></i> Tournoi</div>
-            <div class="text-3xl font-bold tracking-tight">P2000 Casa Padel — Avril 2026</div>
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-90 mt-3">
-              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Villepinte (93)</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4"></i> 10 — 12 avril 2026</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> 64 paires inscrites</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4"></i> 2 000 pts au vainqueur</span>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-[11px] uppercase opacity-75 tracking-widest">Catégorie</div>
-            <div class="text-4xl font-bold leading-none">P2000</div>
-            <div class="text-xs opacity-75 mt-2">Open mixte · Niveau Élite</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="grid grid-cols-4 gap-3 mb-6">
-        <div class="card card-stat"><div class="label">Paires inscrites</div><div class="value">64</div></div>
-        <div class="card card-stat"><div class="label">Classement moyen</div><div class="value">#142</div></div>
-        <div class="card card-stat"><div class="label">Meilleure paire</div><div class="value text-amber-600">#3</div></div>
-        <div class="card card-stat"><div class="label">Matchs joués</div><div class="value">126</div></div>
-      </div>
-
-      <!-- Podium + bracket -->
-      <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="card p-5">
-          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Résultats · Top 5</div>
-          <div class="space-y-2">
-            <div class="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200">
-              <div class="badge badge-gold mb-2">🥇 Vainqueur</div>
-              <div class="font-medium text-sm">Maxime MOREAU</div>
-              <div class="font-medium text-sm">Bastien BLANQUÉ</div>
-              <div class="text-xs text-amber-700 mt-1 font-medium">+ 2 000 pts chacun</div>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <div class="badge badge-silver mb-2">🥈 Finalistes</div>
-              <div class="font-medium text-sm">Aurélien LESCALLIER</div>
-              <div class="font-medium text-sm">Yannick JEAN-ELIE</div>
-              <div class="text-xs text-slate-600 mt-1 font-medium">+ 800 pts chacun</div>
-            </div>
-            <div class="p-3 rounded-xl bg-orange-50 border border-orange-200">
-              <div class="badge badge-bronze mb-2">🥉 Demi-finalistes</div>
-              <div class="font-medium text-sm">Adrien MAIGRET / Thomas LEYGUE</div>
-              <div class="font-medium text-sm">Liam PIOLINE / Delton KIM</div>
-              <div class="text-xs text-orange-700 mt-1 font-medium">+ 500 pts chacun</div>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
-              <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">4e place</div>
-              <div class="font-medium text-sm text-slate-700">Pierre ARNAUD / Clément VIDAL</div>
-              <div class="text-xs text-slate-500 mt-1">+ 320 pts chacun</div>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
-              <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">5e place</div>
-              <div class="font-medium text-sm text-slate-700">Hugo BENARD / Romain CASTEL</div>
-              <div class="text-xs text-slate-500 mt-1">+ 200 pts chacun</div>
-            </div>
-          </div>
-        </div>
-        <div class="card p-5 col-span-2">
-          <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Distribution des paires inscrites par classement</div>
-          <canvas id="chart-tournament-dist" height="220"></canvas>
-        </div>
-      </div>
-
-      <!-- Participants -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center mb-3">
-          <div class="font-semibold flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Participants · 64 paires</div>
-          <div class="flex gap-2">
-            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Trier par : meilleur classement</option><option>Trier par : place</option></select>
-            <button class="text-xs px-3 py-1.5 rounded-lg btn-primary flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Export</button>
-          </div>
-        </div>
-        <table class="w-full text-sm">
-          <thead class="text-slate-500 text-[11px] uppercase font-semibold tracking-wider">
-            <tr class="border-b border-slate-200">
-              <th class="text-left pb-2.5">Paire</th>
-              <th class="text-right pb-2.5">Classement (cumul)</th>
-              <th class="text-right pb-2.5">Tour atteint</th>
-              <th class="text-right pb-2.5">Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Maxime MOREAU + Bastien BLANQUÉ</div><div class="text-xs text-slate-500">PADEL HORIZON / CASA PADEL</div></td><td class="text-right">#1 + #2</td><td class="text-right"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">2 000</td></tr>
-            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Aurélien LESCALLIER + Yannick JEAN-ELIE</div><div class="text-xs text-slate-500">CASA PADEL / PADEL HORIZON</div></td><td class="text-right">#15 + #8</td><td class="text-right"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">800</td></tr>
-            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Adrien MAIGRET + Thomas LEYGUE</div></td><td class="text-right">#3 + #4</td><td class="text-right"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td></tr>
-            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Liam PIOLINE + Delton KIM</div></td><td class="text-right">#289 + #232</td><td class="text-right"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td></tr>
-            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Jérémy SCATENA + Hugo SOLLIER</div></td><td class="text-right">#5 + #42</td><td class="text-right text-slate-500">1/4</td><td class="text-right font-medium">250</td></tr>
-            <tr class="border-t border-slate-100 text-slate-400 italic"><td colspan="4" class="text-center py-2.5 text-xs">… 59 paires éliminées plus tôt</td></tr>
-          </tbody>
-        </table>
+      <div class="text-center text-slate-400 py-20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        <p class="text-sm font-medium">Vue Tournoi — Sprint à venir</p>
+        <p class="text-xs mt-1">Recherche un joueur et clique sur un tournoi depuis son profil</p>
       </div>
     </section>
-
-    <!-- ═════ MAP ══════════════════════════════════════════════════════ -->
     <section class="view" id="view-map">
       <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
         <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
@@ -913,28 +585,80 @@
 
     <!-- ═════ GRAPH ════════════════════════════════════════════════════ -->
     <section class="view" id="view-graph">
+
+      <!-- Toolbar -->
       <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
-        <div class="relative flex-1 min-w-64">
+        <div class="relative flex-1 min-w-64" id="graph-search-wrap">
           <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-          <input type="text" placeholder="Joueur central (vide = vue globale)" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
+          <input id="graph-search" type="text" placeholder="Rechercher un joueur…" autocomplete="off"
+            class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full text-sm focus:outline-none focus:border-teal-400">
+          <div id="graph-autocomplete" class="hidden absolute z-50 top-full left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-56 overflow-y-auto text-sm"></div>
         </div>
-        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Profondeur : 2 sauts</option><option>Profondeur : 1 saut</option><option>Profondeur : 3 sauts</option></select>
-        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Couleur : club</option><option>Couleur : classement</option><option>Couleur : sexe</option><option>Couleur : communauté</option></select>
-        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Min. tournois : 1</option><option>Min. tournois : 5</option><option>Min. tournois : 10</option></select>
-        <button class="btn-primary flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4"></i>Générer</button>
+        <select id="graph-depth" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm">
+          <option value="1">Profondeur : 1 saut</option>
+          <option value="2" selected>Profondeur : 2 sauts</option>
+          <option value="3">Profondeur : 3 sauts</option>
+        </select>
+        <select id="graph-color" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm">
+          <option value="classement">Couleur : classement</option>
+          <option value="sexe">Couleur : sexe</option>
+          <option value="club">Couleur : club</option>
+        </select>
+        <select id="graph-min-w" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm">
+          <option value="1">Min. tournois : 1</option>
+          <option value="3">Min. tournois : 3</option>
+          <option value="5">Min. tournois : 5</option>
+          <option value="10">Min. tournois : 10</option>
+        </select>
+        <button id="graph-gen-btn" onclick="generateEgoGraph()"
+          class="btn-primary flex items-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i>Générer
+        </button>
       </div>
 
+      <!-- Stats row -->
       <div class="grid grid-cols-4 gap-3 mb-4">
-        <div class="card card-stat"><div class="label">Nœuds</div><div class="value">149 124</div></div>
-        <div class="card card-stat"><div class="label">Liens</div><div class="value">428 305</div></div>
-        <div class="card card-stat"><div class="label">Communautés</div><div class="value">~1 250</div></div>
-        <div class="card card-stat"><div class="label">Composante géante</div><div class="value">87%</div></div>
+        <div class="card card-stat"><div class="label">Nœuds</div><div class="value" id="gstat-nodes">—</div></div>
+        <div class="card card-stat"><div class="label">Liens</div><div class="value" id="gstat-links">—</div></div>
+        <div class="card card-stat"><div class="label">Degré moyen</div><div class="value" id="gstat-deg">—</div></div>
+        <div class="card card-stat"><div class="label">Max tournois ensemble</div><div class="value" id="gstat-max">—</div></div>
       </div>
 
-      <div class="card overflow-hidden">
-        <iframe src="graph_padel.html" style="width:100%; height:700px; border:none;" loading="lazy"></iframe>
+      <!-- Canvas -->
+      <div class="card overflow-hidden relative" style="height:680px">
+        <div id="graph-empty" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <p class="text-sm font-medium">Recherche un joueur puis clique sur Générer</p>
+          <p class="text-xs mt-1 text-slate-300">Le graphe ego montre ses partenaires jusqu'à N degrés</p>
+        </div>
+        <div id="graph-loading" class="hidden absolute inset-0 flex items-center justify-center bg-white/80 z-10">
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-sm text-slate-500">Calcul du réseau…</p>
+          </div>
+        </div>
+        <svg id="ego-svg" width="100%" height="100%" style="display:none"></svg>
       </div>
-      <div class="text-xs text-slate-500 mt-2 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i>Iframe sur ton <code class="bg-slate-100 px-1.5 py-0.5 rounded">graph_padel.html</code> existant. Servir via Flask pour bypass file://.</div>
+
+      <!-- Tooltip (hidden by default) -->
+      <div id="graph-tooltip"
+        class="hidden fixed z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 pointer-events-none text-sm w-52">
+      </div>
+
+      <!-- Legend -->
+      <div id="graph-legend" class="hidden mt-3 flex flex-wrap gap-3 items-center text-xs text-slate-500">
+        <span class="font-semibold text-slate-700">Légende :</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span> Top 100</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> Top 1 000</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-blue-400"></span> Top 5 000</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-slate-400"></span> Autre</span>
+        <span class="flex items-center gap-1 ml-4"><span class="inline-block w-8 border-t-2 border-slate-300"></span> 1 tournoi</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-8 border-t-4 border-slate-500"></span> 5+ tournois</span>
+      </div>
+
     </section>
 
     <!-- ═════ PARTNER SUGGESTER ════════════════════════════════════════ -->
@@ -1031,6 +755,17 @@ document.querySelectorAll('[data-view]').forEach(el => {
     document.getElementById('page-title').textContent = titles[v]?.[0] || '';
     document.getElementById('page-subtitle').textContent = titles[v]?.[1] || '';
     if (v === 'map') setTimeout(() => map.invalidateSize(), 100);
+    if (v === 'graph') {
+      // Reset graph view state if no player loaded yet
+      const svgEl = document.getElementById('ego-svg');
+      if (svgEl && svgEl.style.display === 'none' && document.getElementById('graph-empty')) {
+        document.getElementById('graph-empty').classList.remove('hidden');
+      }
+    }
+    if (v === 'leaderboard') {
+      const state = window.lbState;
+      if (state && state.offset === 0 && !state.loading) window.loadLeaderboard?.(true);
+    }
     if (window.lucide) lucide.createIcons();
   });
 });
@@ -1146,6 +881,52 @@ async function loadDashboardStats() {
   chartTournamentDist.update();
 }
 loadDashboardStats();
+
+// ── Top 5 H/F + mini movers dans le dashboard ────────────────────────────────
+async function loadDashboardTops() {
+  const BADGES = ['badge-gold','badge-silver','badge-bronze','badge-silver','badge-silver'];
+  const PAL = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981'];
+
+  function top5Row(p, rank) {
+    const inits = ((p.prenom||'')[0]||'').toUpperCase()+((p.nom||'')[0]||'').toUpperCase();
+    const color = PAL[(rank-1)%PAL.length];
+    return `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
+      <div class="badge ${BADGES[rank-1]||'badge-silver'} w-7 text-center">${rank}</div>
+      <div class="avatar av-sm" style="background:${color};font-size:11px">${inits}</div>
+      <div class="flex-1 font-medium text-sm truncate">${p.nom_complet}</div>
+      <div class="text-xs text-slate-500 truncate max-w-[100px]">${p.club||''}</div>
+    </div>`;
+  }
+
+  const [resH, resF, movers] = await Promise.all([
+    apiFetch('/api/leaderboard?sexe=H&limit=5'),
+    apiFetch('/api/leaderboard?sexe=F&limit=5'),
+    apiFetch('/api/movers?n=4'),
+  ]);
+
+  const elH = document.getElementById('dash-top5-h');
+  const elF = document.getElementById('dash-top5-f');
+  const elM = document.getElementById('dash-movers-mini');
+
+  if (elH && resH) elH.innerHTML = resH.players.map((p,i) => top5Row(p,i+1)).join('');
+  if (elF && resF) elF.innerHTML = resF.players.map((p,i) => top5Row(p,i+1)).join('');
+  if (elM && movers) {
+    const rows = (movers.hausse||[]).slice(0,4).map(p => {
+      const inits = (p.nom_complet||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return `<div class="flex items-center gap-3 cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
+        <div class="avatar av-sm bg-teal-600" style="font-size:11px">${inits}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-medium truncate text-sm">${p.nom_complet}</div>
+          <div class="text-xs text-slate-500">#${(p.classement||0).toLocaleString('fr-FR')} · record perso</div>
+        </div>
+        <div class="trend delta-up text-sm">⭐</div>
+      </div>`;
+    });
+    elM.innerHTML = rows.join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
+  }
+  if (window.lucide) lucide.createIcons();
+}
+loadDashboardTops();
 
 // ── Charts profil joueur (chart-progression + chart-parcours) ─────────────────
 let chartProgression = null;
@@ -1301,6 +1082,25 @@ function renderProfile(data) {
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="generateEgoGraph(data.id, (data.prenom||'')+' '+(data.nom||''))"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Voir réseau
+      </button>
+      <button onclick="loadSuggestions(data.id, data.nom_complet)"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Trouver partenaire
+      </button>
     </div>
 
     <div class="grid grid-cols-6 gap-3 mb-6">
@@ -1698,36 +1498,124 @@ setupAutocomplete('lb-search', 'ac-lb', player => {
   filterLeaderboard();
 });
 
-// ── 10. Filtre leaderboard client-side ───────────────────────────────────────
+// ── Leaderboard — chargement API ────────────────────────────────────────────
 
-function filterLeaderboard() {
-  const q      = (document.getElementById('lb-search')?.value  || '').toLowerCase().trim();
-  const region = (document.getElementById('lb-region')?.value  || '').toLowerCase();
-  const club   = (document.getElementById('lb-club')?.value    || '').toLowerCase();
+const lbState = { offset:0, total:0, loading:false, done:false, sexe:'H', club:'', q:'', age:'' };
+const PALETTE = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6','#0ea5e9','#f97316'];
 
-  const rows = document.querySelectorAll('#lb-tbody tr:not(#lb-sentinel-row)');
-  let visible = 0;
-  rows.forEach(row => {
-    const text = row.textContent.toLowerCase();
-    const ok = (!q || text.includes(q)) && (!region || text.includes(region)) && (!club || text.includes(club));
-    row.style.display = ok ? '' : 'none';
-    if (ok) visible++;
-  });
+function lbRowHtml(p, rank) {
+  const inits = ((p.prenom||'')[0]||'').toUpperCase() + ((p.nom||'')[0]||'').toUpperCase();
+  const color = PALETTE[Math.abs(p.id?.charCodeAt(0)||0) % PALETTE.length];
+  const rankBadge = rank===1 ? '<span class="badge badge-gold">1</span>'
+                  : rank===2 ? '<span class="badge badge-silver">2</span>'
+                  : rank===3 ? '<span class="badge badge-bronze">3</span>'
+                  : `<span class="text-slate-500">${rank.toLocaleString('fr-FR')}</span>`;
+  const meilleur = p.meilleur_classement ? '#' + p.meilleur_classement.toLocaleString('fr-FR') : '—';
+  const stored = loadDefaultPlayer();
+  const isMe = stored && stored.id === p.id;
+  const rowClass = isMe ? 'row-me border-t border-slate-100' : 'border-t border-slate-100 hover:bg-slate-50';
+
+  return `<tr class="${rowClass}" data-player-id="${p.id}" style="cursor:pointer" onclick="loadPlayerProfile('${p.id}')">
+    <td class="py-3 px-4">${rankBadge}</td>
+    <td class="py-3 px-4"><div class="flex items-center gap-2">
+      <div class="avatar av-sm" style="background:${color};font-size:11px;flex-shrink:0">${inits}</div>
+      <span class="font-medium">${p.nom_complet}</span>
+      ${isMe ? '<span class="badge badge-gold">toi</span>' : ''}
+    </div></td>
+    <td class="py-3 px-4 text-slate-600 text-sm truncate max-w-[160px]">${p.club||'—'}</td>
+    <td class="py-3 px-4 text-slate-600 text-sm">${p.ville||'—'}</td>
+    <td class="py-3 px-4 text-right text-slate-500 text-sm">${meilleur}</td>
+    <td class="py-3 px-4 text-right text-sm">${p.nb_tournois||0}</td>
+    <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+  </tr>`;
 }
 
-document.getElementById('lb-search') ?.addEventListener('input',  debounce(filterLeaderboard, 200));
-document.getElementById('lb-region') ?.addEventListener('change', filterLeaderboard);
-document.getElementById('lb-club')   ?.addEventListener('change', filterLeaderboard);
+async function loadLeaderboard(reset=false) {
+  if (lbState.loading) return;
+  if (!reset && lbState.done) return;
 
-// Onglets Hommes / Femmes
+  if (reset) {
+    lbState.offset = 0;
+    lbState.done   = false;
+    // Vider les lignes existantes sauf sentinel
+    const tbody = document.getElementById('lb-tbody');
+    if (tbody) {
+      const sentinel = document.getElementById('lb-sentinel-row');
+      [...tbody.querySelectorAll('tr:not(#lb-sentinel-row)')].forEach(r => r.remove());
+    }
+  }
+
+  lbState.loading = true;
+  const sentinel = document.getElementById('lb-sentinel');
+  if (sentinel) sentinel.innerHTML = '<div style="padding:10px;text-align:center"><div class="skeleton sk-text" style="width:140px;height:11px;margin:0 auto"></div></div>';
+
+  const params = new URLSearchParams({
+    sexe:   lbState.sexe,
+    club:   lbState.club,
+    q:      lbState.q,
+    age:    lbState.age,
+    offset: lbState.offset,
+    limit:  50,
+  });
+
+  const data = await apiFetch('/api/leaderboard?' + params.toString());
+  lbState.loading = false;
+  if (sentinel) sentinel.innerHTML = '';
+  if (!data) return;
+
+  lbState.total = data.total;
+  const rows = (data.players || []).map((p, i) => lbRowHtml(p, lbState.offset + i + 1)).join('');
+  document.getElementById('lb-sentinel-row')?.insertAdjacentHTML('beforebegin', rows);
+
+  lbState.offset += data.players.length;
+  lbState.done = lbState.offset >= lbState.total;
+
+  const counter = document.getElementById('lb-counter');
+  if (counter) counter.textContent = `${lbState.offset.toLocaleString('fr-FR')} / ${lbState.total.toLocaleString('fr-FR')} joueurs`;
+
+  if (window.lucide) lucide.createIcons();
+}
+
+// Filtres
+function applyLbFilters() {
+  lbState.sexe = document.querySelector('#lb-sex-tabs .tab.active')?.dataset.sex || 'H';
+  lbState.club = document.getElementById('lb-club')?.value || '';
+  lbState.q    = document.getElementById('lb-search')?.value.trim() || '';
+  lbState.age  = document.getElementById('lb-age')?.value || '';
+  loadLeaderboard(true);
+}
+
+document.getElementById('lb-search')?.addEventListener('input',  debounce(applyLbFilters, 300));
+document.getElementById('lb-club')  ?.addEventListener('change', applyLbFilters);
+document.getElementById('lb-age')   ?.addEventListener('change', applyLbFilters);
+
 document.querySelectorAll('#lb-sex-tabs .tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('#lb-sex-tabs .tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    filterLeaderboard();
+    applyLbFilters();
   });
 });
 
+// Infinite scroll
+(function initInfiniteScroll() {
+  const sentinel = document.getElementById('lb-sentinel');
+  if (!sentinel) return;
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) loadLeaderboard();
+  }, { rootMargin: '120px' }).observe(sentinel);
+})();
+
+// Charger au premier affichage du leaderboard
+document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', () => {
+  if (lbState.offset === 0) loadLeaderboard(true);
+  setTimeout(() => {
+    const stored = loadDefaultPlayer();
+    if (stored) document.querySelector(`[data-player-id="${stored.id}"]`)?.scrollIntoView({ block:'center', behavior:'smooth' });
+  }, 600);
+});
+
+// ── 6. Fil d'Ariane suggesteur ────────────────────────────────────────────────
 // ── 6. Fil d'Ariane suggesteur ────────────────────────────────────────────────
 
 const suggStack = [];
@@ -1755,6 +1643,25 @@ function renderBreadcrumb() {
 function pushSuggView(label, id) { suggStack.push({label, id}); renderBreadcrumb(); }
 function popSuggView(idx)        { suggStack.splice(idx+1); renderBreadcrumb(); }
 function resetSuggView()         { suggStack.length = 0; renderBreadcrumb(); }
+
+// Called from profile "Trouver partenaire" button
+function loadSuggestions(playerId, playerLabel) {
+  // Navigate to partners view
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-partners')?.classList.add('active');
+  document.querySelector('.nav-item[data-view="partners"]')?.classList.add('active');
+  if (window.titles) {
+    document.getElementById('page-title').textContent    = window.titles['partners']?.[0] || '';
+    document.getElementById('page-subtitle').textContent = window.titles['partners']?.[1] || '';
+  }
+  // Pre-fill the suggester search with this player
+  const inp = document.getElementById('sugg-search-input');
+  if (inp) { inp.value = playerLabel || ''; }
+  // Trigger search if we have an id
+  if (playerId && window.runSuggester) window.runSuggester(playerId);
+  if (window.lucide) lucide.createIcons();
+}
 
 function suggToPlayer(name, id) {
   pushSuggView(name, id || null);
@@ -1833,6 +1740,43 @@ function suggToPlayer(name, id) {
   }, { rootMargin:'80px' }).observe(sentinel);
 })();
 
+// ── Movers — chargement API ──────────────────────────────────────────────────
+
+async function loadMovers() {
+  const sexeTab = document.querySelector('#lb-sex-tabs .tab.active')?.dataset.sex || 'H';
+  const data = await apiFetch(`/api/movers?sexe=${sexeTab}&n=6`);
+  if (!data) return;
+
+  const PALETTE2 = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6'];
+
+  function moverRow(p, isUp) {
+    const inits = (p.nom_complet||'??').split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color = PALETTE2[Math.abs((p.id||'').charCodeAt?.(0)||0) % PALETTE2.length];
+    const delta = p.delta ? p.delta.toLocaleString('fr-FR') : '';
+    return `<div class="flex items-center gap-3 p-3 rounded-lg ${isUp?'bg-emerald-50/50':'bg-red-50/40'} cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
+      <div class="avatar av-md" style="background:${color}">${inits}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-sm truncate">${p.nom_complet}</div>
+        <div class="text-xs text-slate-500 truncate">${p.club||'—'} · #${(p.classement||0).toLocaleString('fr-FR')}</div>
+      </div>
+      ${isUp
+        ? `<div class="text-right shrink-0"><div class="text-xs font-bold text-emerald-600">⭐ Record</div></div>`
+        : `<div class="text-right shrink-0"><div class="trend delta-down text-sm font-bold text-red-500">-${delta}</div><div class="text-[10px] text-slate-400">places</div></div>`
+      }
+    </div>`;
+  }
+
+  const hausse = document.getElementById('movers-hausse');
+  const baisse = document.getElementById('movers-baisse');
+  if (hausse) hausse.innerHTML = (data.hausse||[]).map(p=>moverRow(p,true)).join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
+  if (baisse) baisse.innerHTML = (data.baisse||[]).map(p=>moverRow(p,false)).join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
+  if (window.lucide) lucide.createIcons();
+}
+
+document.querySelector('[data-view="movers"]')?.addEventListener('click', () => {
+  loadMovers();
+});
+
 // ── 9. Scroll vers la ligne "toi" à l'ouverture du leaderboard ───────────────
 
 document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', () => {
@@ -1841,6 +1785,352 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   }, 380);
 });
 
+
+// ── Ego Graph D3 ─────────────────────────────────────────────────────────────
+(function() {
+
+  /* State */
+  let gCurrentPlayerId = null;
+  let gCurrentPlayerLabel = '';
+  let gSimulation = null;
+  let gSvgRoot = null;
+
+  /* ── Autocomplete ──────────────────────────────────────────────────────── */
+  const searchInput = document.getElementById('graph-search');
+  const acBox       = document.getElementById('graph-autocomplete');
+  let acTimer = null;
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      clearTimeout(acTimer);
+      const q = searchInput.value.trim();
+      if (q.length < 2) { acBox.classList.add('hidden'); return; }
+      acTimer = setTimeout(async () => {
+        try {
+          const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`);
+          acBox.innerHTML = data.map(p => `
+            <div class="px-3 py-2 hover:bg-teal-50 cursor-pointer flex justify-between items-center gap-2 graph-ac-item"
+              data-id="${p.id}" data-label="${p.nom_complet}">
+              <span class="font-medium text-slate-800">${p.nom_complet}</span>
+              <span class="text-slate-400 text-xs shrink-0">#${p.classement ?? '?'}</span>
+            </div>`).join('');
+          acBox.classList.remove('hidden');
+          acBox.querySelectorAll('.graph-ac-item').forEach(el => {
+            el.addEventListener('click', () => {
+              gCurrentPlayerId   = el.dataset.id;
+              gCurrentPlayerLabel = el.dataset.label;
+              searchInput.value  = gCurrentPlayerLabel;
+              acBox.classList.add('hidden');
+            });
+          });
+        } catch(e) {}
+      }, 220);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#graph-search-wrap')) acBox.classList.add('hidden');
+    });
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const first = acBox.querySelector('.graph-ac-item');
+        if (first) { first.click(); generateEgoGraph(); }
+      }
+    });
+  }
+
+  /* ── Color helpers ─────────────────────────────────────────────────────── */
+  const COLOR_CLASSEMENT = d => {
+    if (d.is_center) return '#0d9488';
+    const r = d.classement;
+    if (!r) return '#94a3b8';
+    if (r <= 100)   return '#f59e0b';
+    if (r <= 1000)  return '#10b981';
+    if (r <= 5000)  return '#3b82f6';
+    return '#94a3b8';
+  };
+  const COLOR_SEXE = d => {
+    if (d.is_center) return '#0d9488';
+    if (d.sexe === 'H') return '#60a5fa';
+    if (d.sexe === 'F') return '#f472b6';
+    return '#94a3b8';
+  };
+  let clubPalette = {};
+  let clubIdx = 0;
+  const CLUB_COLORS = ['#6366f1','#f59e0b','#10b981','#ec4899','#8b5cf6','#14b8a6','#f97316','#06b6d4','#84cc16','#e11d48'];
+  const COLOR_CLUB = d => {
+    if (d.is_center) return '#0d9488';
+    const c = d.club || '?';
+    if (!clubPalette[c]) clubPalette[c] = CLUB_COLORS[clubIdx++ % CLUB_COLORS.length];
+    return clubPalette[c];
+  };
+
+  function getColorFn() {
+    const mode = document.getElementById('graph-color')?.value || 'classement';
+    if (mode === 'sexe')  return COLOR_SEXE;
+    if (mode === 'club')  return COLOR_CLUB;
+    return COLOR_CLASSEMENT;
+  }
+
+  function updateLegend() {
+    const legend = document.getElementById('graph-legend');
+    if (!legend) return;
+    const mode = document.getElementById('graph-color')?.value || 'classement';
+    legend.classList.remove('hidden');
+    if (mode === 'classement') {
+      legend.innerHTML = `
+        <span class="font-semibold text-slate-700">Légende :</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-teal-500"></span> Joueur central</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span> Top 100</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> Top 1 000</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-blue-400"></span> Top 5 000</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-slate-400"></span> Autre</span>`;
+    } else if (mode === 'sexe') {
+      legend.innerHTML = `
+        <span class="font-semibold text-slate-700">Légende :</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-teal-500"></span> Joueur central</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-blue-400"></span> Homme</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-pink-400"></span> Femme</span>`;
+    } else {
+      legend.innerHTML = `<span class="font-semibold text-slate-700">Légende :</span><span class="text-slate-400">Couleurs par club (top 10)</span>`;
+    }
+  }
+
+  /* ── Node radius ────────────────────────────────────────────────────────── */
+  const nodeR = d => {
+    if (d.is_center) return 18;
+    if (d.degree === 1) return 10;
+    return 7;
+  };
+
+  /* ── Link stroke width ──────────────────────────────────────────────────── */
+  const linkW = d => Math.max(1, Math.log(d.weight + 1) * 1.4);
+
+  /* ── Tooltip ────────────────────────────────────────────────────────────── */
+  const tooltip = document.getElementById('graph-tooltip');
+  function showTooltip(event, d) {
+    if (!tooltip) return;
+    const rankTxt = d.classement ? `#${d.classement.toLocaleString()}` : 'NC';
+    tooltip.innerHTML = `
+      <div class="font-semibold text-slate-800 mb-1">${d.label}</div>
+      <div class="text-slate-500 text-xs space-y-0.5">
+        <div>Classement : <span class="text-slate-700 font-medium">${rankTxt}</span></div>
+        ${d.club ? `<div>Club : <span class="text-slate-700">${d.club}</span></div>` : ''}
+        ${d.sexe ? `<div>Sexe : ${d.sexe === 'H' ? 'Homme' : 'Femme'}</div>` : ''}
+        <div>Degré : ${d.degree === 0 ? 'Centre' : `${d.degree} saut${d.degree > 1 ? 's' : ''}`}</div>
+      </div>
+      ${!d.is_center ? `<div class="mt-2 text-teal-600 text-xs font-medium cursor-pointer">Clic → voir profil · Dbl-clic → recentrer</div>` : ''}`;
+    tooltip.classList.remove('hidden');
+    moveTooltip(event);
+  }
+  function moveTooltip(event) {
+    if (!tooltip) return;
+    const x = event.clientX + 14, y = event.clientY - 20;
+    const W = window.innerWidth, H = window.innerHeight;
+    tooltip.style.left = (x + 210 > W ? x - 224 : x) + 'px';
+    tooltip.style.top  = (y + 160 > H ? y - 160 : y) + 'px';
+  }
+  function hideTooltip() { tooltip?.classList.add('hidden'); }
+
+  /* ── Main render ────────────────────────────────────────────────────────── */
+  function renderD3Graph(data, colorFn) {
+    const svg = document.getElementById('ego-svg');
+    if (!svg) return;
+
+    // Clear previous
+    d3.select(svg).selectAll('*').remove();
+    if (gSimulation) { gSimulation.stop(); gSimulation = null; }
+
+    const W = svg.clientWidth  || svg.parentElement.clientWidth  || 900;
+    const H = svg.clientHeight || svg.parentElement.clientHeight || 680;
+
+    const root = d3.select(svg);
+
+    // Zoom container
+    const g = root.append('g');
+    root.call(d3.zoom()
+      .scaleExtent([0.15, 5])
+      .on('zoom', e => g.attr('transform', e.transform)));
+
+    // Defs: arrowhead marker (optional) + subtle drop shadow
+    const defs = root.append('defs');
+    defs.append('filter').attr('id','glow').html(`
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#0d9488" flood-opacity="0.6"/>
+    `);
+
+    // Links
+    const link = g.append('g').attr('class','links')
+      .selectAll('line')
+      .data(data.links)
+      .join('line')
+        .attr('stroke', '#cbd5e1')
+        .attr('stroke-opacity', 0.7)
+        .attr('stroke-width', linkW);
+
+    // Nodes
+    const node = g.append('g').attr('class','nodes')
+      .selectAll('g')
+      .data(data.nodes)
+      .join('g')
+        .attr('class','node-g')
+        .style('cursor', d => d.is_center ? 'default' : 'pointer')
+        .call(d3.drag()
+          .on('start', dragStart)
+          .on('drag',  dragging)
+          .on('end',   dragEnd));
+
+    node.append('circle')
+      .attr('r', nodeR)
+      .attr('fill', colorFn)
+      .attr('stroke', d => d.is_center ? '#0f766e' : 'white')
+      .attr('stroke-width', d => d.is_center ? 3 : 1.5)
+      .attr('filter', d => d.is_center ? 'url(#glow)' : null);
+
+    // Labels for center + depth-1 only
+    node.filter(d => d.degree <= 1)
+      .append('text')
+        .text(d => d.label.length > 16 ? d.label.slice(0,15)+'…' : d.label)
+        .attr('font-size', d => d.is_center ? '11px' : '9px')
+        .attr('font-weight', d => d.is_center ? '700' : '500')
+        .attr('fill', '#1e293b')
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => nodeR(d) + 11);
+
+    // Interactions
+    node.on('mouseenter', (event, d) => showTooltip(event, d))
+        .on('mousemove',  (event)    => moveTooltip(event))
+        .on('mouseleave', ()         => hideTooltip())
+        .on('click', (event, d) => {
+          if (!d.is_center) { loadPlayerProfile(d.id); showView('player'); }
+        })
+        .on('dblclick', (event, d) => {
+          if (!d.is_center) {
+            event.stopPropagation();
+            gCurrentPlayerId    = d.id;
+            gCurrentPlayerLabel = d.label;
+            if (searchInput) searchInput.value = d.label;
+            generateEgoGraph();
+          }
+        });
+
+    // Force simulation
+    gSimulation = d3.forceSimulation(data.nodes)
+      .force('link', d3.forceLink(data.links).id(d => d.id)
+        .distance(d => 80 / Math.log(d.weight + 2))
+        .strength(0.6))
+      .force('charge', d3.forceManyBody().strength(-220).distanceMax(400))
+      .force('center', d3.forceCenter(W / 2, H / 2))
+      .force('collide', d3.forceCollide().radius(d => nodeR(d) + 4))
+      .on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+    // Pin center node
+    const center = data.nodes.find(n => n.is_center);
+    if (center) {
+      center.fx = W / 2;
+      center.fy = H / 2;
+    }
+  }
+
+  function dragStart(event, d) {
+    if (!event.active && gSimulation) gSimulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+  }
+  function dragging(event, d) { d.fx = event.x; d.fy = event.y; }
+  function dragEnd(event, d) {
+    if (!event.active && gSimulation) gSimulation.alphaTarget(0);
+    if (!d.is_center) { d.fx = null; d.fy = null; }
+  }
+
+  /* ── Public: generate graph ─────────────────────────────────────────────── */
+  window.generateEgoGraph = async function(playerId, playerLabel) {
+    if (playerId) {
+      gCurrentPlayerId    = playerId;
+      gCurrentPlayerLabel = playerLabel || playerId;
+      if (searchInput) searchInput.value = gCurrentPlayerLabel;
+      showView('graph');
+    }
+    const pid = gCurrentPlayerId;
+    if (!pid) {
+      alert('Recherche un joueur d'abord !');
+      return;
+    }
+
+    const depth  = parseInt(document.getElementById('graph-depth')?.value  || '2');
+    const minW   = parseInt(document.getElementById('graph-min-w')?.value  || '1');
+    const colorFn = getColorFn();
+
+    // Reset club palette
+    clubPalette = {}; clubIdx = 0;
+
+    // Show loading
+    document.getElementById('graph-empty').classList.add('hidden');
+    document.getElementById('graph-loading').classList.remove('hidden');
+    document.getElementById('ego-svg').style.display = 'none';
+
+    try {
+      const data = await apiFetch(`/api/ego/${pid}?depth=${depth}`);
+
+      // Filter by min weight
+      const filteredLinks = data.links.filter(l => l.weight >= minW);
+      const keptIds = new Set();
+      filteredLinks.forEach(l => { keptIds.add(l.source); keptIds.add(l.target); });
+      // Always keep center
+      keptIds.add(pid);
+      const filteredNodes = data.nodes.filter(n => keptIds.has(n.id));
+
+      // Stats
+      document.getElementById('gstat-nodes').textContent = filteredNodes.length.toLocaleString();
+      document.getElementById('gstat-links').textContent = filteredLinks.length.toLocaleString();
+      const avgDeg = filteredLinks.length > 0
+        ? (filteredLinks.length * 2 / filteredNodes.length).toFixed(1)
+        : '0';
+      document.getElementById('gstat-deg').textContent = avgDeg;
+      const maxW = filteredLinks.reduce((m, l) => Math.max(m, l.weight), 0);
+      document.getElementById('gstat-max').textContent = maxW || '—';
+
+      document.getElementById('graph-loading').classList.add('hidden');
+      const svgEl = document.getElementById('ego-svg');
+      svgEl.style.display = '';
+
+      renderD3Graph({ nodes: filteredNodes, links: filteredLinks }, colorFn);
+      updateLegend();
+
+    } catch(e) {
+      document.getElementById('graph-loading').classList.add('hidden');
+      document.getElementById('graph-empty').classList.remove('hidden');
+      document.getElementById('graph-empty').querySelector('p').textContent = 'Erreur de chargement — serveur démarré ?';
+    }
+  };
+
+  /* ── Re-color on selector change ───────────────────────────────────────── */
+  document.getElementById('graph-color')?.addEventListener('change', () => {
+    const svgEl = document.getElementById('ego-svg');
+    if (svgEl.style.display === 'none') return;
+    clubPalette = {}; clubIdx = 0;
+    const fn = getColorFn();
+    d3.select(svgEl).selectAll('circle').attr('fill', fn);
+    updateLegend();
+  });
+
+  /* ── Helper: navigate to graph view ────────────────────────────────────── */
+  function showView(v) {
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    document.getElementById('view-' + v)?.classList.add('active');
+    document.querySelector(`.nav-item[data-view="${v}"]`)?.classList.add('active');
+    if (window.titles && window.titles[v]) {
+      document.getElementById('page-title').textContent    = window.titles[v][0] || '';
+      document.getElementById('page-subtitle').textContent = window.titles[v][1] || '';
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+})();
 
 // ── API Wake-up & Live Status ─────────────────────────────────────────────────
 (function initApiStatus() {
@@ -1858,4 +2148,73 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     cdTimer = setInterval(() => {
       s--;
       if (cdEl) cdEl.textContent = Math.max(0, s);
-      if (s <= 0) clearInterval(cdTime
+      if (s <= 0) clearInterval(cdTimer);
+    }, 1000);
+  }
+
+  function stopCountdown() {
+    clearInterval(cdTimer);
+    cdTimer = null;
+  }
+
+  function setBadge(state) {
+    if (!badge) return;
+    badge.className = 'api-badge ' + (state === 'live' ? 'api-live' : state === 'offline' ? 'api-offline' : 'api-pending');
+    const dot = badge.querySelector('.api-dot');
+    if (dot) dot.className = 'api-dot';
+    if (label) label.textContent = state === 'live' ? 'Live' : state === 'offline' ? 'Hors ligne' : 'Connexion…';
+  }
+
+  async function ping() {
+    try {
+      const resp = await fetch(
+        (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+          ? 'http://localhost:5000' : '') + '/api/health',
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (resp.ok) {
+        ready = true;
+        setBadge('live');
+        stopCountdown();
+        if (toast) toast.classList.remove('show');
+      } else {
+        setBadge('offline');
+      }
+    } catch(e) {
+      if (!ready) {
+        setBadge('pending');
+      }
+    }
+  }
+
+  // Initial ping — if not ready after 2s, show wake-up toast
+  setTimeout(async () => {
+    await ping();
+    if (!ready) {
+      if (toast) toast.classList.add('show');
+      startCountdown(55);
+      // Retry every 5s until ready
+      const retry = setInterval(async () => {
+        await ping();
+        if (ready) {
+          clearInterval(retry);
+          setTimeout(() => { if (toast) toast.classList.remove('show'); }, 1500);
+        }
+      }, 5000);
+    }
+  }, 2000);
+})();
+
+</script>
+
+<!-- API wake-up toast -->
+<div id="api-toast">
+  <div class="toast-spinner"></div>
+  <div>
+    <div style="font-weight:600;font-size:13px">Serveur en cours de démarrage…</div>
+    <div style="font-size:11px;opacity:.75;margin-top:2px">Prêt dans ~<span id="toast-countdown">55</span>s (Render gratuit)</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,23 +1,23 @@
 """
 api.py — API Flask pour le dashboard Padel Stats.
-
 Routes :
-  GET /api/search?q=ROLLAND          → recherche joueurs
-  GET /api/player/<id>               → profil complet joueur
-  GET /api/suggest/<id>              → suggestions de partenaires
-  GET /api/path/<src_id>/<tgt_id>    → degrés de séparation (BFS)
-  GET /api/ego/<id>?depth=2          → graphe local ego
-  GET /api/stats                     → stats globales pour dashboard
-  GET /api/clubs?top=100             → top clubs par nb joueurs
-
-Lancement :
-  cd dashboard && python api.py
-  → http://localhost:5000
+  GET /                              → sert le HTML
+  GET /api/search?q=                 → recherche joueurs
+  GET /api/player/<id>               → profil complet
+  GET /api/suggest/<id>              → suggestions partenaires
+  GET /api/path/<src>/<tgt>          → degrés de séparation
+  GET /api/ego/<id>?depth=2          → graphe ego
+  GET /api/stats                     → stats globales dashboard
+  GET /api/leaderboard               → classement paginé + filtres
+  GET /api/movers?sexe=H&n=8         → hausse/baisse classements
+  GET /api/clubs?top=100             → top clubs
+  GET /api/health                    → santé
 """
 import os
 import sys
+import datetime
+from collections import defaultdict
 
-# Permettre les imports depuis le dossier dashboard/
 sys.path.insert(0, os.path.dirname(__file__))
 
 from flask import Flask, jsonify, request, send_file
@@ -28,38 +28,26 @@ from player_profile import search_players, get_player_profile
 from suggester import suggest_partners
 
 app = Flask(__name__)
-CORS(app)   # Autorise les requêtes cross-origin depuis le HTML statique
+CORS(app)
 
-
-# ── Serve frontend ───────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
-    """Sert le fichier HTML du dashboard."""
     html_path = os.path.join(os.path.dirname(__file__), "..", "dashboard_mockup.html")
     return send_file(os.path.abspath(html_path))
 
 
-# ── Graphe chargé uniquement à la demande (path + ego) ───────────────────────
-# Les routes search / player / suggest n'en ont pas besoin → démarrage immédiat
-
-
-# ── Routes ────────────────────────────────────────────────────────────────────
-
 @app.get("/api/search")
 def route_search():
-    """Recherche de joueurs par nom/prénom."""
     q = request.args.get("q", "").strip()
     if len(q) < 2:
         return jsonify([])
     limit = min(int(request.args.get("limit", 20)), 50)
-    results = search_players(q, limit=limit)
-    return jsonify(results)
+    return jsonify(search_players(q, limit=limit))
 
 
 @app.get("/api/player/<player_id>")
 def route_player(player_id: str):
-    """Profil complet d'un joueur."""
     profile = get_player_profile(player_id)
     if not profile:
         return jsonify({"error": "Joueur introuvable"}), 404
@@ -68,24 +56,20 @@ def route_player(player_id: str):
 
 @app.get("/api/suggest/<player_id>")
 def route_suggest(player_id: str):
-    """Suggestions de partenaires pour un joueur."""
     n = min(int(request.args.get("n", 10)), 30)
-    suggestions = suggest_partners(player_id, n=n)
-    return jsonify(suggestions)
+    return jsonify(suggest_partners(player_id, n=n))
 
 
 @app.get("/api/path/<src_id>/<tgt_id>")
 def route_path(src_id: str, tgt_id: str):
-    """Degrés de séparation entre deux joueurs (BFS)."""
     result = engine.shortest_path(src_id, tgt_id)
     if result is None:
-        return jsonify({"error": "Aucun chemin trouvé entre ces deux joueurs"}), 404
+        return jsonify({"error": "Aucun chemin trouve"}), 404
     return jsonify(result)
 
 
 @app.get("/api/ego/<player_id>")
 def route_ego(player_id: str):
-    """Graphe local centré sur un joueur (ego graph)."""
     depth = min(int(request.args.get("depth", 2)), 3)
     graph_data = engine.ego_graph(player_id, depth=depth)
     if not graph_data["nodes"]:
@@ -95,14 +79,9 @@ def route_ego(player_id: str):
 
 @app.get("/api/stats")
 def route_stats():
-    """Stats globales pour les charts du dashboard."""
     from db import fetchall, fetchone
-    import datetime
-    from collections import defaultdict
-
     current_year = datetime.date.today().year
 
-    # 1. Distribution classements
     ranking = fetchone("""
         SELECT
           SUM(CASE WHEN classement <= 100 THEN 1 ELSE 0 END)                AS top100,
@@ -115,7 +94,6 @@ def route_stats():
         FROM joueurs WHERE classement IS NOT NULL
     """) or {}
 
-    # 2. Pyramide âges — calcul en Python pour compatibilité SQLite/PostgreSQL
     naissance_rows = fetchall(
         "SELECT sexe, naissance FROM joueurs WHERE naissance IS NOT NULL AND sexe IN ('H','F')"
     )
@@ -128,23 +106,15 @@ def route_stats():
         sexe = r.get("sexe")
         if sexe not in pyramid:
             continue
-        if age < 18:
-            b = 0
-        elif age <= 25:
-            b = 1
-        elif age <= 35:
-            b = 2
-        elif age <= 45:
-            b = 3
-        elif age <= 55:
-            b = 4
-        elif age <= 65:
-            b = 5
-        else:
-            b = 6
+        if age < 18:      b = 0
+        elif age <= 25:   b = 1
+        elif age <= 35:   b = 2
+        elif age <= 45:   b = 3
+        elif age <= 55:   b = 4
+        elif age <= 65:   b = 5
+        else:             b = 6
         pyramid[sexe][b] += 1
 
-    # 3. Activité mensuelle — calcul en Python pour compatibilité des formats de date
     date_rows = fetchall(
         "SELECT DISTINCT id_tournoi, date_tournoi FROM participations WHERE date_tournoi IS NOT NULL"
     )
@@ -152,9 +122,9 @@ def route_stats():
     for r in date_rows:
         d = r.get("date_tournoi") or ""
         try:
-            if len(d) == 10 and d[2] == "/":   # DD/MM/YYYY
+            if len(d) == 10 and d[2] == "/":
                 mois = d[3:5] + "/" + d[6:]
-            elif len(d) == 10 and d[4] == "-":  # YYYY-MM-DD
+            elif len(d) == 10 and d[4] == "-":
                 mois = d[5:7] + "/" + d[:4]
             else:
                 continue
@@ -168,7 +138,6 @@ def route_stats():
 
     last_12 = sorted(monthly.items(), key=lambda x: _sort_key(x[0]))[-12:]
 
-    # 4. Top villes (proxy régions)
     villes = fetchall("""
         SELECT UPPER(TRIM(ville)) AS ville, COUNT(*) AS nb
         FROM joueurs WHERE ville IS NOT NULL AND ville != ''
@@ -176,25 +145,18 @@ def route_stats():
         ORDER BY nb DESC LIMIT 10
     """)
 
-    # 5. Distribution taille tournois (nb paires)
     tourn_sizes = fetchall(
         "SELECT id_tournoi, COUNT(*) AS nb_parts FROM participations GROUP BY id_tournoi"
     )
-    tdist = [0, 0, 0, 0, 0, 0]  # ≤8, 9-16, 17-32, 33-64, 65-128, 128+
+    tdist = [0, 0, 0, 0, 0, 0]
     for r in tourn_sizes:
         pairs = (r.get("nb_parts") or 0) // 2
-        if pairs <= 8:
-            tdist[0] += 1
-        elif pairs <= 16:
-            tdist[1] += 1
-        elif pairs <= 32:
-            tdist[2] += 1
-        elif pairs <= 64:
-            tdist[3] += 1
-        elif pairs <= 128:
-            tdist[4] += 1
-        else:
-            tdist[5] += 1
+        if pairs <= 8:      tdist[0] += 1
+        elif pairs <= 16:   tdist[1] += 1
+        elif pairs <= 32:   tdist[2] += 1
+        elif pairs <= 64:   tdist[3] += 1
+        elif pairs <= 128:  tdist[4] += 1
+        else:               tdist[5] += 1
 
     return jsonify({
         "ranking_dist": [
@@ -217,28 +179,148 @@ def route_stats():
     })
 
 
+@app.get("/api/leaderboard")
+def route_leaderboard():
+    from db import fetchall, fetchone
+    current_year = datetime.date.today().year
+
+    sexe   = request.args.get("sexe", "H").upper()
+    club   = request.args.get("club", "").strip()
+    q      = request.args.get("q", "").strip()
+    age    = request.args.get("age", "")
+    offset = max(0, int(request.args.get("offset", 0)))
+    limit  = min(int(request.args.get("limit", 50)), 100)
+
+    conditions = ["j.classement IS NOT NULL"]
+    params = []
+
+    if sexe in ("H", "F"):
+        conditions.append("j.sexe = ?")
+        params.append(sexe)
+
+    if club:
+        conditions.append("j.club_nom LIKE ?")
+        params.append("%" + club + "%")
+
+    if q:
+        pattern = "%" + q + "%"
+        conditions.append(
+            "(j.nom LIKE ? OR j.prenom LIKE ? OR (j.nom || ' ' || j.prenom) LIKE ? OR (j.prenom || ' ' || j.nom) LIKE ?)"
+        )
+        params.extend([pattern, pattern, pattern, pattern])
+
+    if age == "u18":
+        conditions.append("j.naissance IS NOT NULL AND (? - CAST(j.naissance AS INT)) < 18")
+        params.append(current_year)
+    elif age == "18-35":
+        conditions.append("j.naissance IS NOT NULL AND (? - CAST(j.naissance AS INT)) BETWEEN 18 AND 35")
+        params.append(current_year)
+    elif age == "35-50":
+        conditions.append("j.naissance IS NOT NULL AND (? - CAST(j.naissance AS INT)) BETWEEN 35 AND 50")
+        params.append(current_year)
+    elif age == "50+":
+        conditions.append("j.naissance IS NOT NULL AND (? - CAST(j.naissance AS INT)) >= 50")
+        params.append(current_year)
+
+    where = " AND ".join(conditions)
+    total_row = fetchone("SELECT COUNT(*) AS n FROM joueurs j WHERE " + where, tuple(params))
+    total = total_row["n"] if total_row else 0
+
+    rows = fetchall(
+        "SELECT j.id_fft, j.nom, j.prenom, j.classement, j.meilleur_classement,"
+        " j.club_nom, j.ville, j.sexe, j.naissance,"
+        " (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois"
+        " FROM joueurs j WHERE " + where +
+        " ORDER BY j.classement ASC LIMIT ? OFFSET ?",
+        tuple(params) + (limit, offset),
+    )
+
+    def fmt(r):
+        age_val = None
+        try:
+            if r.get("naissance") and str(r["naissance"]).isdigit():
+                age_val = current_year - int(r["naissance"])
+        except Exception:
+            pass
+        prenom = (r.get("prenom") or "").strip()
+        nom    = r.get("nom") or ""
+        return {
+            "id":                  r["id_fft"],
+            "nom":                 nom,
+            "prenom":              prenom,
+            "nom_complet":         (prenom + " " + nom).strip(),
+            "classement":          r["classement"],
+            "meilleur_classement": r["meilleur_classement"],
+            "club":                r["club_nom"] or "",
+            "ville":               r["ville"] or "",
+            "sexe":                r["sexe"] or "",
+            "age":                 age_val,
+            "nb_tournois":         r["nb_tournois"] or 0,
+        }
+
+    return jsonify({"players": [fmt(r) for r in rows], "total": total, "offset": offset})
+
+
+@app.get("/api/movers")
+def route_movers():
+    from db import fetchall
+    sexe = request.args.get("sexe", "").upper()
+    n    = min(int(request.args.get("n", 8)), 20)
+    sf   = "AND sexe = ?" if sexe in ("H", "F") else ""
+    bp   = (sexe,) if sexe in ("H", "F") else ()
+
+    hausse = fetchall(
+        "SELECT id_fft, nom, prenom, classement, meilleur_classement, club_nom, ville, sexe"
+        " FROM joueurs WHERE classement IS NOT NULL AND meilleur_classement IS NOT NULL"
+        " AND classement <= 5000 AND classement = meilleur_classement " + sf +
+        " ORDER BY classement ASC LIMIT ?",
+        bp + (n,),
+    )
+
+    baisse = fetchall(
+        "SELECT id_fft, nom, prenom, classement, meilleur_classement, club_nom, ville, sexe,"
+        " (classement - meilleur_classement) AS chute"
+        " FROM joueurs WHERE classement IS NOT NULL AND meilleur_classement IS NOT NULL"
+        " AND classement > meilleur_classement AND nom IS NOT NULL AND nom != '' " + sf +
+        " ORDER BY chute DESC LIMIT ?",
+        bp + (n,),
+    )
+
+    def fmt(r, delta=None):
+        prenom = (r.get("prenom") or "").strip()
+        return {
+            "id":                  r["id_fft"],
+            "nom_complet":         (prenom + " " + (r.get("nom") or "")).strip(),
+            "classement":          r["classement"],
+            "meilleur_classement": r["meilleur_classement"],
+            "club":                r["club_nom"] or "",
+            "ville":               r["ville"] or "",
+            "delta":               delta,
+        }
+
+    return jsonify({
+        "hausse": [fmt(r) for r in hausse],
+        "baisse": [fmt(r, r["chute"]) for r in baisse],
+    })
+
+
 @app.get("/api/clubs")
 def route_clubs():
-    """Top clubs par nombre de joueurs, avec ville majoritaire."""
     from db import fetchall
     top = min(int(request.args.get("top", 100)), 500)
     rows = fetchall("""
-        SELECT club_nom,
-               ville,
-               COUNT(*) AS nb_joueurs
+        SELECT club_nom, ville, COUNT(*) AS nb_joueurs
         FROM joueurs
         WHERE club_nom IS NOT NULL AND club_nom != ''
           AND ville    IS NOT NULL AND ville    != ''
         GROUP BY club_nom, ville
-        ORDER BY nb_joueurs DESC
-        LIMIT ?
+        ORDER BY nb_joueurs DESC LIMIT ?
     """, (top,))
     return jsonify([{"nom": r["club_nom"], "ville": r["ville"], "nb": r["nb_joueurs"]} for r in rows])
 
 
 @app.get("/api/health")
 def route_health():
-    """Check de santé — vérifie que le graphe est chargé."""
     return jsonify({
         "status": "ok",
         "graph_loaded": engine._loaded,
@@ -247,10 +329,7 @@ def route_health():
     })
 
 
-# ── Point d'entrée ────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    print("Démarrage de l'API Padel Stats...")
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV") != "production"
     app.run(debug=debug, host="0.0.0.0", port=port, use_reloader=False)
