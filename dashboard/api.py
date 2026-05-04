@@ -41,11 +41,8 @@ def index():
     return send_file(os.path.abspath(html_path))
 
 
-# ── Chargement du graphe au démarrage (avant fork gunicorn) ──────────────────
-
-print("[API] Chargement du graphe en mémoire...")
-engine.load()
-print(f"[API] Graphe prêt : {len(engine.player_info):,} joueurs.")
+# ── Graphe chargé uniquement à la demande (path + ego) ───────────────────────
+# Les routes search / player / suggest n'en ont pas besoin → démarrage immédiat
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
