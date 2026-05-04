@@ -5,7 +5,7 @@ services:
     region: frankfurt
     plan: free
     buildCommand: pip install -r dashboard/requirements.txt
-    startCommand: cd dashboard && gunicorn api:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    startCommand: cd dashboard && gunicorn api:app --workers 1 --timeout 300 --preload --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:

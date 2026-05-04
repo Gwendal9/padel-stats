@@ -41,15 +41,11 @@ def index():
     return send_file(os.path.abspath(html_path))
 
 
-# ── Chargement du graphe au démarrage ────────────────────────────────────────
+# ── Chargement du graphe au démarrage (avant fork gunicorn) ──────────────────
 
-@app.before_request
-def ensure_graph_loaded():
-    """Charge le graphe en mémoire à la première requête."""
-    if not engine._loaded:
-        print("[API] Chargement du graphe en mémoire...")
-        engine.load()
-        print("[API] Graphe prêt.")
+print("[API] Chargement du graphe en mémoire...")
+engine.load()
+print(f"[API] Graphe prêt : {len(engine.player_info):,} joueurs.")
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
