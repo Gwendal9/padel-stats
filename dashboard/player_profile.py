@@ -235,6 +235,25 @@ def get_player_profile(player_id: str) -> dict | None:
             "type":         p["type"] or "",
         })
 
+    # ── Parcours complet (chronologique, classiques) ─────────────────────
+    parcours = [
+        {
+            "date":        p["date_tournoi"] or "",
+            "position":    p["position"],
+            "categorie":   p["categorie"],
+            "tournoi_nom": p["tournoi_nom"] or "",
+            "partenaire":  p["partenaire_nom"] or "",
+            "id_tournoi":  p["id_tournoi"],
+            "points":      p["points"],
+        }
+        for p in reversed(parts_classiques)
+    ]
+
+    # ── Dates d'activité pour heatmap ────────────────────────────────────
+    date_activities = sorted(set(
+        p["date_tournoi"] for p in parts if p["date_tournoi"]
+    ))
+
     return {
         **joueur,
         "trophy_shelf":      trophy_shelf,
@@ -242,4 +261,7 @@ def get_player_profile(player_id: str) -> dict | None:
         "top_partners":      top_partners,
         "championnats":      championnats,
         "historique_recent": historique,
+        "parcours":          parcours,
+        "date_activities":   date_activities,
+        "nb_partenaires":    len(partners_raw),
     }

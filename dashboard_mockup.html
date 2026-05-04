@@ -741,419 +741,13 @@
 
     <!-- ═════ PLAYER PROFILE ═══════════════════════════════════════════ -->
     <section class="view" id="view-player">
-      <div class="bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-        <div class="relative flex gap-6 items-center">
-          <div class="avatar av-lg bg-white/20 backdrop-blur">AL</div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><i data-lucide="user" class="w-3 h-3"></i> Profil joueur</div>
-            <div class="text-3xl font-bold tracking-tight">Aurélien LESCALLIER</div>
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-90 mt-3">
-              <span class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-4 h-4"></i> CASA PADEL</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Villepinte (93)</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="cake" class="w-4 h-4"></i> 28 ans</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="user" class="w-4 h-4"></i> Homme</span>
-              <span class="flex items-center gap-1.5"><i data-lucide="hand" class="w-4 h-4"></i> Droitier</span>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-[11px] uppercase opacity-75 tracking-widest">Classement</div>
-            <div class="text-6xl font-bold leading-none">#15</div>
-            <div class="flex items-center gap-2 justify-end mt-2">
-              <div class="text-xs opacity-75">Meilleur · #12 · Top 0,01%</div>
-              <span id="badge-at-best" class="badge-atbest" style="display:none">⭐ À son meilleur</span>
-            </div>
-            <div class="trend delta-up text-emerald-300 mt-2 justify-end"><i data-lucide="arrow-up" class="w-3 h-3"></i>3 places (30 jours)</div>
-          </div>
-        </div>
+      <div id="profile-placeholder" class="text-center text-slate-400 py-20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <p class="text-sm">Recherche un joueur pour voir son profil</p>
       </div>
-
-      <!-- Stat row -->
-      <div class="grid grid-cols-6 gap-3 mb-6">
-        <div class="card card-stat"><div class="label">Tournois</div><div class="value">135</div></div>
-        <div class="card card-stat"><div class="label">Victoires</div><div class="value text-emerald-600">28</div></div>
-        <div class="card card-stat"><div class="label">Finales</div><div class="value">42</div></div>
-        <div class="card card-stat"><div class="label">1/2 finales</div><div class="value">35</div></div>
-        <div class="card card-stat"><div class="label">Partenaires</div><div class="value">42</div></div>
-        <div class="card card-stat"><div class="label">Points</div><div class="value">12 450</div></div>
-      </div>
-
-      <!-- Top % Positionnement -->
-      <div class="card p-5 mb-6" id="card-percentile">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <div class="font-semibold flex items-center gap-2">
-              <i data-lucide="target" class="w-4 h-4 text-teal-600"></i>
-              Ton positionnement
-            </div>
-            <div class="text-xs text-slate-500">Parmi 153 291 joueurs inscrits en France</div>
-          </div>
-          <div class="text-[11px] text-slate-400 italic">données personnalisées</div>
-        </div>
-        <div class="space-y-4" id="percentile-rows">
-
-          <!-- Classement général -->
-          <div class="pct-row" data-pct="91" data-label="Top 9%" data-color="teal">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Classement général</span>
-              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 9%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">Classé #14 335 · meilleur que 91% des joueurs</div>
-          </div>
-
-          <!-- Victoires -->
-          <div class="pct-row" data-pct="93" data-label="Top 7%" data-color="amber">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Victoires en tournois</span>
-              <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">Top 7%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">28 victoires · plus que 93% des joueurs</div>
-          </div>
-
-          <!-- Tournois disputés -->
-          <div class="pct-row" data-pct="82" data-label="Top 18%" data-color="teal">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Tournois disputés</span>
-              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 18%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">135 tournois · plus actif que 82% des joueurs</div>
-          </div>
-
-          <!-- Dans ton club -->
-          <div class="pct-row" data-pct="88" data-label="Top 12%" data-color="teal">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Dans ton club <span class="font-normal text-slate-400">(PADEL HORIZON)</span></span>
-              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 12%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">7e meilleur joueur parmi les 58 membres</div>
-          </div>
-
-          <!-- Dans ta région -->
-          <div class="pct-row" data-pct="89" data-label="Top 11%" data-color="teal">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Dans ta région <span class="font-normal text-slate-400">(Île-de-France)</span></span>
-              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 11%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">1 598e sur 14 285 joueurs en IDF</div>
-          </div>
-
-          <!-- Partenaires uniques -->
-          <div class="pct-row" data-pct="78" data-label="Top 22%" data-color="indigo">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-sm text-slate-700 font-medium">Réseau de partenaires</span>
-              <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">Top 22%</span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-indigo-400 to-indigo-600 pct-fill" style="width:0%"></div>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">42 partenaires uniques · plus connecté que 78% des joueurs</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Trophy shelf -->
-      <div class="card p-5 mb-6" id="trophy-shelf">
-        <div class="flex items-center justify-between mb-4">
-          <div class="font-semibold flex items-center gap-2">
-            <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
-            Podiums par catégorie
-            <span class="text-xs font-normal text-slate-400 ml-1">Top 5 seulement</span>
-          </div>
-          <div class="text-xs text-slate-400">28 victoires · 42 finales · 35 demi-finales</div>
-        </div>
-
-        <!-- Catégories classiques -->
-        <div class="space-y-1 mb-4" id="trophy-classic-rows">
-
-          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
-            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-elite text-[11px]">P2000</span></div>
-            <div class="flex gap-2 flex-wrap flex-1">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 2</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 1</span>
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap">3 podiums</div>
-          </div>
-
-          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
-            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-elite text-[11px]">P1500</span></div>
-            <div class="flex gap-2 flex-wrap flex-1">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 3</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 2</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 1</span>
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap">6 podiums</div>
-          </div>
-
-          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
-            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-pro text-[11px]">P1000</span></div>
-            <div class="flex gap-2 flex-wrap flex-1">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 5</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 4</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 3</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 text-[12px] font-semibold">4e ×2</span>
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap">14 podiums</div>
-          </div>
-
-          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
-            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-pro text-[11px]">P500</span></div>
-            <div class="flex gap-2 flex-wrap flex-1">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 8</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 5</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 4</span>
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap">17 podiums</div>
-          </div>
-
-          <div class="trophy-cat flex items-center gap-3 py-2.5">
-            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-mid text-[11px]">P250</span></div>
-            <div class="flex gap-2 flex-wrap flex-1">
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 10</span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 3</span>
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap">13 podiums</div>
-          </div>
-        </div>
-
-        <!-- Championnats -->
-        <div class="border-t border-slate-200 pt-3 mt-1">
-          <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-1.5">
-            <i data-lucide="shield" class="w-3 h-3"></i> Championnats
-          </div>
-          <div class="flex gap-3 flex-wrap">
-            <div class="trophy-cat flex items-center gap-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-3 py-2.5">
-              <span style="font-size:18px">🏆</span>
-              <div>
-                <div class="text-xs font-semibold text-slate-800">Championnat Régional</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">1ère place · avec Yannick JEAN-ELIE</div>
-              </div>
-            </div>
-            <div class="trophy-cat flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
-              <span style="font-size:18px">🎖️</span>
-              <div>
-                <div class="text-xs font-semibold text-slate-800">Championnat de France</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">5ème place · avec Bastien BLANQUÉ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activity calendar heatmap -->
-      <div class="card p-5 mb-6">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <div class="font-semibold flex items-center gap-2"><i data-lucide="calendar-heart" class="w-4 h-4"></i> Activité sur 12 mois</div>
-            <div class="text-xs text-slate-500">38 tournois disputés cette année · semaine la plus active : 4 tournois (semaine du 28 mars)</div>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs text-slate-500">
-            <span>Moins</span>
-            <div class="w-3 h-3 rounded-sm bg-slate-100"></div>
-            <div class="w-3 h-3 rounded-sm bg-teal-200"></div>
-            <div class="w-3 h-3 rounded-sm bg-teal-400"></div>
-            <div class="w-3 h-3 rounded-sm bg-teal-600"></div>
-            <div class="w-3 h-3 rounded-sm bg-teal-800"></div>
-            <span>Plus</span>
-          </div>
-        </div>
-        <div id="heatmap" class="overflow-x-auto"></div>
-      </div>
-
-      <!-- Charts -->
-      <div class="card p-5 mb-6">
-        <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="line-chart" class="w-4 h-4"></i> Évolution du classement (12 derniers mois)</div>
-        <canvas id="chart-progression" height="100"></canvas>
-      </div>
-
-      <!-- Chronogramme parcours -->
-      <div class="card p-5 mb-6">
-        <div class="flex items-center justify-between mb-1">
-          <div class="font-semibold flex items-center gap-2">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-teal-600"></i>
-            Parcours chronologique · 135 tournois
-          </div>
-          <div class="flex gap-2 flex-wrap" id="parcours-legend"></div>
-        </div>
-        <div class="text-xs text-slate-400 mb-3">Hauteur de barre = performance (plus haut = meilleure place) · 🥇 au-dessus = victoire</div>
-        <div style="overflow-x:auto">
-          <div style="min-width:900px">
-            <canvas id="chart-parcours" height="130"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="card p-5">
-          <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Top partenaires</div>
-          <div class="space-y-2">
-            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
-              <div class="flex items-center gap-3"><div class="avatar av-md bg-teal-600">YJ</div>
-                <div><div class="text-sm font-medium">Yannick JEAN-ELIE</div><div class="text-xs text-slate-500">28 tournois · 21 victoires</div></div>
-              </div>
-              <div class="badge badge-cat-pro">75% wins</div>
-            </div>
-            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
-              <div class="flex items-center gap-3"><div class="avatar av-md bg-amber-500">LP</div>
-                <div><div class="text-sm font-medium">Liam PIOLINE</div><div class="text-xs text-slate-500">22 tournois · 15 victoires</div></div>
-              </div>
-              <div class="badge badge-cat-pro">68% wins</div>
-            </div>
-            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
-              <div class="flex items-center gap-3"><div class="avatar av-md bg-indigo-600">DK</div>
-                <div><div class="text-sm font-medium">Delton KIM</div><div class="text-xs text-slate-500">15 tournois · 9 victoires</div></div>
-              </div>
-              <div class="badge badge-cat-pro">60% wins</div>
-            </div>
-            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
-              <div class="flex items-center gap-3"><div class="avatar av-md bg-emerald-600">BB</div>
-                <div><div class="text-sm font-medium">Bastien BLANQUÉ</div><div class="text-xs text-slate-500">10 tournois · 8 victoires</div></div>
-              </div>
-              <div class="badge badge-cat-pro">80% wins</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Palmarès complet -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center mb-4">
-          <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Palmarès complet · 135 tournois</div>
-          <div class="flex gap-2">
-            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Toutes catégories</option><option>P2000+</option><option>P1000-1500</option><option>P500-750</option><option>P100-250</option></select>
-            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Toutes positions</option><option>🥇 Vainqueur</option><option>🥈 Finale</option><option>🥉 1/2 finale</option></select>
-            <button class="text-xs px-3 py-1.5 rounded-lg btn-primary flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Export</button>
-          </div>
-        </div>
-        <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-lg border border-slate-100">
-          <table class="w-full text-sm">
-            <thead class="text-slate-500 text-[11px] uppercase font-semibold tracking-wider sticky top-0 bg-slate-50">
-              <tr>
-                <th class="text-left py-2.5 px-3">Date</th>
-                <th class="text-left py-2.5 px-3">Tournoi</th>
-                <th class="text-left py-2.5 px-3">Cat.</th>
-                <th class="text-left py-2.5 px-3">Partenaire</th>
-                <th class="text-center py-2.5 px-3">Position</th>
-                <th class="text-right py-2.5 px-3">Pts</th>
-                <th class="text-right py-2.5 px-3">Expire</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">12/04/2026</td><td class="font-medium">P2000 Casa Padel</td><td><span class="badge badge-cat-elite">P2000</span></td><td>Bastien BLANQUÉ</td><td class="text-center"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">800</td><td class="text-right text-xs text-slate-400">04/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">28/03/2026</td><td class="font-medium">P1500 Padel Horizon</td><td><span class="badge badge-cat-elite">P1500</span></td><td>Yannick JEAN-ELIE</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">15/03/2026</td><td class="font-medium">P1000 4Padel Toulouse</td><td><span class="badge badge-cat-pro">P1000</span></td><td>Liam PIOLINE</td><td class="text-center"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">02/03/2026</td><td class="font-medium">Open Lyon Padel</td><td><span class="badge badge-cat-pro">P750</span></td><td>Yannick JEAN-ELIE</td><td class="text-center text-slate-500">1/4 finale</td><td class="text-right font-medium">250</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">22/02/2026</td><td class="font-medium">P1000 Padel Horizon</td><td><span class="badge badge-cat-pro">P1000</span></td><td>Bastien BLANQUÉ</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">02/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">08/02/2026</td><td class="font-medium">P500 TC Lille</td><td><span class="badge badge-cat-mid">P500</span></td><td>Delton KIM</td><td class="text-center"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">300</td><td class="text-right text-xs text-slate-400">02/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">25/01/2026</td><td class="font-medium">P1500 Casa Padel</td><td><span class="badge badge-cat-elite">P1500</span></td><td>Yannick JEAN-ELIE</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">01/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">11/01/2026</td><td class="font-medium">P750 4Padel Bordeaux</td><td><span class="badge badge-cat-pro">P750</span></td><td>Liam PIOLINE</td><td class="text-center"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">375</td><td class="text-right text-xs text-slate-400">01/2027</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">28/12/2025</td><td class="font-medium">P500 Tennis Marseille</td><td><span class="badge badge-cat-mid">P500</span></td><td>Bastien BLANQUÉ</td><td class="text-center text-slate-500">1/4 finale</td><td class="text-right font-medium">175</td><td class="text-right text-xs text-slate-400">12/2026</td></tr>
-              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">14/12/2025</td><td class="font-medium">P250 Open Nice</td><td><span class="badge badge-cat-low">P250</span></td><td>Delton KIM</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">125</td><td class="text-right text-xs text-slate-400">12/2026</td></tr>
-              <tr class="border-t border-slate-100 text-slate-400 italic"><td colspan="7" class="text-center py-3 text-xs">… 125 tournois précédents (scroll)</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <div id="profile-content" hidden></div>
     </section>
 
-    <!-- ═════ COMPARE ══════════════════════════════════════════════════ -->
-    <section class="view" id="view-compare">
-      <div class="card p-4 mb-4">
-        <div class="text-sm text-slate-600 mb-3">Compare deux joueurs side-by-side</div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="relative">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-            <input value="Aurélien LESCALLIER" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
-          </div>
-          <div class="relative">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-            <input value="Bastien BLANQUÉ" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="card p-5 bg-gradient-to-br from-teal-50 to-white border-teal-200">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="avatar av-lg bg-teal-600">AL</div>
-            <div>
-              <div class="font-bold text-lg">Aurélien LESCALLIER</div>
-              <div class="text-sm text-slate-500">CASA PADEL · 28 ans</div>
-              <div class="text-3xl font-bold text-teal-600 mt-1">#15</div>
-            </div>
-          </div>
-        </div>
-        <div class="card p-5 bg-gradient-to-br from-emerald-50 to-white border-emerald-200">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="avatar av-lg bg-emerald-600">BB</div>
-            <div>
-              <div class="font-bold text-lg">Bastien BLANQUÉ</div>
-              <div class="text-sm text-slate-500">CASA PADEL · 26 ans</div>
-              <div class="text-3xl font-bold text-emerald-600 mt-1">#2</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats comparison -->
-      <div class="card p-5 mb-6">
-        <div class="font-semibold mb-4">Statistiques</div>
-        <div class="space-y-4">
-          <div>
-            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">135</span><span class="text-slate-500">Tournois</span><span class="font-medium text-emerald-600">132</span></div>
-            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 50.5%"></div><div class="bg-emerald-500 rounded" style="width: 49.5%"></div></div>
-          </div>
-          <div>
-            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">28</span><span class="text-slate-500">Victoires</span><span class="font-medium text-emerald-600">52</span></div>
-            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 35%"></div><div class="bg-emerald-500 rounded" style="width: 65%"></div></div>
-          </div>
-          <div>
-            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">42</span><span class="text-slate-500">Partenaires uniques</span><span class="font-medium text-emerald-600">38</span></div>
-            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 52.5%"></div><div class="bg-emerald-500 rounded" style="width: 47.5%"></div></div>
-          </div>
-          <div>
-            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">12 450</span><span class="text-slate-500">Points cumulés</span><span class="font-medium text-emerald-600">28 900</span></div>
-            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 30.1%"></div><div class="bg-emerald-500 rounded" style="width: 69.9%"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="card p-5">
-          <div class="font-semibold mb-3">Évolution comparée du classement</div>
-          <canvas id="chart-compare-progression" height="180"></canvas>
-        </div>
-        <div class="card p-5">
-          <div class="font-semibold mb-3">Confrontations directes</div>
-          <div class="text-center py-6">
-            <div class="text-5xl font-bold mb-2">10</div>
-            <div class="text-sm text-slate-500 mb-4">tournois ensemble (en équipe)</div>
-            <div class="grid grid-cols-3 gap-3 text-sm">
-              <div><div class="text-2xl font-bold text-emerald-600">8</div><div class="text-xs text-slate-500">Victoires en équipe</div></div>
-              <div><div class="text-2xl font-bold">2</div><div class="text-xs text-slate-500">Finales perdues</div></div>
-              <div><div class="text-2xl font-bold text-teal-600">80%</div><div class="text-xs text-slate-500">Taux de réussite</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═════ CLUB ═════════════════════════════════════════════════════ -->
     <section class="view" id="view-club">
       <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
@@ -1451,209 +1045,426 @@ const slate   = '#94a3b8';
 Chart.defaults.font.family = 'Inter';
 Chart.defaults.color = '#64748b';
 
-// ── Charts dashboard ──────────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-pyramid'), {
-  type: 'bar',
-  data: {
-    labels: ['<18','18-25','25-35','35-45','45-55','55-65','65+'],
-    datasets: [
-      { label:'Hommes', data:[-2800,-22000,-38000,-28000,-18000,-8500,-1700], backgroundColor:teal,  borderRadius:4 },
-      { label:'Femmes', data:[800,6500,9800,7400,4200,1100,200],              backgroundColor:pink,  borderRadius:4 },
-    ]
-  },
-  options: {
+// ══════════════════════════════════════════════════════════════════════════════
+// Charts — instances réutilisables (mises à jour par loadDashboardStats)
+// ══════════════════════════════════════════════════════════════════════════════
+const CAT_COLOR = {
+  'P2000':'#b45309','P1500':'#d97706','P1000':'#0d9488',
+  'P750' :'#0891b2','P500' :'#6366f1','P250' :'#8b5cf6','P100' :'#94a3b8',
+};
+
+function posScore(p) {
+  const map = {1:100,2:80,3:65,4:48,5:35,6:24,7:16,8:10};
+  return map[p] || Math.max(5, Math.round(80/p));
+}
+
+// ── Charts dashboard (initialisés vides, remplis par loadDashboardStats) ──────
+const chartPyramid = new Chart(document.getElementById('chart-pyramid'), {
+  type:'bar',
+  data:{ labels:['<18','18-25','26-35','36-45','46-55','56-65','65+'], datasets:[
+    { label:'Hommes', data:[], backgroundColor:teal,  borderRadius:4 },
+    { label:'Femmes', data:[], backgroundColor:pink,  borderRadius:4 },
+  ]},
+  options:{
     indexAxis:'y',
     plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>Math.abs(c.parsed.x).toLocaleString()+' joueurs'}} },
     scales:{ x:{stacked:true,ticks:{callback:v=>Math.abs(v).toLocaleString()}}, y:{stacked:true} }
   }
 });
 
-new Chart(document.getElementById('chart-tournois'), {
+const chartTournois = new Chart(document.getElementById('chart-tournois'), {
   type:'line',
-  data:{
-    labels:['M','J','J','A','S','O','N','D','J','F','M','A'],
-    datasets:[{ data:[2400,2700,2900,2200,3100,3300,2800,2400,2700,2900,3500,3800], borderColor:amber, backgroundColor:'rgba(245,158,11,0.12)', tension:0.35, fill:true, pointRadius:3 }]
-  },
+  data:{ labels:[], datasets:[{ data:[], borderColor:amber, backgroundColor:'rgba(245,158,11,0.12)', tension:0.35, fill:true, pointRadius:3 }] },
   options:{ plugins:{legend:{display:false}} }
 });
 
-new Chart(document.getElementById('chart-regions'), {
+const chartRegions = new Chart(document.getElementById('chart-regions'), {
   type:'bar',
-  data:{
-    labels:['Île-de-France','PACA','Nouv.-Aquitaine','Auvergne-RA','Occitanie','Hauts-de-Fr.','Grand Est','Pays de Loire','Bretagne','Normandie'],
-    datasets:[{ data:[38500,22300,15800,14200,13800,9200,8100,7400,6500,5800], backgroundColor:teal, borderRadius:4 }]
-  },
+  data:{ labels:[], datasets:[{ data:[], backgroundColor:teal, borderRadius:4 }] },
   options:{ indexAxis:'y', plugins:{legend:{display:false}} }
 });
 
-// ── Charts profil joueur ──────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-progression'), {
-  type:'line',
+// Chart classements dans la sidebar (était chart-club-dist — rebaptisé)
+const chartRankingDist = new Chart(document.getElementById('chart-club-dist'), {
+  type:'bar',
   data:{
-    labels:['Mai 25','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan 26','Fév','Mar','Avr'],
-    datasets:[{ data:[22,19,17,18,15,14,13,12,14,16,15,15], borderColor:teal, backgroundColor:'rgba(13,148,136,0.15)', tension:0.35, fill:true, pointRadius:3 }]
+    labels:['Top 100','100–1k','1k–5k','5k–20k','20k–40k','40k–80k','80k+'],
+    datasets:[{ data:[], backgroundColor:['#0f766e','#0d9488','#14b8a6','#5eead4','#a7f3d0','#ccfbf1','#f0fdf4'], borderRadius:6, borderSkipped:false }]
   },
-  options:{ plugins:{legend:{display:false}}, scales:{y:{reverse:true,title:{display:true,text:'Rang (plus bas = mieux)'}}} }
+  options:{
+    indexAxis:'y', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x.toLocaleString('fr-FR')} joueurs`}} },
+    scales:{ x:{beginAtZero:true}, y:{grid:{display:false}} }
+  }
 });
 
-// ── Chronogramme parcours joueur ──────────────────────────────────────────────
-(function buildParcours() {
+const chartTournamentDist = new Chart(document.getElementById('chart-tournament-dist'), {
+  type:'bar',
+  data:{
+    labels:['≤8 paires','9–16','17–32','33–64','65–128','128+'],
+    datasets:[{ data:[], backgroundColor:pink, borderRadius:4 }]
+  },
+  options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Nb tournois'}}} }
+});
+
+// ── Chart comparateur ─────────────────────────────────────────────────────────
+const chartCompare = new Chart(document.getElementById('chart-compare-progression'), {
+  type:'line',
+  data:{ labels:[], datasets:[
+    { label:'Joueur 1', data:[], borderColor:teal,    backgroundColor:'rgba(13,148,136,0.1)', tension:0.35, fill:true, pointRadius:3 },
+    { label:'Joueur 2', data:[], borderColor:emerald, backgroundColor:'rgba(16,185,129,0.1)',  tension:0.35, fill:true, pointRadius:3 }
+  ]},
+  options:{ plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, scales:{y:{reverse:true}} }
+});
+
+// ── Chargement des stats dashboard ───────────────────────────────────────────
+async function loadDashboardStats() {
+  const stats = await apiFetch('/api/stats');
+  if (!stats) return;
+
+  // Pyramide âges
+  const hommes = stats.pyramid.hommes.map(v => -v);  // négatifs pour côté gauche
+  chartPyramid.data.datasets[0].data = hommes;
+  chartPyramid.data.datasets[1].data = stats.pyramid.femmes;
+  chartPyramid.update();
+
+  // Activité mensuelle
+  chartTournois.data.labels = stats.monthly.labels;
+  chartTournois.data.datasets[0].data = stats.monthly.data;
+  chartTournois.update();
+
+  // Top villes
+  chartRegions.data.labels   = stats.top_villes.map(v => v.ville);
+  chartRegions.data.datasets[0].data = stats.top_villes.map(v => v.nb);
+  chartRegions.update();
+
+  // Distribution classements
+  chartRankingDist.data.datasets[0].data = stats.ranking_dist;
+  chartRankingDist.update();
+
+  // Distribution taille tournois
+  chartTournamentDist.data.datasets[0].data = stats.tournament_dist;
+  chartTournamentDist.update();
+}
+loadDashboardStats();
+
+// ── Charts profil joueur (chart-progression + chart-parcours) ─────────────────
+let chartProgression = null;
+let chartParcours = null;
+
+function buildParcoursChart(parcours) {
   const el = document.getElementById('chart-parcours');
   if (!el) return;
+  if (chartParcours) { chartParcours.destroy(); chartParcours = null; }
+  if (!parcours || !parcours.length) return;
 
-  // Couleur par catégorie
-  const CAT_COLOR = {
-    'P2000':'#b45309', 'P1500':'#d97706', 'P1000':'#0d9488',
-    'P750' :'#0891b2', 'P500' :'#6366f1', 'P250' :'#8b5cf6',
-    'P100' :'#94a3b8',
-  };
+  const scores = parcours.map(e => posScore(parseInt(e.position) || 99));
+  const colors  = parcours.map(e => CAT_COLOR[e.categorie] || '#94a3b8');
 
-  // Score de performance (plus haut = meilleure place)
-  function posScore(p) {
-    const map = {1:100,2:80,3:65,4:48,5:35,6:24,7:16,8:10};
-    return map[p] || Math.max(5, Math.round(80/p));
-  }
-
-  // Mock — 24 derniers tournois d'Aurélien (chronologique)
-  const data = [
-    {d:'Mai 25',    t:'P500 Open Nice',        c:'P500',  p:3},
-    {d:'Mai 25',    t:'P1000 4Padel TLS',      c:'P1000', p:4},
-    {d:'Juin 25',   t:'P250 Lyon Padel',       c:'P250',  p:1},
-    {d:'Juin 25',   t:'P1000 Padel Horizon',   c:'P1000', p:2},
-    {d:'Juil 25',   t:'P500 TC Bordeaux',      c:'P500',  p:5},
-    {d:'Août 25',   t:'P1000 Casa Padel',      c:'P1000', p:3},
-    {d:'Sept 25',   t:'P1500 Padel Horizon',   c:'P1500', p:2},
-    {d:'Sept 25',   t:'P500 Open Lille',       c:'P500',  p:1},
-    {d:'Oct 25',    t:'P1000 TC Marseille',    c:'P1000', p:1},
-    {d:'Oct 25',    t:'P2000 Casa Padel',      c:'P2000', p:3},
-    {d:'Nov 25',    t:'P250 Open Paris',       c:'P250',  p:1},
-    {d:'Nov 25',    t:'P1000 Open Lyon',       c:'P1000', p:2},
-    {d:'Déc 25',    t:'P500 TC Lille',         c:'P500',  p:5},
-    {d:'Jan 26',    t:'P1500 Casa Padel',      c:'P1500', p:1},
-    {d:'Jan 26',    t:'P750 4Padel Bordeaux',  c:'P750',  p:4},
-    {d:'Fév 26',    t:'P500 Open Lille',       c:'P500',  p:2},
-    {d:'Fév 26',    t:'P1000 Padel Horizon',   c:'P1000', p:1},
-    {d:'Fév 26',    t:'P2000 Casa Padel',      c:'P2000', p:5},
-    {d:'Mar 26',    t:'P1000 4Padel TLS',      c:'P1000', p:1},
-    {d:'Mar 26',    t:'P750 Open Lyon',        c:'P750',  p:2},
-    {d:'Mar 26',    t:'P500 Open Paris',       c:'P500',  p:1},
-    {d:'Avr 26',    t:'P1500 Padel Horizon',   c:'P1500', p:1},
-    {d:'Avr 26',    t:'P1000 TC Marseille',    c:'P1000', p:3},
-    {d:'Avr 26',    t:'P2000 Casa Padel',      c:'P2000', p:2},
-  ];
-
-  const scores = data.map(e => posScore(e.p));
-  const colors = data.map(e => CAT_COLOR[e.c] || '#94a3b8');
-
-  // Plugin maison : nom du tournoi + 🥇 au-dessus de chaque barre
   const labelPlugin = {
     id:'parcoursLabels',
     afterDatasetsDraw(chart) {
-      const { ctx, data: cd, chartArea:{top} } = chart;
+      const { ctx } = chart;
       ctx.save();
       chart.getDatasetMeta(0).data.forEach((bar, i) => {
-        const entry = data[i];
+        const entry = parcours[i];
         const x = bar.x, y = bar.y;
-        // Médaillon victoire
-        if (entry.p === 1) {
-          ctx.font = '13px Inter';
-          ctx.textAlign = 'center';
-          ctx.fillText('🥇', x, y - 6);
-        }
-        // Nom du tournoi (vertical, petit)
+        if (parseInt(entry.position) === 1) { ctx.font='13px Inter'; ctx.textAlign='center'; ctx.fillText('🥇',x,y-6); }
         ctx.save();
-        ctx.translate(x, y - (entry.p===1?24:10));
+        ctx.translate(x, y-(parseInt(entry.position)===1?24:10));
         ctx.rotate(-Math.PI/2);
-        ctx.font = '9px Inter';
-        ctx.fillStyle = '#64748b';
-        ctx.textAlign = 'left';
-        ctx.fillText(entry.t.length > 22 ? entry.t.slice(0,20)+'…' : entry.t, 0, 0);
+        ctx.font='9px Inter'; ctx.fillStyle='#64748b'; ctx.textAlign='left';
+        const t = entry.tournoi_nom||'';
+        ctx.fillText(t.length>22?t.slice(0,20)+'…':t, 0, 0);
         ctx.restore();
       });
       ctx.restore();
     }
   };
 
-  new Chart(el, {
-    type:'bar',
-    plugins:[labelPlugin],
-    data:{
-      labels: data.map(e => e.d),
-      datasets:[{
-        data: scores,
-        backgroundColor: colors,
-        borderRadius:4,
-        borderSkipped:false,
-      }]
-    },
+  chartParcours = new Chart(el, {
+    type:'bar', plugins:[labelPlugin],
+    data:{ labels: parcours.map(e => e.date||''), datasets:[{ data:scores, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
     options:{
-      layout:{ padding:{ top:90 } },
-      plugins:{
-        legend:{ display:false },
-        tooltip:{
-          callbacks:{
-            title: items => data[items[0].dataIndex].t,
-            label: items => {
-              const e = data[items[0].dataIndex];
-              const pos = ['','🥇 Vainqueur','🥈 Finaliste','🥉 1/2 finale','4e','5e'][e.p] || `${e.p}e`;
-              return [`${e.d}  ·  ${e.c}  ·  ${pos}`];
-            }
-          }
+      layout:{ padding:{top:90} },
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{
+        title: items => (parcours[items[0].dataIndex].tournoi_nom||''),
+        label: items => {
+          const e = parcours[items[0].dataIndex];
+          const pos = parseInt(e.position);
+          const label = pos===1?'🥇 Vainqueur':pos===2?'🥈 Finaliste':pos===3?'🥉 1/2 finale':`${pos}e`;
+          return [`${e.date}  ·  ${e.categorie}  ·  ${label}`];
         }
-      },
-      scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:10}, maxRotation:45, minRotation:30} },
-        y:{ display:false, min:0, max:115 }
-      }
+      }}},
+      scales:{ x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,minRotation:30}}, y:{display:false,min:0,max:115} }
     }
   });
 
-  // Légende catégories
   const legendEl = document.getElementById('parcours-legend');
   if (legendEl) {
-    const cats = [...new Set(data.map(e => e.c))].sort();
-    legendEl.innerHTML = cats.map(c => `
-      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#475569">
-        <span style="width:10px;height:10px;border-radius:3px;background:${CAT_COLOR[c]||'#94a3b8'};flex-shrink:0"></span>
-        ${c}
-      </span>`).join('');
+    const cats = [...new Set(parcours.map(e=>e.categorie))].sort();
+    legendEl.innerHTML = cats.map(c=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#475569"><span style="width:10px;height:10px;border-radius:3px;background:${CAT_COLOR[c]||'#94a3b8'};flex-shrink:0"></span>${c}</span>`).join('');
   }
-})();
+}
 
-// ── Chart club ────────────────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-club-dist'), {
-  type:'bar',
-  data:{
-    labels:['Top 100','100–1k','1k–5k','5k–20k','20k–40k','40k–80k','80k+'],
-    datasets:[{
-      data:[8, 32, 215, 480, 290, 180, 35],
-      backgroundColor:['#0f766e','#0d9488','#14b8a6','#5eead4','#a7f3d0','#ccfbf1','#f0fdf4'],
-      borderRadius:6,
-      borderSkipped:false,
-    }]
-  },
-  options:{
-    indexAxis:'y',
-    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x} joueurs`}} },
-    scales:{
-      x:{ beginAtZero:true, ticks:{callback:v=>v+''}  },
-      y:{ grid:{display:false} }
-    }
+// ── Rendu complet du profil joueur ────────────────────────────────────────────
+function renderProfile(data) {
+  const MEDAL = ['','🥇','🥈','🥉','4e','5e'];
+  const BADGE_CAT = { P2000:'badge-cat-elite',P1500:'badge-cat-elite',P1000:'badge-cat-pro',P750:'badge-cat-pro',P500:'badge-cat-pro',P250:'badge-cat-mid',P100:'badge-cat-mid',P50:'badge-cat-low',P25:'badge-cat-low' };
+  const initials = ((data.prenom||'')[0]||'')+((data.nom||'')[0]||'');
+  const pct = data.classement ? Math.round((1 - data.classement/153291)*100) : 0;
+  const topPct = 100 - pct;
+
+  // Finales / demi-finales depuis positions_dist
+  const dist = data.positions_dist || {};
+  const nbFinales  = dist[2] || 0;
+  const nbDemis    = dist[3] || 0;
+
+  // Trophy shelf rows
+  const CAT_ORDER = ['P25','P50','P100','P250','P500','P750','P1000','P1500','P2000','P3000'];
+  const shelfRows = Object.keys(data.trophy_shelf||{})
+    .sort((a,b)=>CAT_ORDER.indexOf(b)-CAT_ORDER.indexOf(a))
+    .map(cat => {
+      const counts = data.trophy_shelf[cat];
+      const medals = [1,2,3,4,5].filter(p=>counts[p]>0)
+        .map(p=>`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${p===1?'bg-amber-100 text-amber-800':p===2?'bg-slate-100 text-slate-600':p===3?'bg-orange-100 text-orange-700':'bg-slate-50 text-slate-500'} text-[12px] font-semibold">${MEDAL[p]||p+'e'} ${counts[p]}</span>`).join('');
+      const total = [1,2,3,4,5].reduce((s,p)=>s+(counts[p]||0),0);
+      return `<div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
+        <div style="width:52px;flex-shrink:0"><span class="badge ${BADGE_CAT[cat]||'badge-cat-mid'} text-[11px]">${cat}</span></div>
+        <div class="flex gap-2 flex-wrap flex-1">${medals}</div>
+        <div class="text-xs text-slate-400 whitespace-nowrap">${total} podium${total>1?'s':''}</div>
+      </div>`;
+    }).join('');
+
+  // Championnats
+  const champRows = (data.championnats||[]).slice(0,4).map((c,i) => {
+    const icon = c.position===1?'🏆':c.position<=3?'🥈':'🎖️';
+    const bg   = c.position===1?'bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200':'bg-slate-50 border-slate-200';
+    return `<div class="trophy-cat flex items-center gap-2.5 ${bg} border rounded-xl px-3 py-2.5">
+      <span style="font-size:18px">${icon}</span>
+      <div>
+        <div class="text-xs font-semibold text-slate-800">${c.categorie}</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">${c.position}e place · avec ${c.partenaire||'?'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Top partenaires
+  const partnerRows = (data.top_partners||[]).slice(0,5).map(p => {
+    const inits = (p.nom_complet||'??').split(' ').map(w=>w[0]).join('').slice(0,2);
+    const colors = ['bg-teal-600','bg-amber-500','bg-indigo-600','bg-emerald-600','bg-rose-500'];
+    const col = colors[Math.floor(Math.random()*colors.length)];
+    return `<div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
+      <div class="flex items-center gap-3">
+        <div class="avatar av-md ${col}">${inits}</div>
+        <div><div class="text-sm font-medium">${p.nom_complet}</div><div class="text-xs text-slate-500">${p.nb_tournois} tournois · ${p.nb_victoires} victoire${p.nb_victoires!==1?'s':''}</div></div>
+      </div>
+      <div class="badge badge-cat-pro">${p.taux_victoire}% wins</div>
+    </div>`;
+  }).join('');
+
+  // Historique récent table
+  const histRows = (data.historique_recent||[]).map(h => {
+    const pos = parseInt(h.position);
+    const medal = pos===1?'🥇 ':pos===2?'🥈 ':pos===3?'🥉 ':'';
+    const cl = pos<=3?'font-semibold text-amber-700':'';
+    return `<tr class="border-b border-slate-50 hover:bg-slate-50/60">
+      <td class="py-2 px-3 text-slate-400 text-[11px]">${h.date||''}</td>
+      <td class="py-2 px-3 font-medium text-sm max-w-[200px] truncate">${h.tournoi_nom||''}</td>
+      <td class="py-2 px-3"><span class="badge ${BADGE_CAT[h.categorie]||'badge-cat-mid'} text-[11px]">${h.categorie||''}</span></td>
+      <td class="py-2 px-3 text-sm text-slate-500 truncate">${h.partenaire||'—'}</td>
+      <td class="py-2 px-3 text-sm ${cl}">${medal}${h.position||'—'}</td>
+      <td class="py-2 px-3 text-sm text-slate-400">${h.points||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+    <div class="bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+      <div class="relative flex gap-6 items-center">
+        <div class="avatar av-lg bg-white/20 backdrop-blur">${initials}</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> Profil joueur</div>
+          <div class="text-3xl font-bold tracking-tight">${data.prenom||''} ${data.nom||''}</div>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-90 mt-3">
+            ${data.club?`<span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg> ${data.club}</span>`:''}
+            ${data.ville?`<span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ${data.ville}</span>`:''}
+            ${data.age?`<span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18z"/></svg> ${data.age} ans</span>`:''}
+            ${data.sexe?`<span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> ${data.sexe==='H'?'Homme':'Femme'}</span>`:''}
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] uppercase opacity-75 tracking-widest">Classement</div>
+          <div class="text-6xl font-bold leading-none">#${(data.classement||0).toLocaleString('fr-FR')}</div>
+          <div class="flex items-center gap-2 justify-end mt-2">
+            <div class="text-xs opacity-75">Meilleur · #${(data.meilleur_classement||data.classement||0).toLocaleString('fr-FR')}</div>
+            ${data.classement&&data.meilleur_classement&&data.classement<=data.meilleur_classement?'<span class="badge-atbest">⭐ À son meilleur</span>':''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-6 gap-3 mb-6">
+      <div class="card card-stat"><div class="label">Tournois</div><div class="value">${data.nb_tournois||0}</div></div>
+      <div class="card card-stat"><div class="label">Victoires</div><div class="value text-emerald-600">${data.nb_victoires||0}</div></div>
+      <div class="card card-stat"><div class="label">Finales</div><div class="value">${nbFinales}</div></div>
+      <div class="card card-stat"><div class="label">1/2 finales</div><div class="value">${nbDemis}</div></div>
+      <div class="card card-stat"><div class="label">Partenaires</div><div class="value">${data.nb_partenaires||0}</div></div>
+      <div class="card card-stat"><div class="label">Points</div><div class="value">${(data.points_total||0).toLocaleString('fr-FR')}</div></div>
+    </div>
+
+    <div class="card p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div><div class="font-semibold flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg> Ton positionnement</div>
+        <div class="text-xs text-slate-500">Parmi 153 291 joueurs inscrits en France</div></div>
+        <div class="text-[11px] text-slate-400 italic">données réelles</div>
+      </div>
+      <div class="space-y-4">
+        <div class="pct-row" data-pct="${pct}" data-color="teal">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-sm text-slate-700 font-medium">Classement général</span>
+            <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top ${topPct}%</span>
+          </div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:${pct}%"></div></div>
+          <div class="text-[11px] text-slate-400 mt-1">Classé #${(data.classement||0).toLocaleString('fr-FR')} · meilleur que ${pct}% des joueurs</div>
+        </div>
+        <div class="pct-row">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-sm text-slate-700 font-medium">Victoires en tournois</span>
+            <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">${data.nb_victoires||0} victoires</span>
+          </div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500" style="width:${Math.min((data.nb_victoires||0)/50*100,100)}%"></div></div>
+          <div class="text-[11px] text-slate-400 mt-1">${data.nb_victoires||0} victoire${(data.nb_victoires||0)!==1?'s':''} sur ${data.nb_tournois||0} tournois</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-5 mb-6" id="trophy-shelf">
+      <div class="flex items-center justify-between mb-4">
+        <div class="font-semibold flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15l-3.09 1.636.59-3.447L7 11.182l3.456-.502L12 7.5l1.544 3.18L17 11.182l-2.5 2.007.59 3.447z"/></svg> Podiums par catégorie <span class="text-xs font-normal text-slate-400 ml-1">Top 5 seulement</span></div>
+        <div class="text-xs text-slate-400">${data.nb_victoires||0} victoires · ${nbFinales} finales · ${nbDemis} demi-finales</div>
+      </div>
+      <div class="space-y-1 mb-4" id="trophy-classic-rows">${shelfRows||'<div class="text-sm text-slate-400 py-2">Aucun podium en catégorie classique</div>'}</div>
+      ${champRows?`<div class="border-t border-slate-200 pt-3 mt-1"><div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Championnats</div><div class="flex gap-3 flex-wrap">${champRows}</div></div>`:''}
+    </div>
+
+    <div class="card p-5 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <div><div class="font-semibold flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg> Activité sur 12 mois</div>
+        <div class="text-xs text-slate-500">${data.nb_tournois||0} tournois au total</div></div>
+      </div>
+      <div id="heatmap" class="overflow-x-auto"></div>
+    </div>
+
+    <div class="card p-5 mb-6">
+      <div class="flex items-center justify-between mb-1">
+        <div class="font-semibold flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> Parcours chronologique · ${(data.parcours||[]).length} tournois classiques</div>
+        <div class="flex gap-2 flex-wrap" id="parcours-legend"></div>
+      </div>
+      <div class="text-xs text-slate-400 mb-3">Hauteur de barre = performance (plus haut = meilleure place) · 🥇 au-dessus = victoire</div>
+      <div style="overflow-x:auto"><div style="min-width:${Math.max(900,(data.parcours||[]).length*35)}px"><canvas id="chart-parcours" height="130"></canvas></div></div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="card p-5">
+        <div class="font-semibold mb-3 flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Top partenaires</div>
+        <div class="space-y-2">${partnerRows||'<div class="text-sm text-slate-400">Aucun partenaire</div>'}</div>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold mb-3">Répartition des résultats</div>
+        <div class="space-y-2 text-sm">
+          ${[1,2,3,4,5].map(p=>`<div class="flex items-center gap-2"><span class="w-16 text-xs text-slate-500">${MEDAL[p]||p+'e'}</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full ${p===1?'bg-amber-400':p===2?'bg-slate-400':p===3?'bg-orange-400':'bg-slate-200'}" style="width:${dist[p]?Math.round(dist[p]/(data.nb_tournois||1)*100):0}%"></div></div><span class="w-8 text-right text-xs text-slate-600">${dist[p]||0}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-5">
+      <div class="flex justify-between items-center mb-4">
+        <div class="font-semibold flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Palmarès récent · 10 derniers tournois</div>
+      </div>
+      <div class="overflow-x-auto rounded-lg border border-slate-100">
+        <table class="w-full text-sm">
+          <thead class="text-slate-500 text-[11px] uppercase font-semibold tracking-wider bg-slate-50">
+            <tr><th class="text-left py-2.5 px-3">Date</th><th class="text-left py-2.5 px-3">Tournoi</th><th class="text-left py-2.5 px-3">Cat.</th><th class="text-left py-2.5 px-3">Partenaire</th><th class="text-left py-2.5 px-3">Place</th><th class="text-left py-2.5 px-3">Pts</th></tr>
+          </thead>
+          <tbody>${histRows||'<tr><td colspan="6" class="py-4 text-center text-slate-400 text-xs">Aucun historique</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const el = document.getElementById('profile-content');
+  const placeholder = document.getElementById('profile-placeholder');
+  el.innerHTML = html;
+  el.hidden = false;
+  if (placeholder) placeholder.hidden = true;
+
+  // Rebuild heatmap
+  buildHeatmap(data.date_activities || []);
+
+  // Rebuild parcours chart (next tick pour que le canvas soit dans le DOM)
+  setTimeout(() => buildParcoursChart(data.parcours || []), 50);
+
+  if (window.lucide) lucide.createIcons();
+}
+
+// ── Heatmap générique ─────────────────────────────────────────────────────────
+function buildHeatmap(dates) {
+  const el = document.getElementById('heatmap');
+  if (!el) return;
+  if (!dates || !dates.length) { el.innerHTML = '<div class="text-xs text-slate-400 py-2">Aucune donnée d'activité</div>'; return; }
+
+  // Parser les dates DD/MM/YYYY ou YYYY-MM-DD
+  const counts = {};
+  dates.forEach(d => {
+    let key = d;
+    if (d && d.length===10 && d[2]==='/') key = d.slice(6)+'-'+d.slice(3,5)+'-'+d.slice(0,2);
+    counts[key] = (counts[key]||0)+1;
+  });
+
+  const now = new Date();
+  const start = new Date(now); start.setFullYear(start.getFullYear()-1);
+
+  // Aligner sur un lundi
+  while (start.getDay()!==1) start.setDate(start.getDate()-1);
+
+  let weeks = []; let week = [];
+  const cur = new Date(start);
+  while (cur<=now) {
+    const k = cur.toISOString().slice(0,10);
+    const cnt = counts[k]||0;
+    const level = cnt===0?0:cnt===1?1:cnt<=2?2:cnt<=3?3:4;
+    week.push({k,cnt,level});
+    if (week.length===7) { weeks.push(week); week=[]; }
+    cur.setDate(cur.getDate()+1);
   }
-});
+  if (week.length) weeks.push(week);
 
-// ── Chart comparateur ─────────────────────────────────────────────────────────
-new Chart(document.getElementById('chart-compare-progression'), {
-  type:'line',
-  data:{
-    labels:['Mai 25','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan 26','Fév','Mar','Avr'],
-    datasets:[
-      { label:'Aurélien', data:[22,19,17,18,15,14,13,12,14,16,15,15], borderColor:teal,    backgroundColor:'rgba(13,148,136,0.1)', tension:0.35, fill:true, pointRadius:3 },
-      { label:'Bastien',  data:[4,3,3,4,3,2,2,2,2,2,2,2],             borderColor:emerald, backgroundColor:'rgba(16,185,129,0.1)',  tension:0.35, fill:true, pointRadius:3 }
-    ]
-  },
-  options:{ plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, scales:{y:{reverse:true}} }
-});
+  const colors = ['bg-slate-100','bg-teal-200','bg-teal-400','bg-teal-600','bg-teal-800'];
+  el.innerHTML = `<div style="display:flex;gap:3px">${weeks.map(w=>`<div style="display:flex;flex-direction:column;gap:3px">${w.map(d=>`<div class="w-3 h-3 rounded-sm ${colors[d.level]}" title="${d.k}${d.cnt?' · '+d.cnt+' tournoi'+(d.cnt>1?'s':''):''}"></div>`).join('')}</div>`).join('')}</div>`;
+}
+
+// ── Chargement profil joueur ──────────────────────────────────────────────────
+let _currentProfileId = null;
+
+async function loadPlayerProfile(playerId) {
+  if (!playerId) return;
+  _currentProfileId = playerId;
+
+  const el = document.getElementById('profile-content');
+  const placeholder = document.getElementById('profile-placeholder');
+  if (el) { el.hidden = true; el.innerHTML = ''; }
+  if (placeholder) { placeholder.hidden = false; placeholder.innerHTML = '<div class="text-center text-slate-400 py-20"><div class="text-sm">Chargement...</div></div>'; }
+
+  // Naviguer vers la vue profil
+  const navItem = document.querySelector('[data-view="player"]');
+  if (navItem) navItem.click();
+
+  const data = await apiFetch(`/api/player/${encodeURIComponent(playerId)}`);
+  if (!data || data.error) {
+    if (placeholder) placeholder.innerHTML = '<div class="text-center text-slate-400 py-20"><p class="text-sm">Joueur introuvable</p></div>';
+    return;
+  }
+  renderProfile(data);
+}
 
 // ── Carte Leaflet ─────────────────────────────────────────────────────────────
 const map = L.map('map').setView([46.5, 2.5], 6);
@@ -1661,16 +1472,71 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution:'© OpenStreetMap, © CARTO', subdomains:'abcd', maxZoom:19
 }).addTo(map);
 
-[
-  { name:'CASA PADEL',           ll:[48.96,2.55], joueurs:1240, color:'#0d9488' },
-  { name:'PADEL HORIZON',        ll:[43.45,5.40], joueurs:980,  color:'#0d9488' },
-  { name:'4PADEL TOULOUSE',      ll:[43.60,1.44], joueurs:720,  color:'#14b8a6' },
-  { name:'PADEL CLUB MARSEILLE', ll:[43.30,5.37], joueurs:540,  color:'#14b8a6' },
-  { name:'TC LES LILAS',         ll:[48.88,2.42], joueurs:180,  color:'#5eead4' },
-].forEach(c => {
-  L.circleMarker(c.ll, { radius:Math.sqrt(c.joueurs)/3, fillColor:c.color, color:'#fff', weight:2, fillOpacity:0.85 })
-   .addTo(map).bindPopup(`<b>${c.name}</b><br>${c.joueurs} licenciés`);
-});
+// Coordonnées GPS des principales villes françaises (normalisées en majuscules)
+const CITY_COORDS = {
+  'TOULOUSE':              [43.604,  1.444], 'BORDEAUX':          [44.837, -0.580],
+  'NICE':                  [43.710,  7.262], 'MONTPELLIER':       [43.611,  3.876],
+  'RENNES':                [48.117, -1.678], 'PARIS':             [48.856,  2.352],
+  'AIX EN PROVENCE':       [43.530,  5.447], 'REIMS':             [49.258,  4.032],
+  'MARSEILLE':             [43.296,  5.381], 'NIMES':             [43.836,  4.360],
+  'NANTES':                [47.218, -1.553], 'PERPIGNAN':         [42.698,  2.895],
+  'DIJON':                 [47.322,  5.042], 'CAEN':              [49.183, -0.371],
+  'PAU':                   [43.299, -0.371], 'TOULON':            [43.125,  5.930],
+  'AJACCIO':               [41.919,  8.739], 'NARBONNE':          [43.184,  3.003],
+  'ANGERS':                [47.478, -0.563], 'LILLE':             [50.629,  3.057],
+  'ARLES':                 [43.677,  4.627], 'BEZIERS':           [43.344,  3.216],
+  'ANTIBES':               [43.580,  7.125], 'MONTAUBAN':         [44.017,  1.353],
+  'LIMOGES':               [45.833,  1.261], 'STRASBOURG':        [48.573,  7.752],
+  'ORLEANS':               [47.903,  1.909], 'NANCY':             [48.692,  6.184],
+  'AMIENS':                [49.894,  2.302], 'LYON':              [45.750,  4.850],
+  'GRENOBLE':              [45.188,  5.724], 'METZ':              [49.120,  6.177],
+  'ROUEN':                 [49.443,  1.100], 'CLERMONT FERRAND':  [45.777,  3.087],
+  'BREST':                 [48.390, -4.486], 'LE HAVRE':          [49.494,  0.108],
+  'TOULON':                [43.125,  5.930], 'TOURS':             [47.394,  0.686],
+  'SAINT ETIENNE':         [45.439,  4.387], 'VILLEURBANNE':      [45.772,  4.891],
+  'NANTES':                [47.218, -1.553], 'POITIERS':          [46.580,  0.340],
+  'VALENCIENNES':          [50.357,  3.523], 'CANNES':            [43.552,  7.017],
+  'MERIGNAC':              [44.838, -0.644], 'PESSAC':            [44.806, -0.631],
+  'TALENCE':               [44.808, -0.589], 'BRUGES':            [44.887, -0.632],
+  'BOULOGNE BILLANCOURT':  [48.834,  2.240], 'SELESTAT':          [48.259,  7.453],
+  'NOUMEA':                [-22.276, 166.458],'SETE':             [43.403,  3.696],
+  'FREJUS':                [43.433,  6.737], 'LA CIOTAT':         [43.174,  5.608],
+  'BRUZ':                  [47.981, -1.745], 'MONTAUROUX':        [43.649,  6.741],
+  'LAURE':                 [43.426,  5.472], 'ALBI':              [43.929,  2.148],
+  'LA VALETTE DU VAR':     [43.137,  5.983], 'PALAVAS LES FLOTS': [43.529,  3.929],
+  'VILLIERS SUR MARNE':    [48.827,  2.539], 'POINTE A PITRE':    [16.241, -61.533],
+};
+
+function normalizeVille(v) {
+  return (v || '').toUpperCase().trim()
+    .replace(/\s+\d+E?\s*(ARRONDISSEMENT)?$/i, '') // "PARIS 16", "MARSEILLE 09"
+    .replace(/\bST\b/g, 'SAINT')
+    .trim();
+}
+
+(async function initMapData() {
+  const clubs = await apiFetch('/api/clubs?top=200');
+  if (!clubs || !clubs.length) return;
+
+  // Dédupliquer par ville : garder le club le plus grand de chaque point GPS
+  const seen = new Map();
+  clubs.forEach(c => {
+    const ville = normalizeVille(c.ville);
+    const ll = CITY_COORDS[ville] || CITY_COORDS[Object.keys(CITY_COORDS).find(k => ville.startsWith(k) || k.startsWith(ville))];
+    if (!ll) return;
+    const key = ll.join(',');
+    if (!seen.has(key) || seen.get(key).nb < c.nb) seen.set(key, { ...c, ll, ville });
+  });
+
+  const maxNb = Math.max(...[...seen.values()].map(c => c.nb));
+  seen.forEach(c => {
+    const ratio = c.nb / maxNb;
+    const color = ratio > 0.6 ? '#0d9488' : ratio > 0.3 ? '#14b8a6' : '#5eead4';
+    L.circleMarker(c.ll, { radius: Math.sqrt(c.nb) / 2.5, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.85 })
+     .addTo(map)
+     .bindPopup(`<b>${c.nom}</b><br>${c.ville}<br>${c.nb.toLocaleString('fr-FR')} licenciés`);
+  });
+})();
 
 // ── Chart distribution tournoi ────────────────────────────────────────────────
 new Chart(document.getElementById('chart-tournament-dist'), {
@@ -1682,42 +1548,7 @@ new Chart(document.getElementById('chart-tournament-dist'), {
   options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Nb paires'}}} }
 });
 
-// ── Heatmap activité (GitHub-like) ────────────────────────────────────────────
-(function buildHeatmap() {
-  const el = document.getElementById('heatmap');
-  if (!el) return;
-  const weeks = 53, days = 7;
-  const data = [];
-  for (let w = 0; w < weeks; w++) {
-    const month = Math.floor(w / 4.4);
-    const seasonal = (month >= 2 && month <= 7) ? 1.5 : 0.5;
-    const col = [];
-    for (let d = 0; d < days; d++) {
-      const wd = (d === 5 || d === 6) ? 2 : 1;
-      const r = Math.random();
-      let v = 0;
-      if (r > 0.85 / seasonal / wd) v = 1;
-      if (r > 0.94 / seasonal / wd) v = 2;
-      if (r > 0.98 / seasonal / wd) v = 3;
-      if (r > 0.995 / seasonal / wd) v = 4;
-      col.push(v);
-    }
-    data.push(col);
-  }
-  const colors = ['#f1f5f9','#99f6e4','#5eead4','#14b8a6','#0f766e'];
-  const months = ['Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai'];
-  let html = '<svg width="780" height="120" xmlns="http://www.w3.org/2000/svg" style="font-family:Inter">';
-  for (let m = 0; m < 13; m++)
-    html += `<text x="${20 + m*60}" y="12" font-size="10" fill="#64748b">${months[m]}</text>`;
-  ['L','M','M','J','V','S','D'].forEach((d,i) => {
-    if (i%2===1) html += `<text x="0" y="${28+i*13}" font-size="9" fill="#94a3b8">${d}</text>`;
-  });
-  for (let w = 0; w < weeks; w++)
-    for (let d = 0; d < days; d++)
-      html += `<rect x="${15+w*13}" y="${20+d*13}" width="11" height="11" rx="2" fill="${colors[data[w][d]]}" />`;
-  html += '</svg>';
-  el.innerHTML = html;
-})();
+// ── Heatmap : voir buildHeatmap() ci-dessus — appelée par renderProfile() ──
 
 // ── Dark mode ─────────────────────────────────────────────────────────────────
 const themeBtn = document.getElementById('theme-toggle');
@@ -1802,8 +1633,7 @@ function checkAtBest(classement, meilleur) {
   // classement actuel ≤ meilleur historique = record égalé ou battu
   badge.style.display = (classement && meilleur && classement <= meilleur) ? 'inline-block' : 'none';
 }
-// Mock : Aurélien #15 actuel, #12 meilleur → pas au record
-checkAtBest(15, 12);
+// checkAtBest appelé lors du rendu du profil
 
 // ── 5. Autocomplete ───────────────────────────────────────────────────────────
 
@@ -1849,7 +1679,16 @@ setupAutocomplete('global-search', 'ac-global', player => {
   const inp = document.getElementById('global-search');
   if (inp) inp.value = player.nom_complet;
   saveDefaultPlayer(player);
-  document.querySelector('[data-view="player"]')?.click();
+  loadPlayerProfile(player.id);
+});
+
+// Entrée sur la recherche globale → charge le premier résultat
+document.getElementById('global-search')?.addEventListener('keydown', async e => {
+  if (e.key !== 'Enter') return;
+  const q = e.target.value.trim();
+  if (q.length < 2) return;
+  const results = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=1`);
+  if (results && results.length) { saveDefaultPlayer(results[0]); loadPlayerProfile(results[0].id); e.target.value = results[0].nom_complet; }
 });
 
 // Recherche leaderboard → filtre
@@ -2019,110 +1858,4 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     cdTimer = setInterval(() => {
       s--;
       if (cdEl) cdEl.textContent = Math.max(0, s);
-      if (s <= 0) clearInterval(cdTimer);
-    }, 1000);
-  }
-
-  // Show / hide the wake-up toast
-  function showToast() {
-    if (!toast) return;
-    toast.classList.add('show');
-    startCountdown(30);
-  }
-  function hideToast() {
-    if (!toast) return;
-    toast.classList.remove('show');
-    clearInterval(cdTimer);
-  }
-
-  // Update badge state
-  function setBadge(state) { // 'pending' | 'live' | 'offline'
-    if (!badge || !label) return;
-    badge.className = 'api-badge api-' + state;
-    badge.title = state === 'live'
-      ? '✅ Serveur connecté — données en temps réel'
-      : state === 'pending'
-        ? '⏳ Démarrage du serveur (~30s)…'
-        : '⚠️ Serveur indisponible — données statiques uniquement';
-    label.textContent = state === 'live' ? 'Live' : state === 'pending' ? 'Connexion…' : 'Hors ligne';
-  }
-
-  // Called when API is confirmed alive
-  function onApiReady() {
-    if (ready) return;
-    ready = true;
-    window.API_READY = true;
-    setBadge('live');
-    hideToast();
-    // Dispatch event so other parts of the app can react
-    document.dispatchEvent(new CustomEvent('api:ready'));
-  }
-
-  // Poll /api/health with exponential back-off
-  async function poll(attempt) {
-    if (ready) return;
-    try {
-      const r = await fetch(API_BASE + '/api/health', { signal: AbortSignal.timeout(6000) });
-      if (r.ok) { onApiReady(); return; }
-    } catch {}
-    if (attempt >= 15) { setBadge('offline'); hideToast(); return; }
-    const delay = attempt === 0 ? 800 : Math.min(4000, 1500 * Math.pow(1.3, attempt - 1));
-    setTimeout(() => poll(attempt + 1), delay);
-  }
-
-  // Guard: intercept search attempts before API ready
-  const globalSearch = document.getElementById('global-search');
-  if (globalSearch) {
-    globalSearch.addEventListener('focus', () => {
-      if (!window.API_READY) showToast();
-    });
-  }
-  // Auto-hide toast when user clicks away
-  document.addEventListener('click', e => {
-    if (toast && !toast.contains(e.target) && e.target !== globalSearch) hideToast();
-  });
-
-  // Kick off immediately
-  window.API_READY = false;
-  setBadge('pending');
-  poll(0);
-
-  // If on localhost → mark live instantly
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-    setTimeout(() => { if (!ready) onApiReady(); }, 1200);
-  }
-})();
-
-// ── Percentile bars animation ─────────────────────────────────────
-(function initPercentileBars() {
-  const card = document.getElementById('card-percentile');
-  if (!card) return;
-  let animated = false;
-  function animateBars() {
-    if (animated) return;
-    animated = true;
-    card.querySelectorAll('.pct-fill').forEach((bar, i) => {
-      const row = bar.closest('.pct-row');
-      const pct = row ? parseFloat(row.dataset.pct) : 0;
-      setTimeout(() => { bar.style.width = pct + '%'; }, i * 120);
-    });
-  }
-  const obs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) { animateBars(); obs.disconnect(); }
-  }, { threshold: 0.2 });
-  obs.observe(card);
-})();
-
-</script>
-
-<!-- API wake-up toast -->
-<div id="api-toast">
-  <div class="toast-spinner"></div>
-  <div>
-    <div class="font-semibold text-sm">Serveur en cours de démarrage</div>
-    <div class="text-xs text-slate-300">Disponible dans <span id="toast-countdown">30</span>s — les données statiques sont déjà là</div>
-  </div>
-</div>
-
-</body>
-</html>
+      if (s <= 0) clearInterval(cdTime
