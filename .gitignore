@@ -1,0 +1,40 @@
+# ── Base de données ───────────────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ── Variables d'environnement ─────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# ── Données générées ──────────────────────────────────────────────────────────
+dashboard/data/*.json
+
+# ── Scraper / debug ───────────────────────────────────────────────────────────
+cookies.json
+debug_*.py
+debug_*.html
+debug_*.json
+probe_*.py
+*.csv
+
+# ── Divers ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.ipynb_checkpoints/

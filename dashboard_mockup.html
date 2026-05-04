@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Padel Stats — Maquette</title>
+
+<!-- Tailwind + Charts + Map + Icons + Font -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #0d9488;       /* teal-600 */
+    --primary-dark: #0f766e;
+    --primary-light: #ccfbf1;
+    --accent: #f59e0b;        /* amber-500 */
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+  }
+
+  * { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+  body { background: var(--bg); color: var(--text); }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+  .card-stat { padding: 16px; }
+  .card-stat .value { font-size: 28px; font-weight: 700; line-height: 1.1; }
+  .card-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .card-stat .delta { font-size: 11px; margin-top: 6px; }
+  .delta-up { color: #10b981; }
+  .delta-down { color: #ef4444; }
+
+  /* Nav */
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #cbd5e1;
+    transition: all 0.15s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+  .nav-item.active {
+    background: rgba(13,148,136,0.15);
+    color: #5eead4;
+    box-shadow: inset 3px 0 0 #14b8a6;
+  }
+  .nav-item .lucide { width: 16px; height: 16px; }
+
+  /* Tabs */
+  .tabs { display: inline-flex; background: #f1f5f9; border-radius: 10px; padding: 4px; }
+  .tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; }
+  .tab.active { background: white; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--primary); color: white;
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(13,148,136,0.25); }
+
+  .btn-ghost {
+    border: 1px solid var(--border); color: var(--text);
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+  /* Inputs */
+  input, select { font-size: 13px; }
+  input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: transparent; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge-gold   { background: #fef3c7; color: #b45309; }
+  .badge-silver { background: #f1f5f9; color: #475569; }
+  .badge-bronze { background: #fed7aa; color: #c2410c; }
+  .badge-cat-elite { background: #fef3c7; color: #b45309; }
+  .badge-cat-pro   { background: #ccfbf1; color: #115e59; }
+  .badge-cat-mid   { background: #e0e7ff; color: #4338ca; }
+  .badge-cat-low   { background: #f1f5f9; color: #64748b; }
+
+  /* Views — fade + slide */
+  .view { display: none; }
+  .view.active { display: block; animation: viewIn 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  #map { height: 600px; border-radius: 12px; }
+
+  /* ── Sprint 1 ─────────────────────────────────────────── */
+
+  /* 2. Skeleton shimmer */
+  @keyframes shimmer {
+    from { background-position: -800px 0; }
+    to   { background-position:  800px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.6s infinite linear;
+    border-radius: 6px;
+    display: block;
+  }
+  .sk-text  { height: 13px; }
+  .sk-title { height: 20px; }
+  .sk-round { border-radius: 50% !important; }
+
+  /* 5. Autocomplete dropdown */
+  .ac-wrap { position: relative; }
+  .ac-popup {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.09); z-index: 200;
+    max-height: 300px; overflow-y: auto;
+  }
+  .ac-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; cursor: pointer; font-size: 13px;
+    transition: background 0.1s;
+  }
+  .ac-item:hover { background: #f8fafc; }
+  .ac-item + .ac-item { border-top: 1px solid #f1f5f9; }
+  .ac-rank { font-size: 11px; color: #94a3b8; margin-left: auto; white-space: nowrap; }
+
+  /* 6. Breadcrumb suggesteur */
+  .breadcrumb {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: #64748b; margin-bottom: 14px;
+    padding: 8px 12px; background: #f8fafc; border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  .breadcrumb a { color: var(--primary); cursor: pointer; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb-sep { color: #cbd5e1; }
+
+  /* 7. Trophy shelf — stagger reveal */
+  .trophy-cat {
+    opacity: 0; transform: translateX(-10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .trophy-cat.revealed { opacity: 1; transform: translateX(0); }
+
+  /* 8. Infinite-scroll sentinel shimmer row */
+  .lb-loading td { background: transparent !important; }
+
+  /* 9. Sticky "toi" row — requires .leaderboard-scroll parent */
+  .leaderboard-scroll {
+    max-height: 520px; overflow-y: auto; position: relative;
+    border-radius: 0 0 12px 12px;
+  }
+  .row-me {
+    position: sticky; bottom: 0; z-index: 10;
+    background: #fffbeb !important;
+    box-shadow: 0 -2px 0 0 #f59e0b;
+  }
+  .row-me td { background: #fffbeb !important; }
+
+  /* badge at-best */
+  .badge-atbest {
+    background: linear-gradient(135deg,#fef9c3,#fde68a);
+    color: #92400e; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    border: 1px solid #fcd34d; white-space: nowrap;
+  }
+
+  /* Player avatar */
+  .avatar {
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: white; flex-shrink: 0;
+  }
+  .av-sm { width: 32px; height: 32px; font-size: 12px; }
+  .av-md { width: 40px; height: 40px; font-size: 13px; }
+  .av-lg { width: 96px; height: 96px; font-size: 30px; }
+
+  /* Trend indicators */
+  .trend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; }
+
+  /* Wrapped (Spotify-like) */
+  .wrapped {
+    background: linear-gradient(135deg, #14b8a6 0%, #6366f1 50%, #ec4899 100%);
+    color: white; border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+  }
+  .wrapped::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15), transparent 50%);
+  }
+
+  /* Sortable table chevron */
+  th[data-sort] { cursor: pointer; user-select: none; }
+  th[data-sort]:hover { color: var(--primary); }
+  /* ── Percentile bars ── */
+  .pct-fill { transition: width 1.1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+  /* ── API status badge ── */
+  .api-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    transition: all .4s ease; white-space: nowrap;
+  }
+  .api-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .api-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .api-pending .api-dot { background: #f59e0b; animation: pulse 1.2s infinite; }
+  .api-live    { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .api-live .api-dot { background: #10b981; }
+  .api-offline { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .api-offline .api-dot { background: #ef4444; }
+
+  /* Search blocker toast */
+  #api-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+    background: #1e293b; color: white; padding: 12px 20px; border-radius: 12px;
+    font-size: 13px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25); transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+  }
+  #api-toast.show { transform: translateX(-50%) translateY(0); }
+  #api-toast .toast-spinner {
+    width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3);
+    border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+
+<body class="min-h-screen">
+
+<div class="flex">
+
+  <!-- ─── Sidebar ──────────────────────────────────────────────────── -->
+  <aside class="w-60 bg-slate-900 text-white min-h-screen p-4 fixed flex flex-col">
+    <div class="flex items-center gap-3 px-2 py-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg">
+        <i data-lucide="zap" class="text-white"></i>
+      </div>
+      <div>
+        <div class="font-bold text-base leading-tight">Padel Stats</div>
+        <div class="text-xs text-slate-400">FFT · France</div>
+      </div>
+    </div>
+
+    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2">Vue d'ensemble</div>
+    <nav class="space-y-0.5">
+      <a href="#" data-view="dashboard" class="nav-item active"><i data-lucide="layout-dashboard"></i><span>Tableau de bord</span></a>
+      <a href="#" data-view="leaderboard" class="nav-item"><i data-lucide="trophy"></i><span>Classement</span></a>
+      <a href="#" data-view="movers" class="nav-item"><i data-lucide="trending-up"></i><span>Top progressions</span></a>
+    </nav>
+
+    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2 mt-4">Profils</div>
+    <nav class="space-y-0.5">
+      <a href="#" data-view="player" class="nav-item"><i data-lucide="user"></i><span>Joueur</span></a>
+      <a href="#" data-view="club" class="nav-item"><i data-lucide="building-2"></i><span>Club</span></a>
+      <a href="#" data-view="tournament" class="nav-item"><i data-lucide="medal"></i><span>Tournoi</span></a>
+      <a href="#" data-view="compare" class="nav-item"><i data-lucide="users"></i><span>Comparateur</span></a>
+    </nav>
+
+    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2 mt-4">Exploration</div>
+    <nav class="space-y-0.5">
+      <a href="#" data-view="map" class="nav-item"><i data-lucide="map-pin"></i><span>Carte de France</span></a>
+      <a href="#" data-view="graph" class="nav-item"><i data-lucide="git-branch"></i><span>Graphe partenaires</span></a>
+      <a href="#" data-view="partners" class="nav-item"><i data-lucide="hand-coins"></i><span>Suggesteur</span></a>
+    </nav>
+
+    <div class="mt-auto pt-4 border-t border-slate-800 text-[11px] text-slate-500 px-2 leading-relaxed">
+      <div class="flex items-center gap-1 mb-1"><i data-lucide="database" class="w-3 h-3"></i><span class="font-semibold text-slate-400">Base actuelle</span></div>
+      149 124 joueurs<br>
+      925 547 participations<br>
+      36 981 tournois<br>
+      <span class="text-emerald-400">● Mis à jour il y a 2 h</span>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─────────────────────────────────────────────────────── -->
+  <main class="flex-1 ml-60 p-8">
+
+    <!-- Top bar -->
+    <div class="flex items-center justify-between mb-6 gap-4">
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold tracking-tight" id="page-title">Tableau de bord</h1>
+        <div class="text-sm text-slate-500" id="page-subtitle">Vue d'ensemble du padel français</div>
+      </div>
+      <div class="flex gap-3 items-center">
+        <div id="api-status-badge" class="api-badge api-pending" title="Connexion au serveur en cours...">
+          <span class="api-dot"></span>
+          <span id="api-status-text">Connexion…</span>
+        </div>
+        <div class="relative ac-wrap">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input id="global-search" type="text" placeholder="Joueur, club, tournoi..." class="pl-9 pr-12 py-2 rounded-lg border border-slate-200 bg-white w-72" autocomplete="off">
+          <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">⌘K</kbd>
+          <div id="ac-global" class="ac-popup" hidden></div>
+        </div>
+        <button id="theme-toggle" class="btn-ghost flex items-center justify-center w-9 h-9 p-0" title="Changer de thème">
+          <i data-lucide="moon" class="w-4 h-4"></i>
+        </button>
+        <button class="btn-ghost flex items-center justify-center w-9 h-9 p-0 relative" title="Notifications">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+        <button class="btn-primary flex items-center gap-2"><i data-lucide="user-circle" class="w-4 h-4"></i>Mon profil</button>
+      </div>
+    </div>
+
+    <!-- ═════ DASHBOARD ════════════════════════════════════════════════ -->
+    <section class="view active" id="view-dashboard">
+
+      <!-- Wrapped banner -->
+      <div class="wrapped mb-6 flex items-center justify-between">
+        <div class="relative">
+          <div class="text-xs uppercase tracking-widest opacity-75 mb-1">Padel Wrapped 2026</div>
+          <div class="text-2xl font-bold mb-1">Ton année padel en chiffres</div>
+          <div class="text-sm opacity-90">38 tournois · 12 partenaires · +1 320 places gagnées au classement</div>
+        </div>
+        <button class="relative bg-white text-slate-900 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover:scale-105 transition">
+          Découvrir <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="card card-stat">
+          <div class="flex justify-between items-start">
+            <div class="label">Joueurs classés</div>
+            <i data-lucide="users" class="w-4 h-4 text-slate-300"></i>
+          </div>
+          <div class="value mt-2">149 124</div>
+          <div class="delta delta-up flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +12 350 ce mois</div>
+        </div>
+        <div class="card card-stat">
+          <div class="flex justify-between items-start">
+            <div class="label">Hommes / Femmes</div>
+            <i data-lucide="users-round" class="w-4 h-4 text-slate-300"></i>
+          </div>
+          <div class="value mt-2">119k <span class="text-slate-300 text-2xl font-light">/</span> 30k</div>
+          <div class="delta text-slate-500">80% / 20%</div>
+        </div>
+        <div class="card card-stat">
+          <div class="flex justify-between items-start">
+            <div class="label">Tournois recensés</div>
+            <i data-lucide="calendar" class="w-4 h-4 text-slate-300"></i>
+          </div>
+          <div class="value mt-2">36 981</div>
+          <div class="delta delta-up flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +254 ce mois</div>
+        </div>
+        <div class="card card-stat">
+          <div class="flex justify-between items-start">
+            <div class="label">Participations</div>
+            <i data-lucide="activity" class="w-4 h-4 text-slate-300"></i>
+          </div>
+          <div class="value mt-2">925 547</div>
+          <div class="delta text-slate-500">~6 par joueur</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="card p-5 col-span-2">
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <div class="font-semibold">Pyramide des âges</div>
+              <div class="text-xs text-slate-500">Répartition Hommes / Femmes par tranche d'âge</div>
+            </div>
+            <div class="flex gap-2 text-xs">
+              <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-teal-600"></span>Hommes</div>
+              <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-pink-500"></span>Femmes</div>
+            </div>
+          </div>
+          <canvas id="chart-pyramid" height="180"></canvas>
+        </div>
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Évolution mensuelle des tournois</div>
+          <canvas id="chart-tournois" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="card p-5 col-span-2">
+          <div class="font-semibold mb-3">Top 10 régions par nombre de joueurs</div>
+          <canvas id="chart-regions" height="180"></canvas>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center mb-3">
+            <div class="font-semibold">Plus grosses progressions</div>
+            <a href="#" data-view="movers" class="text-xs text-teal-600 hover:underline">Voir tout</a>
+          </div>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center gap-3">
+              <div class="avatar av-sm bg-teal-600">JD</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium truncate">Julien DUPONT</div>
+                <div class="text-xs text-slate-500">#2 450 (était #5 870)</div>
+              </div>
+              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>3 420</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="avatar av-sm bg-amber-500">MR</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium truncate">Marc ROCHE</div>
+                <div class="text-xs text-slate-500">#1 220 (était #4 080)</div>
+              </div>
+              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>2 860</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="avatar av-sm bg-pink-500">SL</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium truncate">Sophie LEROY</div>
+                <div class="text-xs text-slate-500">#385 F (était #2 100 F)</div>
+              </div>
+              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 715</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="avatar av-sm bg-indigo-600">AT</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium truncate">Antoine TARDIEU</div>
+                <div class="text-xs text-slate-500">#5 805 (était #7 200)</div>
+              </div>
+              <div class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 395</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tops H/F -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card p-5">
+          <div class="flex justify-between items-center mb-4">
+            <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Top 5 Hommes</div>
+            <a href="#" data-view="leaderboard" class="text-xs text-teal-600 hover:underline">Voir tout →</a>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-gold w-7 text-center">1</div>
+              <div class="avatar av-sm bg-teal-600">MM</div>
+              <div class="flex-1 font-medium text-sm">Maxime MOREAU</div>
+              <div class="text-xs text-slate-500">PADEL HORIZON</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">2</div>
+              <div class="avatar av-sm bg-emerald-600">BB</div>
+              <div class="flex-1 font-medium text-sm">Bastien BLANQUÉ</div>
+              <div class="text-xs text-slate-500">CASA PADEL</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-bronze w-7 text-center">3</div>
+              <div class="avatar av-sm bg-indigo-600">AM</div>
+              <div class="flex-1 font-medium text-sm">Adrien MAIGRET</div>
+              <div class="text-xs text-slate-500">4PADEL TOULOUSE</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">4</div>
+              <div class="avatar av-sm bg-purple-600">TL</div>
+              <div class="flex-1 font-medium text-sm">Thomas LEYGUE</div>
+              <div class="text-xs text-slate-500">PADEL CLUB MARSEILLE</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">5</div>
+              <div class="avatar av-sm bg-rose-600">JS</div>
+              <div class="flex-1 font-medium text-sm">Jérémy SCATENA</div>
+              <div class="text-xs text-slate-500">PADEL HORIZON</div>
+            </div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center mb-4">
+            <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Top 5 Femmes</div>
+            <a href="#" data-view="leaderboard" class="text-xs text-teal-600 hover:underline">Voir tout →</a>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-gold w-7 text-center">1</div>
+              <div class="avatar av-sm bg-pink-500">AC</div>
+              <div class="flex-1 font-medium text-sm">Alix COLLOMBON</div>
+              <div class="text-xs text-slate-500">CASA PADEL</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">2</div>
+              <div class="avatar av-sm bg-fuchsia-500">JG</div>
+              <div class="flex-1 font-medium text-sm">Jessica GINIER</div>
+              <div class="text-xs text-slate-500">PADEL HORIZON</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-bronze w-7 text-center">3</div>
+              <div class="avatar av-sm bg-rose-500">LG</div>
+              <div class="flex-1 font-medium text-sm">Léa GODALLIER</div>
+              <div class="text-xs text-slate-500">CASA PADEL</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">4</div>
+              <div class="avatar av-sm bg-purple-500">MM</div>
+              <div class="flex-1 font-medium text-sm">Mélissa MARTIN</div>
+              <div class="text-xs text-slate-500">4PADEL LYON</div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+              <div class="badge badge-silver w-7 text-center">5</div>
+              <div class="avatar av-sm bg-violet-500">AC</div>
+              <div class="flex-1 font-medium text-sm">Audrey CASANOVA</div>
+              <div class="text-xs text-slate-500">CASA PADEL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═════ LEADERBOARD ══════════════════════════════════════════════ -->
+    <section class="view" id="view-leaderboard">
+      <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
+        <div class="tabs" id="lb-sex-tabs">
+          <div class="tab active" data-sex="H">♂ Hommes</div>
+          <div class="tab" data-sex="F">♀ Femmes</div>
+        </div>
+        <select id="lb-region" class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+          <option value="">Toutes régions</option><option>Île-de-France</option><option>PACA</option><option>Nouvelle-Aquitaine</option><option>Auvergne-RA</option><option>Occitanie</option><option>Hauts-de-France</option>
+        </select>
+        <select id="lb-club" class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+          <option value="">Tous clubs</option><option>CASA PADEL</option><option>PADEL HORIZON</option><option>TC LES LILAS</option>
+        </select>
+        <select id="lb-age" class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+          <option value="">Tout âge</option><option value="u18">Moins de 18</option><option value="18-35">18-35</option><option value="35-50">35-50</option><option value="50+">+50</option>
+        </select>
+        <div class="relative flex-1 min-w-48 ac-wrap">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input id="lb-search" type="text" placeholder="Nom du joueur..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full" autocomplete="off">
+          <div id="ac-lb" class="ac-popup" hidden></div>
+        </div>
+        <button class="btn-primary flex items-center gap-2" onclick="filterLeaderboard()"><i data-lucide="filter" class="w-4 h-4"></i>Filtrer</button>
+        <button class="btn-ghost flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Export</button>
+      </div>
+
+      <div class="card overflow-hidden">
+        <div class="leaderboard-scroll">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] font-semibold tracking-wider sticky top-0 z-20">
+            <tr>
+              <th class="text-left py-3 px-4" data-sort>Rang ↓</th>
+              <th class="text-left py-3 px-4" data-sort>Joueur</th>
+              <th class="text-left py-3 px-4" data-sort>Club</th>
+              <th class="text-left py-3 px-4">Ville</th>
+              <th class="text-right py-3 px-4" data-sort>Meilleur</th>
+              <th class="text-right py-3 px-4" data-sort>Tournois</th>
+              <th class="text-right py-3 px-4">Tendance</th>
+            </tr>
+          </thead>
+          <tbody id="lb-tbody">
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="py-3 px-4"><span class="badge badge-gold">1</span></td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-teal-600">MM</div><span class="font-medium">Maxime MOREAU</span></div></td>
+              <td class="py-3 px-4 text-slate-600">PADEL HORIZON</td>
+              <td class="py-3 px-4 text-slate-600">Cabriès</td>
+              <td class="py-3 px-4 text-right text-slate-500">#1</td>
+              <td class="py-3 px-4 text-right">148</td>
+              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+            </tr>
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="py-3 px-4"><span class="badge badge-silver">2</span></td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-emerald-600">BB</div><span class="font-medium">Bastien BLANQUÉ</span></div></td>
+              <td class="py-3 px-4 text-slate-600">CASA PADEL</td>
+              <td class="py-3 px-4 text-slate-600">Villepinte</td>
+              <td class="py-3 px-4 text-right text-slate-500">#2</td>
+              <td class="py-3 px-4 text-right">132</td>
+              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1</span></td>
+            </tr>
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="py-3 px-4"><span class="badge badge-bronze">3</span></td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-indigo-600">AM</div><span class="font-medium">Adrien MAIGRET</span></div></td>
+              <td class="py-3 px-4 text-slate-600">4PADEL TOULOUSE</td>
+              <td class="py-3 px-4 text-slate-600">Toulouse</td>
+              <td class="py-3 px-4 text-right text-slate-500">#3</td>
+              <td class="py-3 px-4 text-right">119</td>
+              <td class="py-3 px-4 text-right"><span class="trend delta-down"><i data-lucide="arrow-down" class="w-3 h-3"></i>1</span></td>
+            </tr>
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="py-3 px-4 text-slate-500">4</td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-purple-600">TL</div><span class="font-medium">Thomas LEYGUE</span></div></td>
+              <td class="py-3 px-4 text-slate-600">PADEL CLUB MARSEILLE</td>
+              <td class="py-3 px-4 text-slate-600">Marseille</td>
+              <td class="py-3 px-4 text-right text-slate-500">#4</td>
+              <td class="py-3 px-4 text-right">125</td>
+              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+            </tr>
+            <tr class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer" data-view="player">
+              <td class="py-3 px-4 text-slate-500">15</td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-cyan-600">AL</div><span class="font-medium">Aurélien LESCALLIER</span></div></td>
+              <td class="py-3 px-4 text-slate-600">CASA PADEL</td>
+              <td class="py-3 px-4 text-slate-600">Villepinte</td>
+              <td class="py-3 px-4 text-right text-slate-500">#12</td>
+              <td class="py-3 px-4 text-right">135</td>
+              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>3</span></td>
+            </tr>
+            <tr class="row-me" id="row-me">
+              <td class="py-3 px-4 text-slate-700 font-medium">14 335</td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-amber-500">GR</div><span class="font-medium">Gwendal ROLLAND</span><span class="badge badge-gold">toi</span></div></td>
+              <td class="py-3 px-4 text-slate-600">TC LES LILAS</td>
+              <td class="py-3 px-4 text-slate-600">Les Lilas</td>
+              <td class="py-3 px-4 text-right text-slate-500">#12 655</td>
+              <td class="py-3 px-4 text-right">38</td>
+              <td class="py-3 px-4 text-right"><span class="trend delta-up"><i data-lucide="arrow-up" class="w-3 h-3"></i>1 320</span></td>
+            </tr>
+            <tr class="border-t border-slate-100 hover:bg-slate-50 italic text-slate-500">
+              <td class="py-3 px-4">66 167</td>
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="avatar av-sm bg-slate-400"><i data-lucide="user-x" class="w-4 h-4"></i></div><span>Anonyme</span></div></td>
+              <td class="py-3 px-4">RC PORTO-VECCHIO</td>
+              <td class="py-3 px-4">—</td>
+              <td class="py-3 px-4 text-right">#51 238</td>
+              <td class="py-3 px-4 text-right">1</td>
+              <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+            </tr>
+            <tr id="lb-sentinel-row" class="lb-loading"><td id="lb-sentinel" colspan="7" class="py-2 text-center text-xs text-slate-400"></td></tr>
+          </tbody>
+        </table>
+        </div><!-- /leaderboard-scroll -->
+        <div class="flex justify-between items-center px-4 py-3 border-t border-slate-100 text-sm text-slate-500">
+          <div>Page <strong class="text-slate-900">1</strong> sur 1 198 · 119 124 résultats</div>
+          <div class="flex gap-1">
+            <button class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+            <button class="px-3 py-1 rounded-lg btn-primary">1</button>
+            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">2</button>
+            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">3</button>
+            <button class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50">…</button>
+            <button class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ MOVERS ═══════════════════════════════════════════════════ -->
+    <section class="view" id="view-movers">
+      <div class="card p-4 mb-4 flex gap-3 items-center">
+        <div class="tabs">
+          <div class="tab active">30 jours</div>
+          <div class="tab">3 mois</div>
+          <div class="tab">12 mois</div>
+        </div>
+        <div class="text-xs text-slate-400 italic">Classements mis à jour mensuellement</div>
+        <div class="flex-1"></div>
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Hommes & Femmes</option><option>Hommes</option><option>Femmes</option></select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card p-5">
+          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Plus grosses progressions (3 mois)</div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
+              <div class="avatar av-md bg-teal-600">JD</div>
+              <div class="flex-1">
+                <div class="font-medium">Julien DUPONT</div>
+                <div class="text-xs text-slate-500">CASA PADEL · #2 450 (était #5 870)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>3 420</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
+              <div class="avatar av-md bg-amber-500">MR</div>
+              <div class="flex-1">
+                <div class="font-medium">Marc ROCHE</div>
+                <div class="text-xs text-slate-500">PADEL HORIZON · #1 220 (était #4 080)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>2 860</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
+              <div class="avatar av-md bg-pink-500">SL</div>
+              <div class="flex-1">
+                <div class="font-medium">Sophie LEROY</div>
+                <div class="text-xs text-slate-500">4PADEL LYON · #385 F (était #2 100 F)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>1 715</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
+              <div class="avatar av-md bg-indigo-600">AT</div>
+              <div class="flex-1">
+                <div class="font-medium">Antoine TARDIEU</div>
+                <div class="text-xs text-slate-500">TC LES LILAS · #5 805 (était #7 200)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-up text-base"><i data-lucide="arrow-up" class="w-4 h-4"></i>1 395</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i> Plus grosses régressions (3 mois)</div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50/40">
+              <div class="avatar av-md bg-slate-500">ND</div>
+              <div class="flex-1">
+                <div class="font-medium">Nicolas DUVAL</div>
+                <div class="text-xs text-slate-500">CASA PADEL · #4 850 (était #1 200)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-down text-base"><i data-lucide="arrow-down" class="w-4 h-4"></i>3 650</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50/40">
+              <div class="avatar av-md bg-stone-500">FL</div>
+              <div class="flex-1">
+                <div class="font-medium">François LAMBERT</div>
+                <div class="text-xs text-slate-500">PADEL HORIZON · #3 200 (était #850)</div>
+              </div>
+              <div class="text-right">
+                <div class="trend delta-down text-base"><i data-lucide="arrow-down" class="w-4 h-4"></i>2 350</div>
+                <div class="text-[10px] text-slate-400">places</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ PLAYER PROFILE ═══════════════════════════════════════════ -->
+    <section class="view" id="view-player">
+      <div class="bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+        <div class="relative flex gap-6 items-center">
+          <div class="avatar av-lg bg-white/20 backdrop-blur">AL</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><i data-lucide="user" class="w-3 h-3"></i> Profil joueur</div>
+            <div class="text-3xl font-bold tracking-tight">Aurélien LESCALLIER</div>
+            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-90 mt-3">
+              <span class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-4 h-4"></i> CASA PADEL</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Villepinte (93)</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="cake" class="w-4 h-4"></i> 28 ans</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="user" class="w-4 h-4"></i> Homme</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="hand" class="w-4 h-4"></i> Droitier</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-[11px] uppercase opacity-75 tracking-widest">Classement</div>
+            <div class="text-6xl font-bold leading-none">#15</div>
+            <div class="flex items-center gap-2 justify-end mt-2">
+              <div class="text-xs opacity-75">Meilleur · #12 · Top 0,01%</div>
+              <span id="badge-at-best" class="badge-atbest" style="display:none">⭐ À son meilleur</span>
+            </div>
+            <div class="trend delta-up text-emerald-300 mt-2 justify-end"><i data-lucide="arrow-up" class="w-3 h-3"></i>3 places (30 jours)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat row -->
+      <div class="grid grid-cols-6 gap-3 mb-6">
+        <div class="card card-stat"><div class="label">Tournois</div><div class="value">135</div></div>
+        <div class="card card-stat"><div class="label">Victoires</div><div class="value text-emerald-600">28</div></div>
+        <div class="card card-stat"><div class="label">Finales</div><div class="value">42</div></div>
+        <div class="card card-stat"><div class="label">1/2 finales</div><div class="value">35</div></div>
+        <div class="card card-stat"><div class="label">Partenaires</div><div class="value">42</div></div>
+        <div class="card card-stat"><div class="label">Points</div><div class="value">12 450</div></div>
+      </div>
+
+      <!-- Top % Positionnement -->
+      <div class="card p-5 mb-6" id="card-percentile">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="font-semibold flex items-center gap-2">
+              <i data-lucide="target" class="w-4 h-4 text-teal-600"></i>
+              Ton positionnement
+            </div>
+            <div class="text-xs text-slate-500">Parmi 153 291 joueurs inscrits en France</div>
+          </div>
+          <div class="text-[11px] text-slate-400 italic">données personnalisées</div>
+        </div>
+        <div class="space-y-4" id="percentile-rows">
+
+          <!-- Classement général -->
+          <div class="pct-row" data-pct="91" data-label="Top 9%" data-color="teal">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Classement général</span>
+              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 9%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">Classé #14 335 · meilleur que 91% des joueurs</div>
+          </div>
+
+          <!-- Victoires -->
+          <div class="pct-row" data-pct="93" data-label="Top 7%" data-color="amber">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Victoires en tournois</span>
+              <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">Top 7%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">28 victoires · plus que 93% des joueurs</div>
+          </div>
+
+          <!-- Tournois disputés -->
+          <div class="pct-row" data-pct="82" data-label="Top 18%" data-color="teal">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Tournois disputés</span>
+              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 18%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">135 tournois · plus actif que 82% des joueurs</div>
+          </div>
+
+          <!-- Dans ton club -->
+          <div class="pct-row" data-pct="88" data-label="Top 12%" data-color="teal">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Dans ton club <span class="font-normal text-slate-400">(PADEL HORIZON)</span></span>
+              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 12%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">7e meilleur joueur parmi les 58 membres</div>
+          </div>
+
+          <!-- Dans ta région -->
+          <div class="pct-row" data-pct="89" data-label="Top 11%" data-color="teal">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Dans ta région <span class="font-normal text-slate-400">(Île-de-France)</span></span>
+              <span class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">Top 11%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">1 598e sur 14 285 joueurs en IDF</div>
+          </div>
+
+          <!-- Partenaires uniques -->
+          <div class="pct-row" data-pct="78" data-label="Top 22%" data-color="indigo">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-sm text-slate-700 font-medium">Réseau de partenaires</span>
+              <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">Top 22%</span>
+            </div>
+            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-indigo-400 to-indigo-600 pct-fill" style="width:0%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">42 partenaires uniques · plus connecté que 78% des joueurs</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Trophy shelf -->
+      <div class="card p-5 mb-6" id="trophy-shelf">
+        <div class="flex items-center justify-between mb-4">
+          <div class="font-semibold flex items-center gap-2">
+            <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+            Podiums par catégorie
+            <span class="text-xs font-normal text-slate-400 ml-1">Top 5 seulement</span>
+          </div>
+          <div class="text-xs text-slate-400">28 victoires · 42 finales · 35 demi-finales</div>
+        </div>
+
+        <!-- Catégories classiques -->
+        <div class="space-y-1 mb-4" id="trophy-classic-rows">
+
+          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
+            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-elite text-[11px]">P2000</span></div>
+            <div class="flex gap-2 flex-wrap flex-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 2</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 1</span>
+            </div>
+            <div class="text-xs text-slate-400 whitespace-nowrap">3 podiums</div>
+          </div>
+
+          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
+            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-elite text-[11px]">P1500</span></div>
+            <div class="flex gap-2 flex-wrap flex-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 3</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 2</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 1</span>
+            </div>
+            <div class="text-xs text-slate-400 whitespace-nowrap">6 podiums</div>
+          </div>
+
+          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
+            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-pro text-[11px]">P1000</span></div>
+            <div class="flex gap-2 flex-wrap flex-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 5</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 4</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 3</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 text-[12px] font-semibold">4e ×2</span>
+            </div>
+            <div class="text-xs text-slate-400 whitespace-nowrap">14 podiums</div>
+          </div>
+
+          <div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
+            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-pro text-[11px]">P500</span></div>
+            <div class="flex gap-2 flex-wrap flex-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 8</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 5</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[12px] font-semibold">🥉 4</span>
+            </div>
+            <div class="text-xs text-slate-400 whitespace-nowrap">17 podiums</div>
+          </div>
+
+          <div class="trophy-cat flex items-center gap-3 py-2.5">
+            <div style="width:52px;flex-shrink:0"><span class="badge badge-cat-mid text-[11px]">P250</span></div>
+            <div class="flex gap-2 flex-wrap flex-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[12px] font-semibold">🥇 10</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[12px] font-semibold">🥈 3</span>
+            </div>
+            <div class="text-xs text-slate-400 whitespace-nowrap">13 podiums</div>
+          </div>
+        </div>
+
+        <!-- Championnats -->
+        <div class="border-t border-slate-200 pt-3 mt-1">
+          <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-1.5">
+            <i data-lucide="shield" class="w-3 h-3"></i> Championnats
+          </div>
+          <div class="flex gap-3 flex-wrap">
+            <div class="trophy-cat flex items-center gap-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-3 py-2.5">
+              <span style="font-size:18px">🏆</span>
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Championnat Régional</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">1ère place · avec Yannick JEAN-ELIE</div>
+              </div>
+            </div>
+            <div class="trophy-cat flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
+              <span style="font-size:18px">🎖️</span>
+              <div>
+                <div class="text-xs font-semibold text-slate-800">Championnat de France</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">5ème place · avec Bastien BLANQUÉ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity calendar heatmap -->
+      <div class="card p-5 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <div class="font-semibold flex items-center gap-2"><i data-lucide="calendar-heart" class="w-4 h-4"></i> Activité sur 12 mois</div>
+            <div class="text-xs text-slate-500">38 tournois disputés cette année · semaine la plus active : 4 tournois (semaine du 28 mars)</div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-slate-500">
+            <span>Moins</span>
+            <div class="w-3 h-3 rounded-sm bg-slate-100"></div>
+            <div class="w-3 h-3 rounded-sm bg-teal-200"></div>
+            <div class="w-3 h-3 rounded-sm bg-teal-400"></div>
+            <div class="w-3 h-3 rounded-sm bg-teal-600"></div>
+            <div class="w-3 h-3 rounded-sm bg-teal-800"></div>
+            <span>Plus</span>
+          </div>
+        </div>
+        <div id="heatmap" class="overflow-x-auto"></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="card p-5 mb-6">
+        <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="line-chart" class="w-4 h-4"></i> Évolution du classement (12 derniers mois)</div>
+        <canvas id="chart-progression" height="100"></canvas>
+      </div>
+
+      <!-- Chronogramme parcours -->
+      <div class="card p-5 mb-6">
+        <div class="flex items-center justify-between mb-1">
+          <div class="font-semibold flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-teal-600"></i>
+            Parcours chronologique · 135 tournois
+          </div>
+          <div class="flex gap-2 flex-wrap" id="parcours-legend"></div>
+        </div>
+        <div class="text-xs text-slate-400 mb-3">Hauteur de barre = performance (plus haut = meilleure place) · 🥇 au-dessus = victoire</div>
+        <div style="overflow-x:auto">
+          <div style="min-width:900px">
+            <canvas id="chart-parcours" height="130"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="card p-5">
+          <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Top partenaires</div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
+              <div class="flex items-center gap-3"><div class="avatar av-md bg-teal-600">YJ</div>
+                <div><div class="text-sm font-medium">Yannick JEAN-ELIE</div><div class="text-xs text-slate-500">28 tournois · 21 victoires</div></div>
+              </div>
+              <div class="badge badge-cat-pro">75% wins</div>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
+              <div class="flex items-center gap-3"><div class="avatar av-md bg-amber-500">LP</div>
+                <div><div class="text-sm font-medium">Liam PIOLINE</div><div class="text-xs text-slate-500">22 tournois · 15 victoires</div></div>
+              </div>
+              <div class="badge badge-cat-pro">68% wins</div>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
+              <div class="flex items-center gap-3"><div class="avatar av-md bg-indigo-600">DK</div>
+                <div><div class="text-sm font-medium">Delton KIM</div><div class="text-xs text-slate-500">15 tournois · 9 victoires</div></div>
+              </div>
+              <div class="badge badge-cat-pro">60% wins</div>
+            </div>
+            <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50">
+              <div class="flex items-center gap-3"><div class="avatar av-md bg-emerald-600">BB</div>
+                <div><div class="text-sm font-medium">Bastien BLANQUÉ</div><div class="text-xs text-slate-500">10 tournois · 8 victoires</div></div>
+              </div>
+              <div class="badge badge-cat-pro">80% wins</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Palmarès complet -->
+      <div class="card p-5">
+        <div class="flex justify-between items-center mb-4">
+          <div class="font-semibold flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Palmarès complet · 135 tournois</div>
+          <div class="flex gap-2">
+            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Toutes catégories</option><option>P2000+</option><option>P1000-1500</option><option>P500-750</option><option>P100-250</option></select>
+            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Toutes positions</option><option>🥇 Vainqueur</option><option>🥈 Finale</option><option>🥉 1/2 finale</option></select>
+            <button class="text-xs px-3 py-1.5 rounded-lg btn-primary flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Export</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-lg border border-slate-100">
+          <table class="w-full text-sm">
+            <thead class="text-slate-500 text-[11px] uppercase font-semibold tracking-wider sticky top-0 bg-slate-50">
+              <tr>
+                <th class="text-left py-2.5 px-3">Date</th>
+                <th class="text-left py-2.5 px-3">Tournoi</th>
+                <th class="text-left py-2.5 px-3">Cat.</th>
+                <th class="text-left py-2.5 px-3">Partenaire</th>
+                <th class="text-center py-2.5 px-3">Position</th>
+                <th class="text-right py-2.5 px-3">Pts</th>
+                <th class="text-right py-2.5 px-3">Expire</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">12/04/2026</td><td class="font-medium">P2000 Casa Padel</td><td><span class="badge badge-cat-elite">P2000</span></td><td>Bastien BLANQUÉ</td><td class="text-center"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">800</td><td class="text-right text-xs text-slate-400">04/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">28/03/2026</td><td class="font-medium">P1500 Padel Horizon</td><td><span class="badge badge-cat-elite">P1500</span></td><td>Yannick JEAN-ELIE</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">15/03/2026</td><td class="font-medium">P1000 4Padel Toulouse</td><td><span class="badge badge-cat-pro">P1000</span></td><td>Liam PIOLINE</td><td class="text-center"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">02/03/2026</td><td class="font-medium">Open Lyon Padel</td><td><span class="badge badge-cat-pro">P750</span></td><td>Yannick JEAN-ELIE</td><td class="text-center text-slate-500">1/4 finale</td><td class="text-right font-medium">250</td><td class="text-right text-xs text-slate-400">03/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">22/02/2026</td><td class="font-medium">P1000 Padel Horizon</td><td><span class="badge badge-cat-pro">P1000</span></td><td>Bastien BLANQUÉ</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">02/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">08/02/2026</td><td class="font-medium">P500 TC Lille</td><td><span class="badge badge-cat-mid">P500</span></td><td>Delton KIM</td><td class="text-center"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">300</td><td class="text-right text-xs text-slate-400">02/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">25/01/2026</td><td class="font-medium">P1500 Casa Padel</td><td><span class="badge badge-cat-elite">P1500</span></td><td>Yannick JEAN-ELIE</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">1000</td><td class="text-right text-xs text-slate-400">01/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">11/01/2026</td><td class="font-medium">P750 4Padel Bordeaux</td><td><span class="badge badge-cat-pro">P750</span></td><td>Liam PIOLINE</td><td class="text-center"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">375</td><td class="text-right text-xs text-slate-400">01/2027</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">28/12/2025</td><td class="font-medium">P500 Tennis Marseille</td><td><span class="badge badge-cat-mid">P500</span></td><td>Bastien BLANQUÉ</td><td class="text-center text-slate-500">1/4 finale</td><td class="text-right font-medium">175</td><td class="text-right text-xs text-slate-400">12/2026</td></tr>
+              <tr class="border-t border-slate-100 hover:bg-slate-50"><td class="py-2 px-3 text-slate-500">14/12/2025</td><td class="font-medium">P250 Open Nice</td><td><span class="badge badge-cat-low">P250</span></td><td>Delton KIM</td><td class="text-center"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">125</td><td class="text-right text-xs text-slate-400">12/2026</td></tr>
+              <tr class="border-t border-slate-100 text-slate-400 italic"><td colspan="7" class="text-center py-3 text-xs">… 125 tournois précédents (scroll)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ COMPARE ══════════════════════════════════════════════════ -->
+    <section class="view" id="view-compare">
+      <div class="card p-4 mb-4">
+        <div class="text-sm text-slate-600 mb-3">Compare deux joueurs side-by-side</div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input value="Aurélien LESCALLIER" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
+          </div>
+          <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input value="Bastien BLANQUÉ" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="card p-5 bg-gradient-to-br from-teal-50 to-white border-teal-200">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="avatar av-lg bg-teal-600">AL</div>
+            <div>
+              <div class="font-bold text-lg">Aurélien LESCALLIER</div>
+              <div class="text-sm text-slate-500">CASA PADEL · 28 ans</div>
+              <div class="text-3xl font-bold text-teal-600 mt-1">#15</div>
+            </div>
+          </div>
+        </div>
+        <div class="card p-5 bg-gradient-to-br from-emerald-50 to-white border-emerald-200">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="avatar av-lg bg-emerald-600">BB</div>
+            <div>
+              <div class="font-bold text-lg">Bastien BLANQUÉ</div>
+              <div class="text-sm text-slate-500">CASA PADEL · 26 ans</div>
+              <div class="text-3xl font-bold text-emerald-600 mt-1">#2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats comparison -->
+      <div class="card p-5 mb-6">
+        <div class="font-semibold mb-4">Statistiques</div>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">135</span><span class="text-slate-500">Tournois</span><span class="font-medium text-emerald-600">132</span></div>
+            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 50.5%"></div><div class="bg-emerald-500 rounded" style="width: 49.5%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">28</span><span class="text-slate-500">Victoires</span><span class="font-medium text-emerald-600">52</span></div>
+            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 35%"></div><div class="bg-emerald-500 rounded" style="width: 65%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">42</span><span class="text-slate-500">Partenaires uniques</span><span class="font-medium text-emerald-600">38</span></div>
+            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 52.5%"></div><div class="bg-emerald-500 rounded" style="width: 47.5%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span class="font-medium text-teal-600">12 450</span><span class="text-slate-500">Points cumulés</span><span class="font-medium text-emerald-600">28 900</span></div>
+            <div class="flex h-2 gap-1"><div class="bg-teal-500 rounded" style="width: 30.1%"></div><div class="bg-emerald-500 rounded" style="width: 69.9%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Évolution comparée du classement</div>
+          <canvas id="chart-compare-progression" height="180"></canvas>
+        </div>
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Confrontations directes</div>
+          <div class="text-center py-6">
+            <div class="text-5xl font-bold mb-2">10</div>
+            <div class="text-sm text-slate-500 mb-4">tournois ensemble (en équipe)</div>
+            <div class="grid grid-cols-3 gap-3 text-sm">
+              <div><div class="text-2xl font-bold text-emerald-600">8</div><div class="text-xs text-slate-500">Victoires en équipe</div></div>
+              <div><div class="text-2xl font-bold">2</div><div class="text-xs text-slate-500">Finales perdues</div></div>
+              <div><div class="text-2xl font-bold text-teal-600">80%</div><div class="text-xs text-slate-500">Taux de réussite</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ CLUB ═════════════════════════════════════════════════════ -->
+    <section class="view" id="view-club">
+      <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+        <div class="relative flex gap-6 items-center">
+          <div class="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center"><i data-lucide="building-2" class="w-10 h-10"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><i data-lucide="building" class="w-3 h-3"></i> Profil club</div>
+            <div class="text-3xl font-bold">CASA PADEL</div>
+            <div class="flex flex-wrap gap-x-4 text-sm opacity-90 mt-2">
+              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Villepinte (93)</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> 1 240 licenciés</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="grid-3x3" class="w-4 h-4"></i> 14 terrains</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3 mb-6">
+        <div class="card card-stat"><div class="label">Classement moyen H</div><div class="value">#3 245</div></div>
+        <div class="card card-stat"><div class="label">Classement moyen F</div><div class="value">#1 875</div></div>
+        <div class="card card-stat"><div class="label">Top 100</div><div class="value text-amber-600">8</div></div>
+        <div class="card card-stat"><div class="label">Tournois organisés (12 mois)</div><div class="value">42</div></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Distribution des classements</div>
+          <canvas id="chart-club-dist" height="200"></canvas>
+        </div>
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Meilleurs joueurs du club</div>
+          <table class="w-full text-sm">
+            <tbody>
+              <tr class="border-b border-slate-100"><td class="py-2"><span class="badge badge-silver">2</span></td><td class="font-medium">Bastien BLANQUÉ</td><td class="text-right text-slate-500 text-xs">132 tournois</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 text-slate-500">15</td><td class="font-medium">Aurélien LESCALLIER</td><td class="text-right text-slate-500 text-xs">135 tournois</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2"><span class="badge badge-gold">1F</span></td><td class="font-medium">Alix COLLOMBON</td><td class="text-right text-slate-500 text-xs">98 tournois</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 text-slate-500">42</td><td class="font-medium">Hugo SOLLIER</td><td class="text-right text-slate-500 text-xs">87 tournois</td></tr>
+              <tr><td class="py-2 text-slate-500">67</td><td class="font-medium">Théo BRECHENMACHER</td><td class="text-right text-slate-500 text-xs">76 tournois</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ TOURNAMENT ═══════════════════════════════════════════════ -->
+    <section class="view" id="view-tournament">
+      <div class="bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+        <div class="relative flex gap-6 items-start">
+          <div class="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center"><i data-lucide="medal" class="w-12 h-12"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-widest opacity-75 mb-1"><i data-lucide="trophy" class="w-3 h-3"></i> Tournoi</div>
+            <div class="text-3xl font-bold tracking-tight">P2000 Casa Padel — Avril 2026</div>
+            <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-90 mt-3">
+              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Villepinte (93)</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4"></i> 10 — 12 avril 2026</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> 64 paires inscrites</span>
+              <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4"></i> 2 000 pts au vainqueur</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-[11px] uppercase opacity-75 tracking-widest">Catégorie</div>
+            <div class="text-4xl font-bold leading-none">P2000</div>
+            <div class="text-xs opacity-75 mt-2">Open mixte · Niveau Élite</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-3 mb-6">
+        <div class="card card-stat"><div class="label">Paires inscrites</div><div class="value">64</div></div>
+        <div class="card card-stat"><div class="label">Classement moyen</div><div class="value">#142</div></div>
+        <div class="card card-stat"><div class="label">Meilleure paire</div><div class="value text-amber-600">#3</div></div>
+        <div class="card card-stat"><div class="label">Matchs joués</div><div class="value">126</div></div>
+      </div>
+
+      <!-- Podium + bracket -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="card p-5">
+          <div class="font-semibold mb-4 flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Résultats · Top 5</div>
+          <div class="space-y-2">
+            <div class="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200">
+              <div class="badge badge-gold mb-2">🥇 Vainqueur</div>
+              <div class="font-medium text-sm">Maxime MOREAU</div>
+              <div class="font-medium text-sm">Bastien BLANQUÉ</div>
+              <div class="text-xs text-amber-700 mt-1 font-medium">+ 2 000 pts chacun</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="badge badge-silver mb-2">🥈 Finalistes</div>
+              <div class="font-medium text-sm">Aurélien LESCALLIER</div>
+              <div class="font-medium text-sm">Yannick JEAN-ELIE</div>
+              <div class="text-xs text-slate-600 mt-1 font-medium">+ 800 pts chacun</div>
+            </div>
+            <div class="p-3 rounded-xl bg-orange-50 border border-orange-200">
+              <div class="badge badge-bronze mb-2">🥉 Demi-finalistes</div>
+              <div class="font-medium text-sm">Adrien MAIGRET / Thomas LEYGUE</div>
+              <div class="font-medium text-sm">Liam PIOLINE / Delton KIM</div>
+              <div class="text-xs text-orange-700 mt-1 font-medium">+ 500 pts chacun</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">4e place</div>
+              <div class="font-medium text-sm text-slate-700">Pierre ARNAUD / Clément VIDAL</div>
+              <div class="text-xs text-slate-500 mt-1">+ 320 pts chacun</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">5e place</div>
+              <div class="font-medium text-sm text-slate-700">Hugo BENARD / Romain CASTEL</div>
+              <div class="text-xs text-slate-500 mt-1">+ 200 pts chacun</div>
+            </div>
+          </div>
+        </div>
+        <div class="card p-5 col-span-2">
+          <div class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Distribution des paires inscrites par classement</div>
+          <canvas id="chart-tournament-dist" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Participants -->
+      <div class="card p-5">
+        <div class="flex justify-between items-center mb-3">
+          <div class="font-semibold flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Participants · 64 paires</div>
+          <div class="flex gap-2">
+            <select class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white"><option>Trier par : meilleur classement</option><option>Trier par : place</option></select>
+            <button class="text-xs px-3 py-1.5 rounded-lg btn-primary flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Export</button>
+          </div>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="text-slate-500 text-[11px] uppercase font-semibold tracking-wider">
+            <tr class="border-b border-slate-200">
+              <th class="text-left pb-2.5">Paire</th>
+              <th class="text-right pb-2.5">Classement (cumul)</th>
+              <th class="text-right pb-2.5">Tour atteint</th>
+              <th class="text-right pb-2.5">Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Maxime MOREAU + Bastien BLANQUÉ</div><div class="text-xs text-slate-500">PADEL HORIZON / CASA PADEL</div></td><td class="text-right">#1 + #2</td><td class="text-right"><span class="badge badge-gold">🥇 Vainqueur</span></td><td class="text-right font-medium text-emerald-600">2 000</td></tr>
+            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Aurélien LESCALLIER + Yannick JEAN-ELIE</div><div class="text-xs text-slate-500">CASA PADEL / PADEL HORIZON</div></td><td class="text-right">#15 + #8</td><td class="text-right"><span class="badge badge-silver">🥈 Finale</span></td><td class="text-right font-medium">800</td></tr>
+            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Adrien MAIGRET + Thomas LEYGUE</div></td><td class="text-right">#3 + #4</td><td class="text-right"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td></tr>
+            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Liam PIOLINE + Delton KIM</div></td><td class="text-right">#289 + #232</td><td class="text-right"><span class="badge badge-bronze">🥉 1/2</span></td><td class="text-right font-medium">500</td></tr>
+            <tr class="border-t border-slate-100"><td class="py-2.5"><div class="font-medium">Jérémy SCATENA + Hugo SOLLIER</div></td><td class="text-right">#5 + #42</td><td class="text-right text-slate-500">1/4</td><td class="text-right font-medium">250</td></tr>
+            <tr class="border-t border-slate-100 text-slate-400 italic"><td colspan="4" class="text-center py-2.5 text-xs">… 59 paires éliminées plus tôt</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═════ MAP ══════════════════════════════════════════════════════ -->
+    <section class="view" id="view-map">
+      <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+          <option>Couleur : classement moyen</option><option>Couleur : nb licenciés</option><option>Couleur : nb tournois</option>
+        </select>
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Toutes régions</option><option>Île-de-France</option><option>PACA</option></select>
+        <div class="relative flex-1 min-w-48">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input type="text" placeholder="Trouver un club..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
+        </div>
+      </div>
+      <div id="map" class="card"></div>
+      <div class="text-xs text-slate-500 mt-2 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i>Aperçu : 5 clubs principaux. La vraie map affichera ~3 000 clubs FFT.</div>
+    </section>
+
+    <!-- ═════ GRAPH ════════════════════════════════════════════════════ -->
+    <section class="view" id="view-graph">
+      <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
+        <div class="relative flex-1 min-w-64">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input type="text" placeholder="Joueur central (vide = vue globale)" class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
+        </div>
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Profondeur : 2 sauts</option><option>Profondeur : 1 saut</option><option>Profondeur : 3 sauts</option></select>
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Couleur : club</option><option>Couleur : classement</option><option>Couleur : sexe</option><option>Couleur : communauté</option></select>
+        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Min. tournois : 1</option><option>Min. tournois : 5</option><option>Min. tournois : 10</option></select>
+        <button class="btn-primary flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4"></i>Générer</button>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3 mb-4">
+        <div class="card card-stat"><div class="label">Nœuds</div><div class="value">149 124</div></div>
+        <div class="card card-stat"><div class="label">Liens</div><div class="value">428 305</div></div>
+        <div class="card card-stat"><div class="label">Communautés</div><div class="value">~1 250</div></div>
+        <div class="card card-stat"><div class="label">Composante géante</div><div class="value">87%</div></div>
+      </div>
+
+      <div class="card overflow-hidden">
+        <iframe src="graph_padel.html" style="width:100%; height:700px; border:none;" loading="lazy"></iframe>
+      </div>
+      <div class="text-xs text-slate-500 mt-2 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i>Iframe sur ton <code class="bg-slate-100 px-1.5 py-0.5 rounded">graph_padel.html</code> existant. Servir via Flask pour bypass file://.</div>
+    </section>
+
+    <!-- ═════ PARTNER SUGGESTER ════════════════════════════════════════ -->
+    <section class="view" id="view-partners">
+      <!-- Fil d'Ariane -->
+      <nav id="sugg-breadcrumb" class="breadcrumb" style="display:none">
+        <i data-lucide="home" class="w-3 h-3"></i>
+        <a onclick="resetSuggView()">Suggesteur</a>
+      </nav>
+
+      <div class="card p-5 mb-4">
+        <div class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="hand-coins" class="w-4 h-4 text-teal-600"></i> Trouve-moi un partenaire</div>
+        <div class="text-sm text-slate-500 mb-4">Suggestions par classement, géolocalisation, et historique de jeu</div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="text-[11px] uppercase font-semibold text-slate-500 tracking-wider">Ton classement</label>
+            <input type="number" value="14335" class="w-full px-3 py-2 rounded-lg border border-slate-200 mt-1">
+          </div>
+          <div>
+            <label class="text-[11px] uppercase font-semibold text-slate-500 tracking-wider">Tolérance (± rangs)</label>
+            <input type="number" value="500" class="w-full px-3 py-2 rounded-lg border border-slate-200 mt-1">
+          </div>
+          <div>
+            <label class="text-[11px] uppercase font-semibold text-slate-500 tracking-wider">Ville / rayon</label>
+            <input type="text" value="Les Lilas, 30 km" class="w-full px-3 py-2 rounded-lg border border-slate-200 mt-1">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-4"><div class="avatar av-lg bg-teal-600 text-2xl">SD</div>
+            <div><div class="font-bold">Sylvain DUMONT</div><div class="text-xs text-slate-500">#14 102 · Paris 11e</div></div>
+          </div>
+          <div class="space-y-2 text-sm text-slate-600 mb-4">
+            <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i> 4 km de chez toi</div>
+            <div class="flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-slate-400"></i> 26 tournois récents</div>
+            <div class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-slate-400"></i> 1 partenaire en commun</div>
+          </div>
+          <button class="w-full btn-primary" onclick="suggToPlayer('Sylvain DUMONT')">Voir profil</button>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-4"><div class="avatar av-lg bg-amber-500 text-2xl">PV</div>
+            <div><div class="font-bold">Pierre VAILLANT</div><div class="text-xs text-slate-500">#14 567 · Pantin</div></div>
+          </div>
+          <div class="space-y-2 text-sm text-slate-600 mb-4">
+            <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i> 6 km de chez toi</div>
+            <div class="flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-slate-400"></i> 18 tournois récents</div>
+            <div class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-slate-400"></i> 3 partenaires en commun</div>
+          </div>
+          <button class="w-full btn-primary" onclick="suggToPlayer('Pierre VAILLANT')">Voir profil</button>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center gap-3 mb-4"><div class="avatar av-lg bg-indigo-600 text-2xl">RL</div>
+            <div><div class="font-bold">Romain LECLERC</div><div class="text-xs text-slate-500">#13 980 · Bagnolet</div></div>
+          </div>
+          <div class="space-y-2 text-sm text-slate-600 mb-4">
+            <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i> 3 km de chez toi</div>
+            <div class="flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4 text-slate-400"></i> 41 tournois récents</div>
+            <div class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-slate-400"></i> 2 partenaires en commun</div>
+          </div>
+          <button class="w-full btn-primary" onclick="suggToPlayer('Romain LECLERC')">Voir profil</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const titles = {
+  dashboard:   ['Tableau de bord',     "Vue d'ensemble du padel français"],
+  leaderboard: ['Classement',          'Filtres et recherche dans le classement'],
+  movers:      ['Top progressions',    'Plus grosses montées et descentes au classement'],
+  player:      ['Profil joueur',       'Statistiques détaillées et palmarès complet'],
+  club:        ['Profil club',         'Statistiques d\'un club'],
+  tournament:  ['Profil tournoi',      'Détails d\'un tournoi : podium, paires, scores'],
+  compare:     ['Comparateur',         'Compare deux joueurs côte à côte'],
+  map:         ['Carte de France',     '~3 000 clubs FFT (aperçu : 5)'],
+  graph:       ['Graphe partenaires',  'Réseau social des paires de padel'],
+  partners:    ['Suggesteur partenaires', 'Trouve un partenaire à ton niveau'],
+};
+
+
+// ── Navigation entre vues ─────────────────────────────────────────────────────
+document.querySelectorAll('[data-view]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    const v = el.dataset.view;
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    document.getElementById('view-' + v)?.classList.add('active');
+    document.querySelector(`.nav-item[data-view="${v}"]`)?.classList.add('active');
+    document.getElementById('page-title').textContent = titles[v]?.[0] || '';
+    document.getElementById('page-subtitle').textContent = titles[v]?.[1] || '';
+    if (v === 'map') setTimeout(() => map.invalidateSize(), 100);
+    if (window.lucide) lucide.createIcons();
+  });
+});
+
+// ── Couleurs ──────────────────────────────────────────────────────────────────
+const teal    = '#0d9488';
+const emerald = '#10b981';
+const amber   = '#f59e0b';
+const pink    = '#ec4899';
+const slate   = '#94a3b8';
+
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.color = '#64748b';
+
+// ── Charts dashboard ──────────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-pyramid'), {
+  type: 'bar',
+  data: {
+    labels: ['<18','18-25','25-35','35-45','45-55','55-65','65+'],
+    datasets: [
+      { label:'Hommes', data:[-2800,-22000,-38000,-28000,-18000,-8500,-1700], backgroundColor:teal,  borderRadius:4 },
+      { label:'Femmes', data:[800,6500,9800,7400,4200,1100,200],              backgroundColor:pink,  borderRadius:4 },
+    ]
+  },
+  options: {
+    indexAxis:'y',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>Math.abs(c.parsed.x).toLocaleString()+' joueurs'}} },
+    scales:{ x:{stacked:true,ticks:{callback:v=>Math.abs(v).toLocaleString()}}, y:{stacked:true} }
+  }
+});
+
+new Chart(document.getElementById('chart-tournois'), {
+  type:'line',
+  data:{
+    labels:['M','J','J','A','S','O','N','D','J','F','M','A'],
+    datasets:[{ data:[2400,2700,2900,2200,3100,3300,2800,2400,2700,2900,3500,3800], borderColor:amber, backgroundColor:'rgba(245,158,11,0.12)', tension:0.35, fill:true, pointRadius:3 }]
+  },
+  options:{ plugins:{legend:{display:false}} }
+});
+
+new Chart(document.getElementById('chart-regions'), {
+  type:'bar',
+  data:{
+    labels:['Île-de-France','PACA','Nouv.-Aquitaine','Auvergne-RA','Occitanie','Hauts-de-Fr.','Grand Est','Pays de Loire','Bretagne','Normandie'],
+    datasets:[{ data:[38500,22300,15800,14200,13800,9200,8100,7400,6500,5800], backgroundColor:teal, borderRadius:4 }]
+  },
+  options:{ indexAxis:'y', plugins:{legend:{display:false}} }
+});
+
+// ── Charts profil joueur ──────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-progression'), {
+  type:'line',
+  data:{
+    labels:['Mai 25','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan 26','Fév','Mar','Avr'],
+    datasets:[{ data:[22,19,17,18,15,14,13,12,14,16,15,15], borderColor:teal, backgroundColor:'rgba(13,148,136,0.15)', tension:0.35, fill:true, pointRadius:3 }]
+  },
+  options:{ plugins:{legend:{display:false}}, scales:{y:{reverse:true,title:{display:true,text:'Rang (plus bas = mieux)'}}} }
+});
+
+// ── Chronogramme parcours joueur ──────────────────────────────────────────────
+(function buildParcours() {
+  const el = document.getElementById('chart-parcours');
+  if (!el) return;
+
+  // Couleur par catégorie
+  const CAT_COLOR = {
+    'P2000':'#b45309', 'P1500':'#d97706', 'P1000':'#0d9488',
+    'P750' :'#0891b2', 'P500' :'#6366f1', 'P250' :'#8b5cf6',
+    'P100' :'#94a3b8',
+  };
+
+  // Score de performance (plus haut = meilleure place)
+  function posScore(p) {
+    const map = {1:100,2:80,3:65,4:48,5:35,6:24,7:16,8:10};
+    return map[p] || Math.max(5, Math.round(80/p));
+  }
+
+  // Mock — 24 derniers tournois d'Aurélien (chronologique)
+  const data = [
+    {d:'Mai 25',    t:'P500 Open Nice',        c:'P500',  p:3},
+    {d:'Mai 25',    t:'P1000 4Padel TLS',      c:'P1000', p:4},
+    {d:'Juin 25',   t:'P250 Lyon Padel',       c:'P250',  p:1},
+    {d:'Juin 25',   t:'P1000 Padel Horizon',   c:'P1000', p:2},
+    {d:'Juil 25',   t:'P500 TC Bordeaux',      c:'P500',  p:5},
+    {d:'Août 25',   t:'P1000 Casa Padel',      c:'P1000', p:3},
+    {d:'Sept 25',   t:'P1500 Padel Horizon',   c:'P1500', p:2},
+    {d:'Sept 25',   t:'P500 Open Lille',       c:'P500',  p:1},
+    {d:'Oct 25',    t:'P1000 TC Marseille',    c:'P1000', p:1},
+    {d:'Oct 25',    t:'P2000 Casa Padel',      c:'P2000', p:3},
+    {d:'Nov 25',    t:'P250 Open Paris',       c:'P250',  p:1},
+    {d:'Nov 25',    t:'P1000 Open Lyon',       c:'P1000', p:2},
+    {d:'Déc 25',    t:'P500 TC Lille',         c:'P500',  p:5},
+    {d:'Jan 26',    t:'P1500 Casa Padel',      c:'P1500', p:1},
+    {d:'Jan 26',    t:'P750 4Padel Bordeaux',  c:'P750',  p:4},
+    {d:'Fév 26',    t:'P500 Open Lille',       c:'P500',  p:2},
+    {d:'Fév 26',    t:'P1000 Padel Horizon',   c:'P1000', p:1},
+    {d:'Fév 26',    t:'P2000 Casa Padel',      c:'P2000', p:5},
+    {d:'Mar 26',    t:'P1000 4Padel TLS',      c:'P1000', p:1},
+    {d:'Mar 26',    t:'P750 Open Lyon',        c:'P750',  p:2},
+    {d:'Mar 26',    t:'P500 Open Paris',       c:'P500',  p:1},
+    {d:'Avr 26',    t:'P1500 Padel Horizon',   c:'P1500', p:1},
+    {d:'Avr 26',    t:'P1000 TC Marseille',    c:'P1000', p:3},
+    {d:'Avr 26',    t:'P2000 Casa Padel',      c:'P2000', p:2},
+  ];
+
+  const scores = data.map(e => posScore(e.p));
+  const colors = data.map(e => CAT_COLOR[e.c] || '#94a3b8');
+
+  // Plugin maison : nom du tournoi + 🥇 au-dessus de chaque barre
+  const labelPlugin = {
+    id:'parcoursLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, data: cd, chartArea:{top} } = chart;
+      ctx.save();
+      chart.getDatasetMeta(0).data.forEach((bar, i) => {
+        const entry = data[i];
+        const x = bar.x, y = bar.y;
+        // Médaillon victoire
+        if (entry.p === 1) {
+          ctx.font = '13px Inter';
+          ctx.textAlign = 'center';
+          ctx.fillText('🥇', x, y - 6);
+        }
+        // Nom du tournoi (vertical, petit)
+        ctx.save();
+        ctx.translate(x, y - (entry.p===1?24:10));
+        ctx.rotate(-Math.PI/2);
+        ctx.font = '9px Inter';
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'left';
+        ctx.fillText(entry.t.length > 22 ? entry.t.slice(0,20)+'…' : entry.t, 0, 0);
+        ctx.restore();
+      });
+      ctx.restore();
+    }
+  };
+
+  new Chart(el, {
+    type:'bar',
+    plugins:[labelPlugin],
+    data:{
+      labels: data.map(e => e.d),
+      datasets:[{
+        data: scores,
+        backgroundColor: colors,
+        borderRadius:4,
+        borderSkipped:false,
+      }]
+    },
+    options:{
+      layout:{ padding:{ top:90 } },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          callbacks:{
+            title: items => data[items[0].dataIndex].t,
+            label: items => {
+              const e = data[items[0].dataIndex];
+              const pos = ['','🥇 Vainqueur','🥈 Finaliste','🥉 1/2 finale','4e','5e'][e.p] || `${e.p}e`;
+              return [`${e.d}  ·  ${e.c}  ·  ${pos}`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:10}, maxRotation:45, minRotation:30} },
+        y:{ display:false, min:0, max:115 }
+      }
+    }
+  });
+
+  // Légende catégories
+  const legendEl = document.getElementById('parcours-legend');
+  if (legendEl) {
+    const cats = [...new Set(data.map(e => e.c))].sort();
+    legendEl.innerHTML = cats.map(c => `
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#475569">
+        <span style="width:10px;height:10px;border-radius:3px;background:${CAT_COLOR[c]||'#94a3b8'};flex-shrink:0"></span>
+        ${c}
+      </span>`).join('');
+  }
+})();
+
+// ── Chart club ────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-club-dist'), {
+  type:'bar',
+  data:{
+    labels:['Top 100','100–1k','1k–5k','5k–20k','20k–40k','40k–80k','80k+'],
+    datasets:[{
+      data:[8, 32, 215, 480, 290, 180, 35],
+      backgroundColor:['#0f766e','#0d9488','#14b8a6','#5eead4','#a7f3d0','#ccfbf1','#f0fdf4'],
+      borderRadius:6,
+      borderSkipped:false,
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x} joueurs`}} },
+    scales:{
+      x:{ beginAtZero:true, ticks:{callback:v=>v+''}  },
+      y:{ grid:{display:false} }
+    }
+  }
+});
+
+// ── Chart comparateur ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('chart-compare-progression'), {
+  type:'line',
+  data:{
+    labels:['Mai 25','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan 26','Fév','Mar','Avr'],
+    datasets:[
+      { label:'Aurélien', data:[22,19,17,18,15,14,13,12,14,16,15,15], borderColor:teal,    backgroundColor:'rgba(13,148,136,0.1)', tension:0.35, fill:true, pointRadius:3 },
+      { label:'Bastien',  data:[4,3,3,4,3,2,2,2,2,2,2,2],             borderColor:emerald, backgroundColor:'rgba(16,185,129,0.1)',  tension:0.35, fill:true, pointRadius:3 }
+    ]
+  },
+  options:{ plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, scales:{y:{reverse:true}} }
+});
+
+// ── Carte Leaflet ─────────────────────────────────────────────────────────────
+const map = L.map('map').setView([46.5, 2.5], 6);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution:'© OpenStreetMap, © CARTO', subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+[
+  { name:'CASA PADEL',           ll:[48.96,2.55], joueurs:1240, color:'#0d9488' },
+  { name:'PADEL HORIZON',        ll:[43.45,5.40], joueurs:980,  color:'#0d9488' },
+  { name:'4PADEL TOULOUSE',      ll:[43.60,1.44], joueurs:720,  color:'#14b8a6' },
+  { name:'PADEL CLUB MARSEILLE', ll:[43.30,5.37], joueurs:540,  color:'#14b8a6' },
+  { name:'TC LES LILAS',         ll:[48.88,2.42], joueurs:180,  color:'#5eead4' },
+].forEach(c => {
+  L.circleMarker(c.ll, { radius:Math.sqrt(c.joueurs)/3, fillColor:c.color, color:'#fff', weight:2, fillOpacity:0.85 })
+   .addTo(map).bindPopup(`<b>${c.name}</b><br>${c.joueurs} licenciés`);
+});
+
+// ── Chart distribution tournoi ────────────────────────────────────────────────
+new Chart(document.getElementById('chart-tournament-dist'), {
+  type:'bar',
+  data:{
+    labels:['Top 50','50-200','200-500','500-1k','1k-3k','3k+'],
+    datasets:[{ data:[4,12,18,14,10,6], backgroundColor:pink, borderRadius:4 }]
+  },
+  options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Nb paires'}}} }
+});
+
+// ── Heatmap activité (GitHub-like) ────────────────────────────────────────────
+(function buildHeatmap() {
+  const el = document.getElementById('heatmap');
+  if (!el) return;
+  const weeks = 53, days = 7;
+  const data = [];
+  for (let w = 0; w < weeks; w++) {
+    const month = Math.floor(w / 4.4);
+    const seasonal = (month >= 2 && month <= 7) ? 1.5 : 0.5;
+    const col = [];
+    for (let d = 0; d < days; d++) {
+      const wd = (d === 5 || d === 6) ? 2 : 1;
+      const r = Math.random();
+      let v = 0;
+      if (r > 0.85 / seasonal / wd) v = 1;
+      if (r > 0.94 / seasonal / wd) v = 2;
+      if (r > 0.98 / seasonal / wd) v = 3;
+      if (r > 0.995 / seasonal / wd) v = 4;
+      col.push(v);
+    }
+    data.push(col);
+  }
+  const colors = ['#f1f5f9','#99f6e4','#5eead4','#14b8a6','#0f766e'];
+  const months = ['Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc','Jan','Fév','Mar','Avr','Mai'];
+  let html = '<svg width="780" height="120" xmlns="http://www.w3.org/2000/svg" style="font-family:Inter">';
+  for (let m = 0; m < 13; m++)
+    html += `<text x="${20 + m*60}" y="12" font-size="10" fill="#64748b">${months[m]}</text>`;
+  ['L','M','M','J','V','S','D'].forEach((d,i) => {
+    if (i%2===1) html += `<text x="0" y="${28+i*13}" font-size="9" fill="#94a3b8">${d}</text>`;
+  });
+  for (let w = 0; w < weeks; w++)
+    for (let d = 0; d < days; d++)
+      html += `<rect x="${15+w*13}" y="${20+d*13}" width="11" height="11" rx="2" fill="${colors[data[w][d]]}" />`;
+  html += '</svg>';
+  el.innerHTML = html;
+})();
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-toggle');
+themeBtn?.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  themeBtn.querySelector('i').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  lucide.createIcons();
+});
+
+const darkStyles = document.createElement('style');
+darkStyles.textContent = `
+  body.dark-mode { background:#0f172a; color:#e2e8f0; }
+  body.dark-mode .card { background:#1e293b; border-color:#334155; }
+  body.dark-mode .card:hover { border-color:#475569; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+  body.dark-mode input, body.dark-mode select { background:#1e293b; border-color:#334155; color:#e2e8f0; }
+  body.dark-mode .btn-ghost { background:#1e293b; border-color:#334155; color:#e2e8f0; }
+  body.dark-mode .btn-ghost:hover { background:#334155; }
+  body.dark-mode .tabs { background:#1e293b; }
+  body.dark-mode .tab.active { background:#334155; color:#e2e8f0; }
+  body.dark-mode th { background:#1e293b !important; color:#94a3b8 !important; }
+  body.dark-mode tr:hover { background:#1e293b !important; }
+  body.dark-mode .border-slate-100, body.dark-mode .border-slate-200 { border-color:#334155 !important; }
+  body.dark-mode .bg-slate-50 { background:#1e293b !important; }
+  body.dark-mode .text-slate-500 { color:#94a3b8 !important; }
+  body.dark-mode .text-slate-600 { color:#cbd5e1 !important; }
+  body.dark-mode .text-slate-900 { color:#e2e8f0 !important; }
+  body.dark-mode .row-me, body.dark-mode .row-me td { background:#2d2106 !important; }
+  body.dark-mode .leaderboard-scroll { scrollbar-color:#334155 #1e293b; }
+`;
+document.head.appendChild(darkStyles);
+
+// ── Init Lucide ───────────────────────────────────────────────────────────────
+lucide.createIcons();
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SPRINT 1 — Fondations UX
+// ══════════════════════════════════════════════════════════════════════════════
+
+const API_BASE = 'http://localhost:5000';
+
+// ── Utilitaires ───────────────────────────────────────────────────────────────
+
+function debounce(fn, ms) {
+  let t;
+  return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+}
+
+async function apiFetch(path) {
+  try {
+    const r = await fetch(API_BASE + path, { signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+// ── 3. Joueur par défaut — localStorage ──────────────────────────────────────
+
+const LS_PLAYER = 'padel_default_player';
+
+function saveDefaultPlayer(p) {
+  try { localStorage.setItem(LS_PLAYER, JSON.stringify(p)); } catch {}
+}
+function loadDefaultPlayer() {
+  try { return JSON.parse(localStorage.getItem(LS_PLAYER)); } catch { return null; }
+}
+
+// Pré-remplir la barre de recherche globale si un joueur est mémorisé
+(function applyStoredPlayer() {
+  const p = loadDefaultPlayer();
+  if (!p) return;
+  const inp = document.getElementById('global-search');
+  if (inp && !inp.value) inp.value = p.nom_complet || '';
+})();
+
+// ── 4. Badge "À son meilleur" ────────────────────────────────────────────────
+
+function checkAtBest(classement, meilleur) {
+  const badge = document.getElementById('badge-at-best');
+  if (!badge) return;
+  // classement actuel ≤ meilleur historique = record égalé ou battu
+  badge.style.display = (classement && meilleur && classement <= meilleur) ? 'inline-block' : 'none';
+}
+// Mock : Aurélien #15 actuel, #12 meilleur → pas au record
+checkAtBest(15, 12);
+
+// ── 5. Autocomplete ───────────────────────────────────────────────────────────
+
+function renderAcItems(popup, players, onSelect) {
+  if (!players || !players.length) { popup.hidden = true; return; }
+  popup.innerHTML = players.map(p => {
+    const initials = ((p.prenom||'')[0]||'') + ((p.nom||'')[0]||'');
+    const cl  = p.classement ? '#' + p.classement.toLocaleString('fr-FR') : '';
+    const sub = [p.club, p.ville].filter(Boolean).join(' · ');
+    return `<div class="ac-item" data-id="${p.id}">
+      <div class="avatar av-sm" style="background:var(--primary);font-size:11px;flex-shrink:0">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nom_complet}</div>
+        <div style="font-size:11px;color:#94a3b8">${sub}</div>
+      </div>
+      <div class="ac-rank">${cl}</div>
+    </div>`;
+  }).join('');
+  popup.hidden = false;
+  popup.querySelectorAll('.ac-item').forEach((el,i) => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); onSelect(players[i]); popup.hidden = true; });
+  });
+}
+
+function setupAutocomplete(inputId, popupId, onSelect) {
+  const input = document.getElementById(inputId);
+  const popup = document.getElementById(popupId);
+  if (!input || !popup) return;
+
+  const doSearch = debounce(async q => {
+    if (q.length < 2) { popup.hidden = true; return; }
+    const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`);
+    renderAcItems(popup, data || [], onSelect);
+  }, 250);
+
+  input.addEventListener('input',   e => doSearch(e.target.value.trim()));
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') popup.hidden = true; });
+  input.addEventListener('blur',    ()  => setTimeout(() => { popup.hidden = true; }, 150));
+}
+
+// Recherche globale → profil joueur
+setupAutocomplete('global-search', 'ac-global', player => {
+  const inp = document.getElementById('global-search');
+  if (inp) inp.value = player.nom_complet;
+  saveDefaultPlayer(player);
+  document.querySelector('[data-view="player"]')?.click();
+});
+
+// Recherche leaderboard → filtre
+setupAutocomplete('lb-search', 'ac-lb', player => {
+  const inp = document.getElementById('lb-search');
+  if (inp) inp.value = player.nom_complet;
+  filterLeaderboard();
+});
+
+// ── 10. Filtre leaderboard client-side ───────────────────────────────────────
+
+function filterLeaderboard() {
+  const q      = (document.getElementById('lb-search')?.value  || '').toLowerCase().trim();
+  const region = (document.getElementById('lb-region')?.value  || '').toLowerCase();
+  const club   = (document.getElementById('lb-club')?.value    || '').toLowerCase();
+
+  const rows = document.querySelectorAll('#lb-tbody tr:not(#lb-sentinel-row)');
+  let visible = 0;
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    const ok = (!q || text.includes(q)) && (!region || text.includes(region)) && (!club || text.includes(club));
+    row.style.display = ok ? '' : 'none';
+    if (ok) visible++;
+  });
+}
+
+document.getElementById('lb-search') ?.addEventListener('input',  debounce(filterLeaderboard, 200));
+document.getElementById('lb-region') ?.addEventListener('change', filterLeaderboard);
+document.getElementById('lb-club')   ?.addEventListener('change', filterLeaderboard);
+
+// Onglets Hommes / Femmes
+document.querySelectorAll('#lb-sex-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#lb-sex-tabs .tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    filterLeaderboard();
+  });
+});
+
+// ── 6. Fil d'Ariane suggesteur ────────────────────────────────────────────────
+
+const suggStack = [];
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('sugg-breadcrumb');
+  if (!bc) return;
+  if (!suggStack.length) { bc.style.display = 'none'; return; }
+  bc.style.display = 'flex';
+  const parts = [
+    `<i data-lucide="home" class="w-3 h-3"></i>`,
+    `<a onclick="resetSuggView()">Suggesteur</a>`,
+  ];
+  suggStack.forEach((s,i) => {
+    parts.push('<span class="breadcrumb-sep">›</span>');
+    if (i < suggStack.length - 1)
+      parts.push(`<a onclick="popSuggView(${i})">${s.label}</a>`);
+    else
+      parts.push(`<span style="color:#0f172a;font-weight:500">${s.label}</span>`);
+  });
+  bc.innerHTML = parts.join('');
+  lucide.createIcons();
+}
+
+function pushSuggView(label, id) { suggStack.push({label, id}); renderBreadcrumb(); }
+function popSuggView(idx)        { suggStack.splice(idx+1); renderBreadcrumb(); }
+function resetSuggView()         { suggStack.length = 0; renderBreadcrumb(); }
+
+function suggToPlayer(name, id) {
+  pushSuggView(name, id || null);
+  document.querySelector('[data-view="player"]')?.click();
+}
+
+// ── 7. Trophy shelf — IntersectionObserver + stagger ─────────────────────────
+
+(function initTrophyShelf() {
+  const shelf = document.getElementById('trophy-shelf');
+  if (!shelf) return;
+
+  function revealAll() {
+    shelf.querySelectorAll('.trophy-cat:not(.revealed)')
+         .forEach((el,i) => setTimeout(() => el.classList.add('revealed'), i * 80));
+  }
+
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) revealAll();
+  }, { threshold: 0.1 }).observe(shelf);
+
+  document.querySelector('[data-view="player"]')?.addEventListener('click', () => {
+    setTimeout(revealAll, 320);
+  });
+})();
+
+// ── 8. Infinite scroll leaderboard ───────────────────────────────────────────
+
+(function initInfiniteScroll() {
+  const sentinel = document.getElementById('lb-sentinel');
+  const tbody    = document.getElementById('lb-tbody');
+  if (!sentinel || !tbody) return;
+
+  let page = 1, loading = false;
+  const palette = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6','#0ea5e9','#f97316'];
+
+  function loadMore() {
+    if (loading || page > 5) {
+      if (page > 5) sentinel.innerHTML = '<div style="text-align:center;padding:10px 0;font-size:12px;color:#94a3b8">— Fin du classement (démo) —</div>';
+      return;
+    }
+    loading = true;
+    sentinel.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:12px 0">
+      <div class="skeleton sk-text" style="width:160px;height:11px"></div>
+    </div>`;
+
+    setTimeout(() => {
+      const start = 14336 + (page-1) * 8;
+      const rows = Array.from({length:8}, (_,i) => {
+        const rank  = start + i;
+        const color = palette[(rank*3+i) % palette.length];
+        const ini   = String.fromCharCode(65+((rank*7)%26)) + String.fromCharCode(65+((rank*13)%26));
+        return `<tr class="border-t border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 text-slate-500">${rank.toLocaleString('fr-FR')}</td>
+          <td class="py-3 px-4"><div class="flex items-center gap-2">
+            <div class="avatar av-sm" style="background:${color};font-size:11px">${ini}</div>
+            <span class="font-medium text-slate-700">Joueur #${rank}</span>
+          </div></td>
+          <td class="py-3 px-4 text-slate-500">—</td>
+          <td class="py-3 px-4 text-slate-500">—</td>
+          <td class="py-3 px-4 text-right text-slate-400">#${rank}</td>
+          <td class="py-3 px-4 text-right">${3+(rank%20)}</td>
+          <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('lb-sentinel-row').insertAdjacentHTML('beforebegin', rows);
+      sentinel.innerHTML = '';
+      page++;
+      loading = false;
+    }, 700);
+  }
+
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) loadMore();
+  }, { rootMargin:'80px' }).observe(sentinel);
+})();
+
+// ── 9. Scroll vers la ligne "toi" à l'ouverture du leaderboard ───────────────
+
+document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', () => {
+  setTimeout(() => {
+    document.getElementById('row-me')?.scrollIntoView({ block:'center', behavior:'smooth' });
+  }, 380);
+});
+
+
+// ── API Wake-up & Live Status ─────────────────────────────────────────────────
+(function initApiStatus() {
+  const badge   = document.getElementById('api-status-badge');
+  const label   = document.getElementById('api-status-text');
+  const toast   = document.getElementById('api-toast');
+  const cdEl    = document.getElementById('toast-countdown');
+  let   ready   = false;
+  let   cdTimer = null;
+
+  // Countdown displayed in the toast
+  function startCountdown(seconds) {
+    let s = seconds;
+    if (cdEl) cdEl.textContent = s;
+    cdTimer = setInterval(() => {
+      s--;
+      if (cdEl) cdEl.textContent = Math.max(0, s);
+      if (s <= 0) clearInterval(cdTimer);
+    }, 1000);
+  }
+
+  // Show / hide the wake-up toast
+  function showToast() {
+    if (!toast) return;
+    toast.classList.add('show');
+    startCountdown(30);
+  }
+  function hideToast() {
+    if (!toast) return;
+    toast.classList.remove('show');
+    clearInterval(cdTimer);
+  }
+
+  // Update badge state
+  function setBadge(state) { // 'pending' | 'live' | 'offline'
+    if (!badge || !label) return;
+    badge.className = 'api-badge api-' + state;
+    badge.title = state === 'live'
+      ? '✅ Serveur connecté — données en temps réel'
+      : state === 'pending'
+        ? '⏳ Démarrage du serveur (~30s)…'
+        : '⚠️ Serveur indisponible — données statiques uniquement';
+    label.textContent = state === 'live' ? 'Live' : state === 'pending' ? 'Connexion…' : 'Hors ligne';
+  }
+
+  // Called when API is confirmed alive
+  function onApiReady() {
+    if (ready) return;
+    ready = true;
+    window.API_READY = true;
+    setBadge('live');
+    hideToast();
+    // Dispatch event so other parts of the app can react
+    document.dispatchEvent(new CustomEvent('api:ready'));
+  }
+
+  // Poll /api/health with exponential back-off
+  async function poll(attempt) {
+    if (ready) return;
+    try {
+      const r = await fetch(API_BASE + '/api/health', { signal: AbortSignal.timeout(6000) });
+      if (r.ok) { onApiReady(); return; }
+    } catch {}
+    if (attempt >= 15) { setBadge('offline'); hideToast(); return; }
+    const delay = attempt === 0 ? 800 : Math.min(4000, 1500 * Math.pow(1.3, attempt - 1));
+    setTimeout(() => poll(attempt + 1), delay);
+  }
+
+  // Guard: intercept search attempts before API ready
+  const globalSearch = document.getElementById('global-search');
+  if (globalSearch) {
+    globalSearch.addEventListener('focus', () => {
+      if (!window.API_READY) showToast();
+    });
+  }
+  // Auto-hide toast when user clicks away
+  document.addEventListener('click', e => {
+    if (toast && !toast.contains(e.target) && e.target !== globalSearch) hideToast();
+  });
+
+  // Kick off immediately
+  window.API_READY = false;
+  setBadge('pending');
+  poll(0);
+
+  // If on localhost → mark live instantly
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    setTimeout(() => { if (!ready) onApiReady(); }, 1200);
+  }
+})();
+
+// ── Percentile bars animation ─────────────────────────────────────
+(function initPercentileBars() {
+  const card = document.getElementById('card-percentile');
+  if (!card) return;
+  let animated = false;
+  function animateBars() {
+    if (animated) return;
+    animated = true;
+    card.querySelectorAll('.pct-fill').forEach((bar, i) => {
+      const row = bar.closest('.pct-row');
+      const pct = row ? parseFloat(row.dataset.pct) : 0;
+      setTimeout(() => { bar.style.width = pct + '%'; }, i * 120);
+    });
+  }
+  const obs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) { animateBars(); obs.disconnect(); }
+  }, { threshold: 0.2 });
+  obs.observe(card);
+})();
+
+</script>
+
+<!-- API wake-up toast -->
+<div id="api-toast">
+  <div class="toast-spinner"></div>
+  <div>
+    <div class="font-semibold text-sm">Serveur en cours de démarrage</div>
+    <div class="text-xs text-slate-300">Disponible dans <span id="toast-countdown">30</span>s — les données statiques sont déjà là</div>
+  </div>
+</div>
+
+</body>
+</html>

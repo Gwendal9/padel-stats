@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: padel-stats
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r dashboard/requirements.txt
+    startCommand: cd dashboard && gunicorn api:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: padel-db
+          property: connectionString
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+databases:
+  - name: padel-db
+    plan: free
+    region: frankfurt
+    databaseName: padel
+    user: padel
