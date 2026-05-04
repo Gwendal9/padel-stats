@@ -10,12 +10,14 @@ from contextlib import contextmanager
 DATABASE_URL = os.environ.get("DATABASE_URL")
 USE_POSTGRES = bool(DATABASE_URL)
 
+# Toujours défini (utilisé par graph_engine et autres modules en mode SQLite)
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "tenup.db")
+
 if USE_POSTGRES:
     import psycopg2
     import psycopg2.extras
 else:
     import sqlite3
-    DB_PATH = os.path.join(os.path.dirname(__file__), "..", "tenup.db")
 
 
 def _adapt(query: str, params: tuple) -> tuple[str, tuple]:
