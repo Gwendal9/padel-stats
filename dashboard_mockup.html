@@ -807,8 +807,14 @@ function posScore(p) {
   return map[p] || Math.max(5, Math.round(80/p));
 }
 
+// ── Helper null-safe : évite un crash si le canvas est absent (vue non encore créée)
+function makeChart(id, cfg) {
+  const el = document.getElementById(id);
+  return el ? new Chart(el, cfg) : null;
+}
+
 // ── Charts dashboard (initialisés vides, remplis par loadDashboardStats) ──────
-const chartPyramid = new Chart(document.getElementById('chart-pyramid'), {
+const chartPyramid = makeChart('chart-pyramid', {
   type:'bar',
   data:{ labels:['<18','18-25','26-35','36-45','46-55','56-65','65+'], datasets:[
     { label:'Hommes', data:[], backgroundColor:teal,  borderRadius:4 },
@@ -821,20 +827,20 @@ const chartPyramid = new Chart(document.getElementById('chart-pyramid'), {
   }
 });
 
-const chartTournois = new Chart(document.getElementById('chart-tournois'), {
+const chartTournois = makeChart('chart-tournois', {
   type:'line',
   data:{ labels:[], datasets:[{ data:[], borderColor:amber, backgroundColor:'rgba(245,158,11,0.12)', tension:0.35, fill:true, pointRadius:3 }] },
   options:{ plugins:{legend:{display:false}} }
 });
 
-const chartRegions = new Chart(document.getElementById('chart-regions'), {
+const chartRegions = makeChart('chart-regions', {
   type:'bar',
   data:{ labels:[], datasets:[{ data:[], backgroundColor:teal, borderRadius:4 }] },
   options:{ indexAxis:'y', plugins:{legend:{display:false}} }
 });
 
 // Chart classements dans la sidebar (était chart-club-dist — rebaptisé)
-const chartRankingDist = new Chart(document.getElementById('chart-club-dist'), {
+const chartRankingDist = makeChart('chart-club-dist', {
   type:'bar',
   data:{
     labels:['Top 100','100–1k','1k–5k','5k–20k','20k–40k','40k–80k','80k+'],
@@ -846,7 +852,7 @@ const chartRankingDist = new Chart(document.getElementById('chart-club-dist'), {
   }
 });
 
-const chartTournamentDist = new Chart(document.getElementById('chart-tournament-dist'), {
+const chartTournamentDist = makeChart('chart-tournament-dist', {
   type:'bar',
   data:{
     labels:['≤8 paires','9–16','17–32','33–64','65–128','128+'],
@@ -856,7 +862,7 @@ const chartTournamentDist = new Chart(document.getElementById('chart-tournament-
 });
 
 // ── Chart comparateur ─────────────────────────────────────────────────────────
-const chartCompare = new Chart(document.getElementById('chart-compare-progression'), {
+const chartCompare = makeChart('chart-compare-progression', {
   type:'line',
   data:{ labels:[], datasets:[
     { label:'Joueur 1', data:[], borderColor:teal,    backgroundColor:'rgba(13,148,136,0.1)', tension:0.35, fill:true, pointRadius:3 },
@@ -871,28 +877,38 @@ async function loadDashboardStats() {
   if (!stats) return;
 
   // Pyramide âges
-  const hommes = stats.pyramid.hommes.map(v => -v);  // négatifs pour côté gauche
-  chartPyramid.data.datasets[0].data = hommes;
-  chartPyramid.data.datasets[1].data = stats.pyramid.femmes;
-  chartPyramid.update();
+  if (chartPyramid) {
+    const hommes = stats.pyramid.hommes.map(v => -v);
+    chartPyramid.data.datasets[0].data = hommes;
+    chartPyramid.data.datasets[1].data = stats.pyramid.femmes;
+    chartPyramid.update();
+  }
 
   // Activité mensuelle
-  chartTournois.data.labels = stats.monthly.labels;
-  chartTournois.data.datasets[0].data = stats.monthly.data;
-  chartTournois.update();
+  if (chartTournois) {
+    chartTournois.data.labels = stats.monthly.labels;
+    chartTournois.data.datasets[0].data = stats.monthly.data;
+    chartTournois.update();
+  }
 
   // Top villes
-  chartRegions.data.labels   = stats.top_villes.map(v => v.ville);
-  chartRegions.data.datasets[0].data = stats.top_villes.map(v => v.nb);
-  chartRegions.update();
+  if (chartRegions) {
+    chartRegions.data.labels   = stats.top_villes.map(v => v.ville);
+    chartRegions.data.datasets[0].data = stats.top_villes.map(v => v.nb);
+    chartRegions.update();
+  }
 
   // Distribution classements
-  chartRankingDist.data.datasets[0].data = stats.ranking_dist;
-  chartRankingDist.update();
+  if (chartRankingDist) {
+    chartRankingDist.data.datasets[0].data = stats.ranking_dist;
+    chartRankingDist.update();
+  }
 
   // Distribution taille tournois
-  chartTournamentDist.data.datasets[0].data = stats.tournament_dist;
-  chartTournamentDist.update();
+  if (chartTournamentDist) {
+    chartTournamentDist.data.datasets[0].data = stats.tournament_dist;
+    chartTournamentDist.update();
+  }
 }
 loadDashboardStats();
 
@@ -1352,15 +1368,7 @@ function normalizeVille(v) {
   });
 })();
 
-// ── Chart distribution tournoi ────────────────────────────────────────────────
-new Chart(document.getElementById('chart-tournament-dist'), {
-  type:'bar',
-  data:{
-    labels:['Top 50','50-200','200-500','500-1k','1k-3k','3k+'],
-    datasets:[{ data:[4,12,18,14,10,6], backgroundColor:pink, borderRadius:4 }]
-  },
-  options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Nb paires'}}} }
-});
+// (chart-tournament-dist géré par makeChart dans l'init des charts dashboard)
 
 // ── Heatmap : voir buildHeatmap() ci-dessus — appelée par renderProfile() ──
 
