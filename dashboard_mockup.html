@@ -1503,9 +1503,9 @@ function debounce(fn, ms) {
 async function apiFetch(path, timeout = 10000) {
   try {
     const r = await fetch(API_BASE + path, { signal: AbortSignal.timeout(timeout) });
-    if (!r.ok) return null;
+    if (!r.ok) { console.warn('[apiFetch]', path, r.status); return null; }
     return await r.json();
-  } catch { return null; }
+  } catch(e) { console.warn('[apiFetch]', path, e?.name || e); return null; }
 }
 
 // ── 3. Joueur par défaut — localStorage ──────────────────────────────────────
@@ -2467,7 +2467,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   async function ping() {
     attempt++;
     try {
-      const data = await apiFetch('/api/health');
+      const data = await apiFetch('/api/health', 8000);  // fail-fast pour retry rapide
       if (data && data.status === 'ok') {
         ready = true;
         clearInterval(retryId);
@@ -2489,16 +2489,17 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     return false;
   }
 
-  // Ping immédiat, toast après 3s si toujours pas prêt
-  ping().then(ok => {
-    if (ok) return;
-    setTimeout(() => {
-      if (ready) return;
-      toast?.classList.add('show');
-      startElapsed();
-    }, 3000);
-    retryId = setInterval(() => ping(), 4000);
-  });
+  // Toast immédiat — l'utilisateur sait toujours ce qui se passe
+  toast?.classList.add('show');
+  startElapsed();
+
+  // Pings séquentiels (évite concurrence) : 8s timeout, 2s gap
+  (async function doPings() {
+    while (!ready) {
+      await ping();
+      if (!ready) await new Promise(r => setTimeout(r, 2000));
+    }
+  })();
 })();
 
 </script>
