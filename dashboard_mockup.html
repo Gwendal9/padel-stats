@@ -733,6 +733,15 @@
   </main>
 </div>
 
+<!-- API wake-up toast — must be BEFORE <script> so getElementById finds it -->
+<div id="api-toast">
+  <div class="toast-spinner"></div>
+  <div>
+    <div style="font-weight:600;font-size:13px">Serveur en cours de démarrage…</div>
+    <div style="font-size:11px;opacity:.75;margin-top:2px">Prêt dans ~<span id="toast-countdown">55</span>s (Render gratuit)</div>
+  </div>
+</div>
+
 <script>
 const titles = {
   dashboard:   ['Tableau de bord',     "Vue d'ensemble du padel français"],
@@ -2327,92 +2336,68 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
 // ── API Wake-up & Live Status ─────────────────────────────────────────────────
 (function initApiStatus() {
-  const badge   = document.getElementById('api-status-badge');
-  const label   = document.getElementById('api-status-text');
-  const toast   = document.getElementById('api-toast');
-  const cdEl    = document.getElementById('toast-countdown');
-  let   ready   = false;
-  let   cdTimer = null;
-
-  // Countdown displayed in the toast
-  function startCountdown(seconds) {
-    let s = seconds;
-    if (cdEl) cdEl.textContent = s;
-    cdTimer = setInterval(() => {
-      s--;
-      if (cdEl) cdEl.textContent = Math.max(0, s);
-      if (s <= 0) clearInterval(cdTimer);
-    }, 1000);
-  }
-
-  function stopCountdown() {
-    clearInterval(cdTimer);
-    cdTimer = null;
-  }
+  const badge = document.getElementById('api-status-badge');
+  const label = document.getElementById('api-status-text');
+  const toast = document.getElementById('api-toast');
+  const cdEl  = document.getElementById('toast-countdown');
+  let ready   = false;
+  let retryId = null;
+  let cdTimer = null;
+  let attempt = 0;
 
   function setBadge(state) {
     if (!badge) return;
-    badge.className = 'api-badge ' + (state === 'live' ? 'api-live' : state === 'offline' ? 'api-offline' : 'api-pending');
+    badge.className = 'api-badge ' + { live:'api-live', offline:'api-offline', pending:'api-pending' }[state];
     const dot = badge.querySelector('.api-dot');
     if (dot) dot.className = 'api-dot';
     if (label) label.textContent = state === 'live' ? 'Live' : state === 'offline' ? 'Hors ligne' : 'Connexion…';
   }
 
-  async function ping() {
-    try {
-      const resp = await fetch(
-        (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-          ? 'http://localhost:5000' : '') + '/api/health',
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (resp.ok) {
-        ready = true;
-        setBadge('live');
-        stopCountdown();
-        if (toast) toast.classList.remove('show');
-        // Re-trigger dashboard loads if charts never loaded (cold start)
-        if (typeof loadDashboardStats === 'function')  loadDashboardStats();
-        if (typeof loadDashboardTops  === 'function')  loadDashboardTops();
-        if (typeof loadMovers         === 'function')  loadMovers();
-        if (typeof loadLeaderboard    === 'function' && window.lbState?.offset === 0) loadLeaderboard(true);
-      } else {
-        setBadge('offline');
-      }
-    } catch(e) {
-      if (!ready) {
-        setBadge('pending');
-      }
-    }
+  function startCountdown(s) {
+    if (cdEl) cdEl.textContent = s;
+    let rem = s;
+    cdTimer = setInterval(() => {
+      rem = Math.max(0, rem - 1);
+      if (cdEl) cdEl.textContent = rem;
+      if (rem <= 0) clearInterval(cdTimer);
+    }, 1000);
   }
 
-  // Initial ping — if not ready after 2s, show wake-up toast
-  setTimeout(async () => {
-    await ping();
-    if (!ready) {
-      if (toast) toast.classList.add('show');
-      startCountdown(55);
-      // Retry every 5s until ready
-      const retry = setInterval(async () => {
-        await ping();
-        if (ready) {
-          clearInterval(retry);
-          setTimeout(() => { if (toast) toast.classList.remove('show'); }, 1500);
-        }
-      }, 5000);
-    }
-  }, 2000);
+  async function ping() {
+    attempt++;
+    try {
+      const data = await apiFetch('/api/health');   // uses apiFetch → 10s timeout
+      if (data && data.status === 'ok') {
+        ready = true;
+        clearInterval(retryId);
+        clearInterval(cdTimer);
+        setBadge('live');
+        if (toast) { toast.classList.remove('show'); }
+        // Charts may have failed on cold-start — reload them now
+        loadDashboardStats?.();
+        loadDashboardTops?.();
+        loadMovers?.();
+        if (window.lbState?.offset === 0) loadLeaderboard?.(true);
+        return true;
+      }
+    } catch(e) { /* network error */ }
+    setBadge('pending');
+    return false;
+  }
+
+  // Ping immediately, then show toast after 3s if still not ready
+  ping().then(ok => {
+    if (ok) return;
+    setTimeout(() => {
+      if (ready) return;
+      if (toast) { toast.classList.add('show'); startCountdown(60); }
+    }, 3000);
+    // Retry every 4s
+    retryId = setInterval(() => ping(), 4000);
+  });
 })();
 
 </script>
-
-<!-- API wake-up toast -->
-<div id="api-toast">
-  <div class="toast-spinner"></div>
-  <div>
-    <div style="font-weight:600;font-size:13px">Serveur en cours de démarrage…</div>
-    <div style="font-size:11px;opacity:.75;margin-top:2px">Prêt dans ~<span id="toast-countdown">55</span>s (Render gratuit)</div>
-  </div>
-</div>
 
 </body>
 </html>
