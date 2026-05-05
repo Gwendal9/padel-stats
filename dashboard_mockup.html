@@ -1403,9 +1403,9 @@ function debounce(fn, ms) {
   return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
 }
 
-async function apiFetch(path) {
+async function apiFetch(path, timeout = 10000) {
   try {
-    const r = await fetch(API_BASE + path, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(API_BASE + path, { signal: AbortSignal.timeout(timeout) });
     if (!r.ok) return null;
     return await r.json();
   } catch { return null; }
@@ -2370,6 +2370,11 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
         setBadge('live');
         stopCountdown();
         if (toast) toast.classList.remove('show');
+        // Re-trigger dashboard loads if charts never loaded (cold start)
+        if (typeof loadDashboardStats === 'function')  loadDashboardStats();
+        if (typeof loadDashboardTops  === 'function')  loadDashboardTops();
+        if (typeof loadMovers         === 'function')  loadMovers();
+        if (typeof loadLeaderboard    === 'function' && window.lbState?.offset === 0) loadLeaderboard(true);
       } else {
         setBadge('offline');
       }
