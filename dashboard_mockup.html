@@ -1320,7 +1320,7 @@ function renderProfile(data) {
 function buildHeatmap(dates) {
   const el = document.getElementById('heatmap');
   if (!el) return;
-  if (!dates || !dates.length) { el.innerHTML = '<div class="text-xs text-slate-400 py-2">Aucune donnée d'activité</div>'; return; }
+  if (!dates || !dates.length) { el.innerHTML = '<div class="text-xs text-slate-400 py-2">Aucune donnée d\'activité</div>'; return; }
 
   // Parser les dates DD/MM/YYYY ou YYYY-MM-DD
   const counts = {};
@@ -2158,7 +2158,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     }
     const pid = gCurrentPlayerId;
     if (!pid) {
-      alert('Recherche un joueur d'abord !');
+      alert("Recherche un joueur d'abord !");
       return;
     }
 
