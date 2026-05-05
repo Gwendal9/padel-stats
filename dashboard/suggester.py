@@ -74,8 +74,8 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
           AND j.sexe   = ?
           AND j.classement BETWEEN ? AND ?
           AND j.classement IS NOT NULL
-        GROUP BY j.id_fft
-        HAVING nb_tournois >= 3
+        GROUP BY j.id_fft, j.nom, j.prenom, j.classement, j.club_nom, j.ville, j.naissance
+        HAVING COUNT(DISTINCT p.id_tournoi) >= 3
         """,
         (player_id, ref_sexe, cl_min, cl_max),
     )
@@ -145,6 +145,4 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
             "deja_joue":   False,
         })
 
-    # Trier par score décroissant, couper à n
-    scored.sort(key=lambda x: -x["score"])
-    return scored[:n]
+    # Trier par score décroiss

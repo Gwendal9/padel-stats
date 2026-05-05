@@ -26,6 +26,7 @@ from flask_cors import CORS
 from graph_engine import engine
 from player_profile import search_players, get_player_profile
 from suggester import suggest_partners
+from db import USE_POSTGRES
 
 app = Flask(__name__)
 CORS(app)
@@ -115,28 +116,42 @@ def route_stats():
         else:             b = 6
         pyramid[sexe][b] += 1
 
-    date_rows = fetchall(
-        "SELECT DISTINCT id_tournoi, date_tournoi FROM participations WHERE date_tournoi IS NOT NULL"
-    )
-    monthly = defaultdict(int)
-    for r in date_rows:
-        d = r.get("date_tournoi") or ""
-        try:
-            if len(d) == 10 and d[2] == "/":
-                mois = d[3:5] + "/" + d[6:]
-            elif len(d) == 10 and d[4] == "-":
-                mois = d[5:7] + "/" + d[:4]
-            else:
-                continue
-            monthly[mois] += 1
-        except Exception:
-            continue
-
-    def _sort_key(m):
-        mm, yyyy = m.split("/")
-        return (int(yyyy), int(mm))
-
-    last_12 = sorted(monthly.items(), key=lambda x: _sort_key(x[0]))[-12:]
+    # Activité mensuelle — agrégée en SQL
+    try:
+        if USE_POSTGRES:
+            month_rows = fetchall("""
+                SELECT TO_CHAR(MIN(date_tournoi::date), 'MM/YYYY') AS mois,
+                       COUNT(DISTINCT id_tournoi) AS nb
+                FROM participations
+                WHERE date_tournoi IS NOT NULL AND date_tournoi ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                GROUP BY DATE_TRUNC('month', date_tournoi::date)
+                ORDER BY DATE_TRUNC('month', date_tournoi::date) DESC
+                LIMIT 12
+            """)
+            last_12 = [(r["mois"], r["nb"]) for r in reversed(month_rows)]
+        else:
+            date_rows = fetchall(
+                "SELECT DISTINCT id_tournoi, date_tournoi FROM participations WHERE date_tournoi IS NOT NULL"
+            )
+            monthly = defaultdict(int)
+            for r in date_rows:
+                d = r.get("date_tournoi") or ""
+                try:
+                    if len(d) == 10 and d[2] == "/":
+                        mois = d[3:5] + "/" + d[6:]
+                    elif len(d) == 10 and d[4] == "-":
+                        mois = d[5:7] + "/" + d[:4]
+                    else:
+                        continue
+                    monthly[mois] += 1
+                except Exception:
+                    continue
+            def _sort_key(m):
+                mm, yyyy = m.split("/")
+                return (int(yyyy), int(mm))
+            last_12 = sorted(monthly.items(), key=lambda x: _sort_key(x[0]))[-12:]
+    except Exception:
+        last_12 = []
 
     villes = fetchall("""
         SELECT UPPER(TRIM(ville)) AS ville, COUNT(*) AS nb
@@ -145,18 +160,36 @@ def route_stats():
         ORDER BY nb DESC LIMIT 10
     """)
 
-    tourn_sizes = fetchall(
+    # Distribution taille tournois — agrégé directement en SQL (plus rapide)
+    tdist_rows = fetchall("""
+        SELECT
+          COUNT(*) FILTER (WHERE nb_parts <= 16)                    AS b1,
+          COUNT(*) FILTER (WHERE nb_parts BETWEEN 17 AND 32)        AS b2,
+          COUNT(*) FILTER (WHERE nb_parts BETWEEN 33 AND 64)        AS b3,
+          COUNT(*) FILTER (WHERE nb_parts BETWEEN 65 AND 128)       AS b4,
+          COUNT(*) FILTER (WHERE nb_parts BETWEEN 129 AND 256)      AS b5,
+          COUNT(*) FILTER (WHERE nb_parts > 256)                    AS b6
+        FROM (
+          SELECT id_tournoi, COUNT(*) AS nb_parts
+          FROM participations GROUP BY id_tournoi
+        ) t
+    """) if USE_POSTGRES else fetchall(
         "SELECT id_tournoi, COUNT(*) AS nb_parts FROM participations GROUP BY id_tournoi"
     )
-    tdist = [0, 0, 0, 0, 0, 0]
-    for r in tourn_sizes:
-        pairs = (r.get("nb_parts") or 0) // 2
-        if pairs <= 8:      tdist[0] += 1
-        elif pairs <= 16:   tdist[1] += 1
-        elif pairs <= 32:   tdist[2] += 1
-        elif pairs <= 64:   tdist[3] += 1
-        elif pairs <= 128:  tdist[4] += 1
-        else:               tdist[5] += 1
+    if USE_POSTGRES and tdist_rows:
+        r = tdist_rows[0]
+        tdist = [r.get("b1",0) or 0, r.get("b2",0) or 0, r.get("b3",0) or 0,
+                 r.get("b4",0) or 0, r.get("b5",0) or 0, r.get("b6",0) or 0]
+    else:
+        tdist = [0, 0, 0, 0, 0, 0]
+        for r in (tdist_rows or []):
+            pairs = (r.get("nb_parts") or 0) // 2
+            if pairs <= 8:      tdist[0] += 1
+            elif pairs <= 16:   tdist[1] += 1
+            elif pairs <= 32:   tdist[2] += 1
+            elif pairs <= 64:   tdist[3] += 1
+            elif pairs <= 128:  tdist[4] += 1
+            else:               tdist[5] += 1
 
     return jsonify({
         "ranking_dist": [
@@ -279,57 +312,4 @@ def route_movers():
 
     baisse = fetchall(
         "SELECT id_fft, nom, prenom, classement, meilleur_classement, club_nom, ville, sexe,"
-        " (classement - meilleur_classement) AS chute"
-        " FROM joueurs WHERE classement IS NOT NULL AND meilleur_classement IS NOT NULL"
-        " AND classement > meilleur_classement AND nom IS NOT NULL AND nom != '' " + sf +
-        " ORDER BY chute DESC LIMIT ?",
-        bp + (n,),
-    )
-
-    def fmt(r, delta=None):
-        prenom = (r.get("prenom") or "").strip()
-        return {
-            "id":                  r["id_fft"],
-            "nom_complet":         (prenom + " " + (r.get("nom") or "")).strip(),
-            "classement":          r["classement"],
-            "meilleur_classement": r["meilleur_classement"],
-            "club":                r["club_nom"] or "",
-            "ville":               r["ville"] or "",
-            "delta":               delta,
-        }
-
-    return jsonify({
-        "hausse": [fmt(r) for r in hausse],
-        "baisse": [fmt(r, r["chute"]) for r in baisse],
-    })
-
-
-@app.get("/api/clubs")
-def route_clubs():
-    from db import fetchall
-    top = min(int(request.args.get("top", 100)), 500)
-    rows = fetchall("""
-        SELECT club_nom, ville, COUNT(*) AS nb_joueurs
-        FROM joueurs
-        WHERE club_nom IS NOT NULL AND club_nom != ''
-          AND ville    IS NOT NULL AND ville    != ''
-        GROUP BY club_nom, ville
-        ORDER BY nb_joueurs DESC LIMIT ?
-    """, (top,))
-    return jsonify([{"nom": r["club_nom"], "ville": r["ville"], "nb": r["nb_joueurs"]} for r in rows])
-
-
-@app.get("/api/health")
-def route_health():
-    return jsonify({
-        "status": "ok",
-        "graph_loaded": engine._loaded,
-        "nb_nodes": len(engine.player_info),
-        "nb_links": sum(len(v) for v in engine.graph.values()) // 2,
-    })
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_ENV") != "production"
-    app.run(debug=debug, host="0.0.0.0", port=port, use_reloader=False)
+        " (classement - meilleur_classement) AS
