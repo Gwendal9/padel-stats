@@ -145,4 +145,6 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
             "deja_joue":   False,
         })
 
-    # Trier par score décroiss
+    # Trier par score décroissant, couper à n
+    scored.sort(key=lambda x: -x["score"])
+    return scored[:n]
