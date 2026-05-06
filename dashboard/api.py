@@ -103,26 +103,48 @@ def route_stats():
         FROM joueurs WHERE classement IS NOT NULL
     """) or {}
 
-    naissance_rows = fetchall(
+    # Pyramide âges — agrégée en SQL (évite 149k lignes en Python)
+    _yr = current_year
+    pyr_rows = fetchall(f"""
+        SELECT sexe,
+          SUM(CASE WHEN ({_yr} - naissance::int) < 18                        THEN 1 ELSE 0 END) AS b0,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 18 AND 25           THEN 1 ELSE 0 END) AS b1,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 26 AND 35           THEN 1 ELSE 0 END) AS b2,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 36 AND 45           THEN 1 ELSE 0 END) AS b3,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 46 AND 55           THEN 1 ELSE 0 END) AS b4,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 56 AND 65           THEN 1 ELSE 0 END) AS b5,
+          SUM(CASE WHEN ({_yr} - naissance::int) > 65                        THEN 1 ELSE 0 END) AS b6
+        FROM joueurs
+        WHERE naissance IS NOT NULL
+          AND naissance ~ '^[0-9]{{4}}$'
+          AND sexe IN ('H','F')
+        GROUP BY sexe
+    """) if USE_POSTGRES else fetchall(
         "SELECT sexe, naissance FROM joueurs WHERE naissance IS NOT NULL AND sexe IN ('H','F')"
     )
     pyramid = {"H": [0] * 7, "F": [0] * 7}
-    for r in naissance_rows:
-        try:
-            age = current_year - int(r["naissance"])
-        except (ValueError, TypeError):
-            continue
-        sexe = r.get("sexe")
-        if sexe not in pyramid:
-            continue
-        if age < 18:      b = 0
-        elif age <= 25:   b = 1
-        elif age <= 35:   b = 2
-        elif age <= 45:   b = 3
-        elif age <= 55:   b = 4
-        elif age <= 65:   b = 5
-        else:             b = 6
-        pyramid[sexe][b] += 1
+    if USE_POSTGRES:
+        for r in pyr_rows:
+            s = r.get("sexe")
+            if s in pyramid:
+                pyramid[s] = [int(r.get(f"b{i}") or 0) for i in range(7)]
+    else:
+        for r in pyr_rows:
+            try:
+                age = _yr - int(r["naissance"])
+            except (ValueError, TypeError):
+                continue
+            s = r.get("sexe")
+            if s not in pyramid:
+                continue
+            if age < 18:      b = 0
+            elif age <= 25:   b = 1
+            elif age <= 35:   b = 2
+            elif age <= 45:   b = 3
+            elif age <= 55:   b = 4
+            elif age <= 65:   b = 5
+            else:             b = 6
+            pyramid[s][b] += 1
 
     try:
         if USE_POSTGRES:
