@@ -83,6 +83,14 @@ def route_stats():
     from db import fetchall, fetchone
     current_year = datetime.date.today().year
 
+    # Compteurs globaux (pour KPIs)
+    counts = fetchone("""
+        SELECT
+          (SELECT COUNT(*) FROM joueurs)                    AS nb_joueurs,
+          (SELECT COUNT(DISTINCT id_tournoi) FROM participations) AS nb_tournois,
+          (SELECT COUNT(*) FROM participations)             AS nb_participations
+    """) or {}
+
     ranking = fetchone("""
         SELECT
           SUM(CASE WHEN classement <= 100 THEN 1 ELSE 0 END)                AS top100,
@@ -195,6 +203,9 @@ def route_stats():
         tdist = [0, 0, 0, 0, 0, 0]
 
     return jsonify({
+        "nb_joueurs":        int(counts.get("nb_joueurs") or 0),
+        "nb_tournois":       int(counts.get("nb_tournois") or 0),
+        "nb_participations": int(counts.get("nb_participations") or 0),
         "ranking_dist": [
             ranking.get("top100", 0), ranking.get("c100_1k", 0),
             ranking.get("c1k_5k", 0), ranking.get("c5k_20k", 0),
