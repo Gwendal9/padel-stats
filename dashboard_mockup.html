@@ -330,7 +330,7 @@
         <div class="relative ac-wrap">
           <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
           <input id="global-search" type="text" placeholder="Joueur, club, tournoi..." class="pl-9 pr-12 py-2 rounded-lg border border-slate-200 bg-white w-72" autocomplete="off">
-          <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">⌘K</kbd>
+          <kbd id="search-shortcut-badge" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">⌘K</kbd>
           <div id="ac-global" class="ac-popup" hidden></div>
         </div>
         <button id="theme-toggle" class="btn-ghost flex items-center justify-center w-9 h-9 p-0" title="Changer de thème">
@@ -462,6 +462,37 @@
         </div>
       </div>
 
+      <!-- Row 3 : Distribution classements -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="card p-5">
+          <div class="font-semibold mb-1">Répartition des classements</div>
+          <div class="text-xs text-slate-400 mb-3">Distribution des joueurs par niveau</div>
+          <div class="chart-wrap">
+            <canvas id="chart-club-dist" height="180"></canvas>
+            <div class="chart-skel" id="skel-rankdist">
+              <div class="chart-skel-bar" style="height:30%"></div><div class="chart-skel-bar" style="height:50%"></div>
+              <div class="chart-skel-bar" style="height:80%"></div><div class="chart-skel-bar" style="height:95%"></div>
+              <div class="chart-skel-bar" style="height:75%"></div><div class="chart-skel-bar" style="height:45%"></div>
+              <div class="chart-skel-bar" style="height:20%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card p-5">
+          <div class="font-semibold mb-1">Top 10 clubs</div>
+          <div class="text-xs text-slate-400 mb-3">Par nombre de joueurs licenciés</div>
+          <div class="chart-wrap">
+            <canvas id="chart-top-clubs" height="180"></canvas>
+            <div class="chart-skel" id="skel-top-clubs">
+              <div class="chart-skel-bar" style="height:95%"></div><div class="chart-skel-bar" style="height:80%"></div>
+              <div class="chart-skel-bar" style="height:70%"></div><div class="chart-skel-bar" style="height:60%"></div>
+              <div class="chart-skel-bar" style="height:50%"></div><div class="chart-skel-bar" style="height:40%"></div>
+              <div class="chart-skel-bar" style="height:32%"></div><div class="chart-skel-bar" style="height:25%"></div>
+              <div class="chart-skel-bar" style="height:18%"></div><div class="chart-skel-bar" style="height:12%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Movers mini + Tops H/F -->
       <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="card p-5 col-span-3">
@@ -515,7 +546,7 @@
           <div id="ac-lb" class="ac-popup" hidden></div>
         </div>
         <button class="btn-primary flex items-center gap-2" onclick="filterLeaderboard()"><i data-lucide="filter" class="w-4 h-4"></i>Filtrer</button>
-        <button class="btn-ghost flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Export</button>
+        <button class="btn-ghost flex items-center gap-2" onclick="exportLeaderboardCSV()"><i data-lucide="download" class="w-4 h-4"></i>Export CSV</button>
       </div>
 
       <div class="card overflow-hidden">
@@ -547,14 +578,12 @@
     <!-- ═════ MOVERS ═══════════════════════════════════════════════════ -->
     <section class="view" id="view-movers">
       <div class="card p-4 mb-4 flex gap-3 items-center">
-        <div class="tabs">
-          <div class="tab active">30 jours</div>
-          <div class="tab">3 mois</div>
-          <div class="tab">12 mois</div>
+        <div class="text-xs text-slate-400 italic flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Classements basés sur les données FFT — mise à jour mensuelle
         </div>
-        <div class="text-xs text-slate-400 italic">Classements mis à jour mensuellement</div>
         <div class="flex-1"></div>
-        <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Hommes & Femmes</option><option>Hommes</option><option>Femmes</option></select>
+        <select id="movers-sexe" class="px-3 py-2 rounded-lg border border-slate-200 bg-white" onchange="loadMovers()"><option value="">Tous</option><option value="H">Hommes</option><option value="F">Femmes</option></select>
       </div>
 
       <div class="grid grid-cols-2 gap-4" id="movers-grid">
@@ -702,6 +731,10 @@
         <div class="card p-5">
           <div class="font-semibold mb-3">Chemin le plus court dans le réseau</div>
           <div id="cmp-path" class="text-sm text-slate-500">—</div>
+        </div>
+        <div class="card p-5">
+          <div class="font-semibold mb-3">Comparaison classement actuel / meilleur</div>
+          <canvas id="chart-compare-progression" height="140"></canvas>
         </div>
       </div>
 
@@ -1075,14 +1108,29 @@ const chartTournamentDist = makeChart('chart-tournament-dist', {
   options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Nb tournois'}}} }
 });
 
+const chartTopClubs = makeChart('chart-top-clubs', {
+  type:'bar',
+  data:{
+    labels:[],
+    datasets:[{ data:[], backgroundColor:'#0d9488', borderRadius:4, borderSkipped:false }]
+  },
+  options:{
+    indexAxis:'y',
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x.toLocaleString('fr-FR')} joueurs`}} },
+    scales:{ x:{beginAtZero:true,grid:{display:false}}, y:{grid:{display:false}} }
+  }
+});
+
 // ── Chart comparateur ─────────────────────────────────────────────────────────
 const chartCompare = makeChart('chart-compare-progression', {
-  type:'line',
+  type:'bar',
   data:{ labels:[], datasets:[
-    { label:'Joueur 1', data:[], borderColor:teal,    backgroundColor:'rgba(13,148,136,0.1)', tension:0.35, fill:true, pointRadius:3 },
-    { label:'Joueur 2', data:[], borderColor:emerald, backgroundColor:'rgba(16,185,129,0.1)',  tension:0.35, fill:true, pointRadius:3 }
+    { label:'Classement actuel',  data:[], backgroundColor:['#0d9488','#6366f1'], borderRadius:6 },
   ]},
-  options:{ plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, scales:{y:{reverse:true}} }
+  options:{
+    plugins:{ legend:{display:false} },
+    scales:{ y:{ reverse:true, beginAtZero:false, title:{ display:true, text:'Classement (↓ = meilleur)' } } }
+  }
 });
 
 // ── Chargement des stats dashboard ───────────────────────────────────────────
@@ -1144,22 +1192,33 @@ async function loadDashboardStats() {
     document.getElementById('skel-tournois')?.classList.add('hidden');
   }
 
-  // Top villes
+  // Répartition classements
+  if (chartRankingDist && stats.ranking_dist) {
+    chartRankingDist.data.datasets[0].data = stats.ranking_dist;
+    chartRankingDist.update();
+    document.getElementById('skel-rankdist')?.classList.add('hidden');
+  }
+
+  // Top 10 clubs (appel séparé)
+  apiFetch('/api/clubs?top=10').then(clubs => {
+    if (!clubs || !chartTopClubs) return;
+    const sorted = clubs.slice(0, 10).reverse();
+    chartTopClubs.data.labels = sorted.map(c => c.nom.length > 22 ? c.nom.slice(0, 20) + '…' : c.nom);
+    chartTopClubs.data.datasets[0].data = sorted.map(c => c.nb_joueurs);
+    chartTopClubs.update();
+    document.getElementById('skel-top-clubs')?.classList.add('hidden');
+  });
+
+  // Top villes / régions
   if (chartRegions) {
-    chartRegions.data.labels   = stats.top_villes.map(v => v.ville);
+    chartRegions.data.labels = stats.top_villes.map(v => v.ville);
     chartRegions.data.datasets[0].data = stats.top_villes.map(v => v.nb);
     chartRegions.update();
     document.getElementById('skel-regions')?.classList.add('hidden');
   }
 
-  // Distribution classements
-  if (chartRankingDist) {
-    chartRankingDist.data.datasets[0].data = stats.ranking_dist;
-    chartRankingDist.update();
-  }
-
   // Distribution taille tournois
-  if (chartTournamentDist) {
+  if (chartTournamentDist && stats.tournament_dist) {
     chartTournamentDist.data.datasets[0].data = stats.tournament_dist;
     chartTournamentDist.update();
     document.getElementById('skel-tdist')?.classList.add('hidden');
@@ -1830,6 +1889,23 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
 
 // ── Utilitaires ───────────────────────────────────────────────────────────────
 
+function showNotif(msg, type = 'info') {
+  let el = document.getElementById('_notif_bar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_notif_bar';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  const colors = { info:'#0f172a', error:'#dc2626', success:'#0d9488' };
+  el.style.background = colors[type] || colors.info;
+  el.style.color = '#fff';
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 2800);
+}
+
 function debounce(fn, ms) {
   let t;
   return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
@@ -1937,6 +2013,35 @@ setupAutocomplete('lb-search', 'ac-lb', player => {
 
 // ── Leaderboard — chargement API ────────────────────────────────────────────
 
+async function exportLeaderboardCSV() {
+  const params = new URLSearchParams({
+    sexe:  lbState.sexe,
+    club:  lbState.club || lbState.region,
+    q:     lbState.q,
+    age:   lbState.age,
+    offset: 0,
+    limit:  2000,
+  });
+  const data = await apiFetch('/api/leaderboard?' + params.toString());
+  if (!data || !data.players.length) { showNotif('Aucune donnée à exporter.', 'error'); return; }
+  const cols = ['Classement','Nom','Prénom','Club','Ville','Âge','Tournois','Meilleur classement'];
+  const rows = data.players.map((p, i) => [
+    i + 1,
+    p.nom,
+    p.prenom,
+    p.club || '',
+    p.ville || '',
+    p.age || '',
+    p.nb_tournois || 0,
+    p.meilleur_classement || '',
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [cols.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: 'classement_padel.csv' });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
 const filterLeaderboard = () => applyLbFilters();
 const lbState = { offset:0, total:0, loading:false, done:false, sexe:'H', club:'', q:'', age:'' };
 const PALETTE = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6','#0ea5e9','#f97316'];
@@ -2186,8 +2291,8 @@ function suggToPlayer(name, id) {
 // ── Movers — chargement API ──────────────────────────────────────────────────
 
 async function loadMovers() {
-  const sexeTab = document.querySelector('#lb-sex-tabs .tab.active')?.dataset.sex || 'H';
-  const data = await apiFetch(`/api/movers?sexe=${sexeTab}&n=6`);
+  const sexeVal = document.getElementById('movers-sexe')?.value || '';
+  const data = await apiFetch(`/api/movers?sexe=${encodeURIComponent(sexeVal)}&n=8`);
   if (!data) return;
 
   const PALETTE2 = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6'];
@@ -2499,7 +2604,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     }
     const pid = gCurrentPlayerId;
     if (!pid) {
-      alert("Recherche un joueur d'abord !");
+      showNotif('Recherche un joueur d\'abord !', 'error');
       return;
     }
 
@@ -2881,6 +2986,18 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     } else {
       pathEl.textContent = 'Aucun chemin trouvé dans le réseau.';
     }
+
+    // Mettre à jour chart comparaison
+    if (chartCompare && cmpA.rank && cmpB.rank) {
+      const rA = Number(cmpA.rank), rB = Number(cmpB.rank);
+      chartCompare.data.labels = [
+        (cmpA.label||'Joueur A').split(' ').slice(-1)[0],
+        (cmpB.label||'Joueur B').split(' ').slice(-1)[0],
+      ];
+      chartCompare.data.datasets[0].data = [rA, rB];
+      chartCompare.data.datasets[0].backgroundColor = ['#0d9488','#6366f1'];
+      chartCompare.update();
+    }
   }
 
   function showCmpCard(cardId, p) {
@@ -3049,7 +3166,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       if (searchInput) searchInput.value = suggCurrentLabel;
     }
     const pid = suggCurrentId;
-    if (!pid) { alert('Recherche un joueur d\'abord !'); return; }
+    if (!pid) { showNotif('Recherche un joueur d\'abord !', 'error'); return; }
 
     const n = parseInt(document.getElementById('sugg-n')?.value || '9');
 
@@ -3170,7 +3287,164 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   })();
 })();
 
+// ── Spotlight ⌘K ─────────────────────────────────────────────────────────────
+(function() {
+  // Détection OS pour affichage raccourci
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+  const shortcutLabel = isMac ? '⌘K' : 'Ctrl+K';
+  const badgeEl = document.getElementById('search-shortcut-badge');
+  const hintEl  = document.getElementById('sp-shortcut-hint');
+  if (badgeEl) badgeEl.textContent = shortcutLabel;
+  if (hintEl)  hintEl.textContent  = shortcutLabel;
+
+  const overlay = document.getElementById('spotlight-overlay');
+  const inp     = document.getElementById('spotlight-input');
+  const results = document.getElementById('spotlight-results');
+  let spTimer = null, spActive = -1, spItems = [];
+
+  window.closeSpotlight = function() {
+    overlay.classList.add('hidden');
+    inp.value = '';
+    results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
+    spActive = -1; spItems = [];
+  };
+
+  function openSpotlight() {
+    overlay.classList.remove('hidden');
+    inp.focus();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('hidden') ? openSpotlight() : closeSpotlight();
+    }
+    if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeSpotlight();
+  });
+
+  document.getElementById('global-search')?.addEventListener('focus', e => {
+    e.target.blur();
+    openSpotlight();
+  });
+
+  function navigate(dir) {
+    if (!spItems.length) return;
+    spItems[spActive]?.classList.remove('sp-active');
+    spActive = Math.max(0, Math.min(spItems.length - 1, spActive + dir));
+    spItems[spActive]?.classList.add('sp-active');
+    spItems[spActive]?.scrollIntoView({ block:'nearest' });
+  }
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Enter') { e.preventDefault(); (spItems[spActive] || spItems[0])?.click(); }
+  });
+
+  inp.addEventListener('input', () => {
+    clearTimeout(spTimer);
+    const q = inp.value.trim();
+    if (q.length < 2) {
+      results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
+      spItems = []; spActive = -1;
+      return;
+    }
+    results.innerHTML = '<div class="sp-empty" style="padding:16px 0">Recherche…</div>';
+    spTimer = setTimeout(() => doSearch(q), 200);
+  });
+
+  async function doSearch(q) {
+    const [players, clubs, tournaments] = await Promise.all([
+      apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`),
+      apiFetch(`/api/clubs?top=8&q=${encodeURIComponent(q)}`),
+      apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=4`),
+    ]);
+
+    let html = '';
+
+    if (players && players.length) {
+      html += '<div class="sp-section-label">Joueurs</div>';
+      html += players.map(p => `
+        <div class="sp-item" data-action="player" data-id="${p.id}" data-name="${p.nom_complet}">
+          <div class="sp-icon" style="background:#f0fdfa;color:#0d9488"><i data-lucide="user" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-800 truncate">${p.nom_complet}</div>
+            <div class="text-xs text-slate-400">#${p.classement ?? '?'}${p.club ? ' · ' + p.club : ''}</div>
+          </div>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+        </div>`).join('');
+    }
+
+    const clubMatches = (clubs || []).filter(c => c.nom.toLowerCase().includes(q.toLowerCase())).slice(0, 4);
+    if (clubMatches.length) {
+      html += '<div class="sp-section-label">Clubs</div>';
+      html += clubMatches.map(c => `
+        <div class="sp-item" data-action="club" data-nom="${c.nom.replace(/"/g,'&quot;')}">
+          <div class="sp-icon" style="background:#fdf4ff;color:#9333ea"><i data-lucide="building-2" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-800 truncate">${c.nom}</div>
+            <div class="text-xs text-slate-400">${c.ville} · ${(c.nb || 0).toLocaleString('fr-FR')} licenciés</div>
+          </div>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+        </div>`).join('');
+    }
+
+    if (tournaments && tournaments.length) {
+      html += '<div class="sp-section-label">Tournois</div>';
+      html += tournaments.map(t => `
+        <div class="sp-item" data-action="tournament" data-id="${t.id}" data-nom="${(t.nom || '').replace(/"/g,'&quot;')}">
+          <div class="sp-icon" style="background:#fff7ed;color:#f59e0b"><i data-lucide="trophy" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-800 truncate">${t.nom || t.id}</div>
+            <div class="text-xs text-slate-400">${t.categorie || ''}${t.date ? ' · ' + t.date : ''}${t.lieu ? ' · ' + t.lieu : ''}</div>
+          </div>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+        </div>`).join('');
+    }
+
+    if (!html) html = `<div class="sp-empty">Aucun résultat pour « ${q} »</div>`;
+
+    results.innerHTML = html;
+    spItems = [...results.querySelectorAll('.sp-item')];
+    spActive = -1;
+    if (window.lucide) lucide.createIcons();
+
+    spItems.forEach(el => {
+      el.addEventListener('click', () => {
+        const action = el.dataset.action;
+        closeSpotlight();
+        if (action === 'player') {
+          loadPlayerProfile(el.dataset.id);
+        } else if (action === 'club') {
+          document.querySelector('[data-view="club"]')?.click();
+          setTimeout(() => window.loadClubProfile?.(el.dataset.nom), 80);
+        } else if (action === 'tournament') {
+          document.querySelector('[data-view="tournament"]')?.click();
+          setTimeout(() => window.loadTournamentView?.(el.dataset.id, el.dataset.nom), 80);
+        }
+      });
+    });
+  }
+})();
 </script>
+
+  <!-- ⌘K Spotlight Search -->
+  <div id="spotlight-overlay" class="hidden" onclick="if(event.target===this)closeSpotlight()">
+    <div id="spotlight-box">
+      <div id="spotlight-input-wrap">
+        <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+        <input id="spotlight-input" type="text" placeholder="Joueur, club, tournoi…" autocomplete="off" spellcheck="false">
+        <kbd onclick="closeSpotlight()" style="cursor:pointer;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#94a3b8">Esc</kbd>
+      </div>
+      <div id="spotlight-results"><div class="sp-empty">Tape pour rechercher…</div></div>
+      <div class="sp-footer">
+        <span><kbd>↑↓</kbd> naviguer</span>
+        <span><kbd>↵</kbd> ouvrir</span>
+        <span><kbd id="sp-shortcut-hint">⌘K</kbd> fermer</span>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
