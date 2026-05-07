@@ -309,7 +309,7 @@
       <span id="sb-joueurs">…</span> joueurs<br>
       <span id="sb-participations">…</span> participations<br>
       <span id="sb-tournois">…</span> tournois<br>
-      <span class="text-emerald-400">● Données en direct</span>
+      <span class="text-slate-500">● Source FFT · maj mensuelle</span>
     </div>
   </aside>
 
@@ -436,7 +436,7 @@
       <!-- Charts row 2 -->
       <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="card p-5 col-span-2">
-          <div class="font-semibold mb-3">Top 10 régions par nombre de joueurs</div>
+          <div class="font-semibold mb-3">Top 10 villes par nombre de joueurs</div>
           <div class="chart-wrap">
             <canvas id="chart-regions" height="180"></canvas>
             <div class="chart-skel" id="skel-regions">
@@ -490,17 +490,6 @@
               <div class="chart-skel-bar" style="height:18%"></div><div class="chart-skel-bar" style="height:12%"></div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Movers mini + Tops H/F -->
-      <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="card p-5 col-span-3">
-          <div class="flex justify-between items-center mb-3">
-            <div class="font-semibold">Plus grosses progressions</div>
-            <a href="#" data-view="movers" class="text-xs text-teal-600 hover:underline">Voir tout</a>
-          </div>
-          <div class="space-y-2 text-sm" id="dash-movers-mini"><div class="skeleton sk-text" style="height:44px;border-radius:8px"></div></div>
         </div>
       </div>
 
@@ -1024,8 +1013,7 @@ document.querySelectorAll('[data-view]').forEach(el => {
       }
     }
     if (v === 'leaderboard') {
-      const state = window.lbState;
-      if (state && state.offset === 0 && !state.loading) window.loadLeaderboard?.(true);
+      setTimeout(() => window.loadLeaderboard?.(true), 50);
     }
     if (window.lucide) lucide.createIcons();
   });
@@ -1075,9 +1063,12 @@ const chartPyramid = makeChart('chart-pyramid', {
 });
 
 const chartTournois = makeChart('chart-tournois', {
-  type:'line',
-  data:{ labels:[], datasets:[{ data:[], borderColor:amber, backgroundColor:'rgba(245,158,11,0.12)', tension:0.35, fill:true, pointRadius:3 }] },
-  options:{ plugins:{legend:{display:false}} }
+  type:'bar',
+  data:{ labels:[], datasets:[{ data:[], backgroundColor:amber, borderRadius:4 }] },
+  options:{
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.y} tournois`}} },
+    scales:{ y:{ beginAtZero:true, title:{display:true, text:'Nb tournois'} } }
+  }
 });
 
 const chartRegions = makeChart('chart-regions', {
@@ -1156,13 +1147,13 @@ async function loadDashboardStats() {
   const kpiPSub = document.getElementById('kpi-participations-sub');
 
   if (kpiJ) kpiJ.textContent = totalJoueurs > 0 ? totalJoueurs.toLocaleString('fr-FR') : '—';
-  if (kpiJSub) kpiJSub.innerHTML = '<i data-lucide="trending-up" class="w-3 h-3"></i> données en direct';
+  if (kpiJSub) kpiJSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Source FFT · maj mensuelle';
   if (kpiS) kpiS.innerHTML = `${(totalH/1000).toFixed(0)}k <span class="text-slate-300 text-2xl font-light">/</span> ${(totalF/1000).toFixed(0)}k`;
   if (kpiSSub) kpiSSub.textContent = `${pct}% / ${100-pct}%`;
   if (kpiT) kpiT.textContent = totalTournois > 0 ? totalTournois.toLocaleString('fr-FR') : '—';
-  if (kpiTSub) kpiTSub.innerHTML = '<i data-lucide="trending-up" class="w-3 h-3"></i> données en direct';
+  if (kpiTSub) kpiTSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Source FFT · maj mensuelle';
   if (kpiP) kpiP.textContent = totalParts > 0 ? totalParts.toLocaleString('fr-FR') : '—';
-  if (kpiPSub) kpiPSub.innerHTML = '<i data-lucide="trending-up" class="w-3 h-3"></i> données en direct';
+  if (kpiPSub) kpiPSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Source FFT · maj mensuelle';
 
   if (window.lucide) lucide.createIcons();
 
@@ -1204,7 +1195,7 @@ async function loadDashboardStats() {
     if (!clubs || !chartTopClubs) return;
     const sorted = clubs.slice(0, 10).reverse();
     chartTopClubs.data.labels = sorted.map(c => c.nom.length > 22 ? c.nom.slice(0, 20) + '…' : c.nom);
-    chartTopClubs.data.datasets[0].data = sorted.map(c => c.nb_joueurs);
+    chartTopClubs.data.datasets[0].data = sorted.map(c => c.nb);
     chartTopClubs.update();
     document.getElementById('skel-top-clubs')?.classList.add('hidden');
   });
@@ -1242,32 +1233,16 @@ async function loadDashboardTops() {
     </div>`;
   }
 
-  const [resH, resF, movers] = await Promise.all([
+  const [resH, resF] = await Promise.all([
     apiFetch('/api/leaderboard?sexe=H&limit=5'),
     apiFetch('/api/leaderboard?sexe=F&limit=5'),
-    apiFetch('/api/movers?n=4'),
   ]);
 
   const elH = document.getElementById('dash-top5-h');
   const elF = document.getElementById('dash-top5-f');
-  const elM = document.getElementById('dash-movers-mini');
 
   if (elH && resH) elH.innerHTML = resH.players.map((p,i) => top5Row(p,i+1)).join('');
   if (elF && resF) elF.innerHTML = resF.players.map((p,i) => top5Row(p,i+1)).join('');
-  if (elM && movers) {
-    const rows = (movers.hausse||[]).slice(0,4).map(p => {
-      const inits = (p.nom_complet||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      return `<div class="flex items-center gap-3 cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
-        <div class="avatar av-sm bg-teal-600" style="font-size:11px">${inits}</div>
-        <div class="flex-1 min-w-0">
-          <div class="font-medium truncate text-sm">${p.nom_complet}</div>
-          <div class="text-xs text-slate-500">#${(p.classement||0).toLocaleString('fr-FR')} · record perso</div>
-        </div>
-        <div class="trend delta-up text-sm">⭐</div>
-      </div>`;
-    });
-    elM.innerHTML = rows.join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
-  }
   if (window.lucide) lucide.createIcons();
 }
 loadDashboardTops();
