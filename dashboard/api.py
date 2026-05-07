@@ -31,6 +31,11 @@ from db import USE_POSTGRES
 app = Flask(__name__)
 CORS(app)
 
+# Préchargement du graphe en arrière-plan dès le démarrage
+# Avec gunicorn --preload, le thread tourne dans le master avant le fork
+import threading as _threading
+_threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preloader").start()
+
 
 @app.route("/")
 def index():
@@ -377,15 +382,192 @@ def route_movers():
 def route_clubs():
     from db import fetchall
     top = min(int(request.args.get("top", 100)), 500)
-    rows = fetchall("""
-        SELECT club_nom, ville, COUNT(*) AS nb_joueurs
-        FROM joueurs
-        WHERE club_nom IS NOT NULL AND club_nom != ''
-          AND ville    IS NOT NULL AND ville    != ''
-        GROUP BY club_nom, ville
-        ORDER BY nb_joueurs DESC LIMIT ?
-    """, (top,))
+    q   = request.args.get("q", "").strip()
+    if q:
+        rows = fetchall("""
+            SELECT club_nom, ville, COUNT(*) AS nb_joueurs
+            FROM joueurs
+            WHERE club_nom IS NOT NULL AND club_nom != ''
+              AND ville    IS NOT NULL AND ville    != ''
+              AND club_nom LIKE ?
+            GROUP BY club_nom, ville
+            ORDER BY nb_joueurs DESC LIMIT ?
+        """, ("%" + q + "%", top))
+    else:
+        rows = fetchall("""
+            SELECT club_nom, ville, COUNT(*) AS nb_joueurs
+            FROM joueurs
+            WHERE club_nom IS NOT NULL AND club_nom != ''
+              AND ville    IS NOT NULL AND ville    != ''
+            GROUP BY club_nom, ville
+            ORDER BY nb_joueurs DESC LIMIT ?
+        """, (top,))
     return jsonify([{"nom": r["club_nom"], "ville": r["ville"], "nb": r["nb_joueurs"]} for r in rows])
+
+
+@app.get("/api/tournaments")
+def route_tournaments():
+    from db import fetchall
+    q     = request.args.get("q", "").strip()
+    limit = min(int(request.args.get("limit", 20)), 50)
+    if q:
+        rows = fetchall("""
+            SELECT t.id_tournoi, t.nom, t.categorie,
+                   MIN(p.date_tournoi) AS date_tournoi,
+                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+            FROM tournois t
+            JOIN participations p ON p.id_tournoi = t.id_tournoi
+            WHERE t.nom ILIKE ?
+            GROUP BY t.id_tournoi, t.nom, t.categorie
+            ORDER BY date_tournoi DESC LIMIT ?
+        """, ("%" + q + "%", limit)) if USE_POSTGRES else fetchall("""
+            SELECT t.id_tournoi, t.nom, t.categorie,
+                   MIN(p.date_tournoi) AS date_tournoi,
+                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+            FROM tournois t
+            JOIN participations p ON p.id_tournoi = t.id_tournoi
+            WHERE t.nom LIKE ?
+            GROUP BY t.id_tournoi, t.nom, t.categorie
+            ORDER BY date_tournoi DESC LIMIT ?
+        """, ("%" + q + "%", limit))
+    else:
+        rows = fetchall("""
+            SELECT t.id_tournoi, t.nom, t.categorie,
+                   MIN(p.date_tournoi) AS date_tournoi,
+                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+            FROM tournois t
+            JOIN participations p ON p.id_tournoi = t.id_tournoi
+            GROUP BY t.id_tournoi, t.nom, t.categorie
+            ORDER BY date_tournoi DESC LIMIT ?
+        """, (limit,))
+    return jsonify([{
+        "id": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
+        "date": r["date_tournoi"] or "", "nb_joueurs": r["nb_joueurs"] or 0,
+    } for r in rows])
+
+
+@app.get("/api/tournament/<tid>")
+def route_tournament(tid: str):
+    from db import fetchall, fetchone
+    info = fetchone("""
+        SELECT t.id_tournoi, t.nom, t.categorie,
+               MIN(p.date_tournoi) AS date_tournoi,
+               COUNT(DISTINCT p.id_joueur) AS nb_joueurs,
+               COUNT(DISTINCT p.partenaire_id) AS nb_paires_raw
+        FROM tournois t
+        JOIN participations p ON p.id_tournoi = t.id_tournoi
+        WHERE t.id_tournoi = ?
+        GROUP BY t.id_tournoi, t.nom, t.categorie
+    """, (tid,))
+    if not info:
+        return jsonify({"error": "Tournoi introuvable"}), 404
+
+    # All results (pairs deduplicated by position)
+    results = fetchall("""
+        SELECT p.id_joueur, p.partenaire_id, p.partenaire_nom,
+               p.position, p.points,
+               j.nom, j.prenom, j.classement
+        FROM participations p
+        JOIN joueurs j ON j.id_fft = p.id_joueur
+        WHERE p.id_tournoi = ?
+        ORDER BY p.position ASC, j.classement ASC NULLS LAST
+    """, (tid,))
+
+    # Deduplicate pairs (same position + same pair appears twice)
+    seen = set()
+    pairs = []
+    for r in results:
+        ids = tuple(sorted([r["id_joueur"], r["partenaire_id"] or ""]))
+        if ids in seen:
+            continue
+        seen.add(ids)
+        pairs.append({
+            "position":     r["position"],
+            "points":       r["points"],
+            "joueur1_id":   r["id_joueur"],
+            "joueur1_nom":  f"{(r.get('prenom') or '').strip()} {r.get('nom') or ''}".strip(),
+            "joueur1_cl":   r["classement"],
+            "joueur2_id":   r["partenaire_id"] or "",
+            "joueur2_nom":  r["partenaire_nom"] or "",
+        })
+
+    return jsonify({
+        "id":          info["id_tournoi"],
+        "nom":         info["nom"] or "",
+        "categorie":   info["categorie"] or "",
+        "date":        info["date_tournoi"] or "",
+        "nb_joueurs":  info["nb_joueurs"] or 0,
+        "nb_paires":   len(pairs),
+        "pairs":       pairs[:64],
+    })
+
+
+@app.get("/api/club")
+def route_club():
+    from db import fetchall, fetchone
+    nom = request.args.get("nom", "").strip()
+    if not nom:
+        return jsonify({"error": "nom requis"}), 400
+
+    # Stats globales du club
+    stats = fetchone("""
+        SELECT
+          COUNT(*) AS nb_joueurs,
+          SUM(CASE WHEN sexe = 'H' THEN 1 ELSE 0 END) AS nb_h,
+          SUM(CASE WHEN sexe = 'F' THEN 1 ELSE 0 END) AS nb_f,
+          MIN(CASE WHEN sexe = 'H' AND classement IS NOT NULL THEN classement END) AS best_h,
+          MIN(CASE WHEN sexe = 'F' AND classement IS NOT NULL THEN classement END) AS best_f,
+          ROUND(AVG(classement)) AS avg_rank,
+          SUM(CASE WHEN classement IS NOT NULL AND classement <= 100 THEN 1 ELSE 0 END) AS top100,
+          SUM(CASE WHEN classement IS NOT NULL AND classement <= 1000 THEN 1 ELSE 0 END) AS top1000
+        FROM joueurs
+        WHERE club_nom = ?
+    """, (nom,)) or {}
+
+    ville_row = fetchone("""
+        SELECT ville FROM joueurs WHERE club_nom = ? AND ville IS NOT NULL LIMIT 1
+    """, (nom,)) or {}
+
+    # Top joueurs hommes
+    top_h = fetchall("""
+        SELECT id_fft, nom, prenom, classement, meilleur_classement,
+               (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois
+        FROM joueurs j
+        WHERE club_nom = ? AND sexe = 'H' AND classement IS NOT NULL
+        ORDER BY classement ASC LIMIT 8
+    """, (nom,))
+
+    # Top joueurs femmes
+    top_f = fetchall("""
+        SELECT id_fft, nom, prenom, classement, meilleur_classement,
+               (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois
+        FROM joueurs j
+        WHERE club_nom = ? AND sexe = 'F' AND classement IS NOT NULL
+        ORDER BY classement ASC LIMIT 8
+    """, (nom,))
+
+    def fmt(r):
+        return {
+            "id": r["id_fft"], "nom": r["nom"] or "", "prenom": r["prenom"] or "",
+            "nom_complet": f"{(r.get('prenom') or '').strip()} {r.get('nom') or ''}".strip(),
+            "classement": r["classement"], "meilleur_classement": r["meilleur_classement"],
+            "nb_tournois": r["nb_tournois"] or 0,
+        }
+
+    return jsonify({
+        "nom":       nom,
+        "ville":     ville_row.get("ville") or "",
+        "nb_joueurs": int(stats.get("nb_joueurs") or 0),
+        "nb_h":       int(stats.get("nb_h") or 0),
+        "nb_f":       int(stats.get("nb_f") or 0),
+        "best_h":     stats.get("best_h"),
+        "best_f":     stats.get("best_f"),
+        "avg_rank":   int(stats.get("avg_rank") or 0) if stats.get("avg_rank") else None,
+        "top100":     int(stats.get("top100") or 0),
+        "top1000":    int(stats.get("top1000") or 0),
+        "top_h":      [fmt(r) for r in top_h],
+        "top_f":      [fmt(r) for r in top_f],
+    })
 
 
 @app.get("/api/health")
