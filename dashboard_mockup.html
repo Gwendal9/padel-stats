@@ -1019,7 +1019,24 @@
   </main>
 </div>
 
-<!-- API wake-up toast — must be BEFORE <script> so getElementById finds it -->
+  <!-- ⌘K Spotlight Search -->
+  <div id="spotlight-overlay" class="hidden" onclick="if(event.target===this)closeSpotlight()">
+    <div id="spotlight-box">
+      <div id="spotlight-input-wrap">
+        <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+        <input id="spotlight-input" type="text" placeholder="Joueur, club, tournoi…" autocomplete="off" spellcheck="false">
+        <kbd onclick="closeSpotlight()" style="cursor:pointer;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#94a3b8">Esc</kbd>
+      </div>
+      <div id="spotlight-results"><div class="sp-empty">Tape pour rechercher…</div></div>
+      <div class="sp-footer">
+        <span><kbd>↑↓</kbd> naviguer</span>
+        <span><kbd>↵</kbd> ouvrir</span>
+        <span><kbd id="sp-shortcut-hint">⌘K</kbd> fermer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- API wake-up toast — must be BEFORE <script> so getElementById finds it -->
 <div id="api-toast">
   <div id="api-toast-bar-wrap"><div id="api-toast-bar"></div></div>
   <div id="api-toast-inner">
@@ -2173,150 +2190,7 @@ document.querySelectorAll('#lb-sex-tabs .tab').forEach(tab => {
 });
 
 // Infinite scroll
-(function initInfiniteScroll() {
-  const sentinel = document.getElementById('lb-sentinel');
-  if (!sentinel) return;
-  new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) loadLeaderboard();
-  }, { rootMargin: '120px' }).observe(sentinel);
-})();
 
-// Charger au premier affichage du leaderboard
-document.querySelector('[data-view="club"]')?.addEventListener('click', () => {
-  setTimeout(() => document.getElementById('club-search-input')?.focus(), 100);
-});
-document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', () => {
-  if (lbState.offset === 0) loadLeaderboard(true);
-  setTimeout(() => {
-    const stored = loadDefaultPlayer();
-    if (stored) document.querySelector(`[data-player-id="${stored.id}"]`)?.scrollIntoView({ block:'center', behavior:'smooth' });
-  }, 600);
-});
-
-// ── 6. Fil d'Ariane suggesteur ────────────────────────────────────────────────
-// ── 6. Fil d'Ariane suggesteur ────────────────────────────────────────────────
-
-const suggStack = [];
-
-function renderBreadcrumb() {
-  const bc = document.getElementById('sugg-breadcrumb');
-  if (!bc) return;
-  if (!suggStack.length) { bc.style.display = 'none'; return; }
-  bc.style.display = 'flex';
-  const parts = [
-    `<i data-lucide="home" class="w-3 h-3"></i>`,
-    `<a onclick="resetSuggView()">Suggesteur</a>`,
-  ];
-  suggStack.forEach((s,i) => {
-    parts.push('<span class="breadcrumb-sep">›</span>');
-    if (i < suggStack.length - 1)
-      parts.push(`<a onclick="popSuggView(${i})">${s.label}</a>`);
-    else
-      parts.push(`<span style="color:#0f172a;font-weight:500">${s.label}</span>`);
-  });
-  bc.innerHTML = parts.join('');
-  lucide.createIcons();
-}
-
-function pushSuggView(label, id) { suggStack.push({label, id}); renderBreadcrumb(); }
-function popSuggView(idx)        { suggStack.splice(idx+1); renderBreadcrumb(); }
-function resetSuggView()         { suggStack.length = 0; renderBreadcrumb(); }
-
-// Called from profile "Trouver partenaire" button
-function loadSuggestions(playerId, playerLabel) {
-  // Navigate to partners view
-  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-  document.getElementById('view-partners')?.classList.add('active');
-  document.querySelector('.nav-item[data-view="partners"]')?.classList.add('active');
-  if (window.titles) {
-    document.getElementById('page-title').textContent    = window.titles['partners']?.[0] || '';
-    document.getElementById('page-subtitle').textContent = window.titles['partners']?.[1] || '';
-  }
-  // Pre-fill the suggester search with this player
-  const inp = document.getElementById('sugg-search-input');
-  if (inp) { inp.value = playerLabel || ''; }
-  // Trigger search if we have an id
-  if (playerId && window.runSuggester) window.runSuggester(playerId);
-  if (window.lucide) lucide.createIcons();
-}
-
-function suggToPlayer(name, id) {
-  pushSuggView(name, id || null);
-  document.querySelector('[data-view="player"]')?.click();
-}
-
-// ── 7. Trophy shelf — IntersectionObserver + stagger ─────────────────────────
-
-(function initTrophyShelf() {
-  const shelf = document.getElementById('trophy-shelf');
-  if (!shelf) return;
-
-  function revealAll() {
-    shelf.querySelectorAll('.trophy-cat:not(.revealed)')
-         .forEach((el,i) => setTimeout(() => el.classList.add('revealed'), i * 80));
-  }
-
-  new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) revealAll();
-  }, { threshold: 0.1 }).observe(shelf);
-
-  document.querySelector('[data-view="player"]')?.addEventListener('click', () => {
-    setTimeout(revealAll, 320);
-  });
-})();
-
-// ── 8. Infinite scroll leaderboard ───────────────────────────────────────────
-
-(function initInfiniteScroll() {
-  const sentinel = document.getElementById('lb-sentinel');
-  const tbody    = document.getElementById('lb-tbody');
-  if (!sentinel || !tbody) return;
-
-  let page = 1, loading = false;
-  const palette = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6','#0ea5e9','#f97316'];
-
-  function loadMore() {
-    if (loading || page > 5) {
-      if (page > 5) sentinel.innerHTML = '<div style="text-align:center;padding:10px 0;font-size:12px;color:#94a3b8">— Fin du classement (démo) —</div>';
-      return;
-    }
-    loading = true;
-    sentinel.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:12px 0">
-      <div class="skeleton sk-text" style="width:160px;height:11px"></div>
-    </div>`;
-
-    setTimeout(() => {
-      const start = 14336 + (page-1) * 8;
-      const rows = Array.from({length:8}, (_,i) => {
-        const rank  = start + i;
-        const color = palette[(rank*3+i) % palette.length];
-        const ini   = String.fromCharCode(65+((rank*7)%26)) + String.fromCharCode(65+((rank*13)%26));
-        return `<tr class="border-t border-slate-100 hover:bg-slate-50">
-          <td class="py-3 px-4 text-slate-500">${rank.toLocaleString('fr-FR')}</td>
-          <td class="py-3 px-4"><div class="flex items-center gap-2">
-            <div class="avatar av-sm" style="background:${color};font-size:11px">${ini}</div>
-            <span class="font-medium text-slate-700">Joueur #${rank}</span>
-          </div></td>
-          <td class="py-3 px-4 text-slate-500">—</td>
-          <td class="py-3 px-4 text-slate-500">—</td>
-          <td class="py-3 px-4 text-right text-slate-400">#${rank}</td>
-          <td class="py-3 px-4 text-right">${3+(rank%20)}</td>
-          <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
-        </tr>`;
-      }).join('');
-
-      document.getElementById('lb-sentinel-row').insertAdjacentHTML('beforebegin', rows);
-      sentinel.innerHTML = '';
-      page++;
-      loading = false;
-    }, 700);
-  }
-
-  new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) loadMore();
-  }, { rootMargin:'80px' }).observe(sentinel);
-})();
 
 // ── Movers — chargement API ──────────────────────────────────────────────────
 
@@ -2766,7 +2640,12 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     document.getElementById('page-subtitle').textContent    = `${data.categorie} · ${data.date || '—'}`;
 
     const tbody = document.getElementById('tourn-results-body');
-    tbody.innerHTML = (data.pairs || []).map(p => {
+    const sortedPairs = (data.pairs || []).slice().sort((a, b) => {
+      const pa = parseInt(a.position) || 9999;
+      const pb = parseInt(b.position) || 9999;
+      return pa - pb;
+    });
+    tbody.innerHTML = sortedPairs.map(p => {
       const pos = parseInt(p.position) || 0;
       const med = MEDAL[pos] || '';
       const cl  = pos <= 3 ? 'font-semibold text-amber-700' : '';
@@ -2847,13 +2726,9 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     const q = inp.value.trim();
     if (q.length < 2) { ac.hidden = true; return; }
     t = setTimeout(async () => {
-      const data = await apiFetch(`/api/clubs?top=200`);
-      if (!data) return;
-      const matches = data
-        .filter(c => c.nom.toUpperCase().includes(q.toUpperCase()))
-        .slice(0, 8);
-      if (!matches.length) { ac.hidden = true; return; }
-      ac.innerHTML = matches.map(c => `
+      const data = await apiFetch(`/api/clubs?top=8&q=${encodeURIComponent(q)}`);
+      if (!data || !data.length) { ac.hidden = true; return; }
+      ac.innerHTML = data.map(c => `
         <div class="px-3 py-2 hover:bg-teal-50 cursor-pointer text-sm club-ac-item"
           data-nom="${c.nom.replace(/"/g,'&quot;')}">
           <span class="font-medium">${c.nom}</span>
@@ -3335,16 +3210,13 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   let spTimer = null, spActive = -1, spItems = [];
 
   window.closeSpotlight = function() {
-    inp.value = '';
-    results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
-    spActive = -1; spItems = [];
     overlay.classList.add('hidden');
     inp.value = '';
     results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
     spActive = -1; spItems = [];
   };
 
-  function openSpotlight() {
+  window.openSpotlight = function openSpotlight() {
     overlay.classList.remove('hidden');
     inp.focus();
     if (window.lucide) lucide.createIcons();
@@ -3464,23 +3336,6 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   }
 })();
 </script>
-
-  <!-- ⌘K Spotlight Search -->
-  <div id="spotlight-overlay" class="hidden" onclick="if(event.target===this)closeSpotlight()">
-    <div id="spotlight-box">
-      <div id="spotlight-input-wrap">
-        <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
-        <input id="spotlight-input" type="text" placeholder="Joueur, club, tournoi…" autocomplete="off" spellcheck="false">
-        <kbd onclick="closeSpotlight()" style="cursor:pointer;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#94a3b8">Esc</kbd>
-      </div>
-      <div id="spotlight-results"><div class="sp-empty">Tape pour rechercher…</div></div>
-      <div class="sp-footer">
-        <span><kbd>↑↓</kbd> naviguer</span>
-        <span><kbd>↵</kbd> ouvrir</span>
-        <span><kbd id="sp-shortcut-hint">⌘K</kbd> fermer</span>
-      </div>
-    </div>
-  </div>
 
 </body>
 </html>
