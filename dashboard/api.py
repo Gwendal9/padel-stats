@@ -279,9 +279,15 @@ def route_leaderboard():
         conditions.append("j.sexe = ?")
         params.append(sexe)
 
+    ville  = request.args.get("ville", "").strip()
+
     if club:
         conditions.append("j.club_nom LIKE ?")
         params.append("%" + club + "%")
+
+    if ville:
+        conditions.append("j.ville LIKE ?")
+        params.append("%" + ville + "%")
 
     if q:
         pattern = "%" + q + "%"
@@ -477,7 +483,7 @@ def route_tournament(tid: str):
         FROM participations p
         JOIN joueurs j ON j.id_fft = p.id_joueur
         WHERE p.id_tournoi = ?
-        ORDER BY p.position ASC, j.classement ASC NULLS LAST
+        ORDER BY CAST(p.position AS INTEGER) ASC, j.classement ASC
     """, (tid,))
 
     # Deduplicate pairs (same position + same pair appears twice)

@@ -1690,6 +1690,16 @@ async function loadPlayerProfile(playerId) {
   updateWrappedBanner(data);
 }
 
+// ── loadSuggestions — raccourci profil → suggesteur ─────────────────────────
+function loadSuggestions(playerId, nomComplet) {
+  document.querySelector('[data-view="partners"]')?.click();
+  setTimeout(() => {
+    const inp = document.getElementById('sugg-search-input');
+    if (inp) inp.value = nomComplet || '';
+    window.runSuggester?.(playerId, nomComplet);
+  }, 80);
+}
+
 // ── Carte Leaflet ─────────────────────────────────────────────────────────────
 const map = L.map('map').setView([46.5, 2.5], 6);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -2063,7 +2073,8 @@ setupAutocomplete('lb-search', 'ac-lb', player => {
 async function exportLeaderboardCSV() {
   const params = new URLSearchParams({
     sexe:  lbState.sexe,
-    club:  lbState.club || lbState.region,
+    club:  lbState.club,
+    ville: lbState.region,
     q:     lbState.q,
     age:   lbState.age,
     offset: 0,
@@ -2116,7 +2127,13 @@ function lbRowHtml(p, rank) {
     <td class="py-3 px-4 text-slate-600 text-sm">${p.ville||'—'}</td>
     <td class="py-3 px-4 text-right text-slate-500 text-sm">${meilleur}</td>
     <td class="py-3 px-4 text-right text-sm">${p.nb_tournois||0}</td>
-    <td class="py-3 px-4 text-right"><span class="trend text-slate-400">—</span></td>
+    <td class="py-3 px-4 text-right">${(() => {
+      const diff = p.classement && p.meilleur_classement ? p.classement - p.meilleur_classement : null;
+      if (diff === null) return '<span class="trend text-slate-400">—</span>';
+      if (diff === 0)    return '<span class="trend text-teal-600 font-semibold" title="À son meilleur">★</span>';
+      if (diff < 0)      return `<span class="trend text-emerald-600">▲${Math.abs(diff).toLocaleString('fr-FR')}</span>`;
+      return `<span class="trend text-red-400">▼${diff.toLocaleString('fr-FR')}</span>`;
+    })()}</td>
   </tr>`;
 }
 
@@ -2141,7 +2158,8 @@ async function loadLeaderboard(reset=false) {
 
   const params = new URLSearchParams({
     sexe:   lbState.sexe,
-    club:   lbState.club || lbState.region,
+    club:   lbState.club,
+    ville:  lbState.region,
     q:      lbState.q,
     age:    lbState.age,
     offset: lbState.offset,
@@ -2526,9 +2544,15 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
     try {
       const data = await apiFetch(`/api/ego/${pid}?depth=${depth}`);
+      if (!data || !data.nodes) {
+        document.getElementById('graph-loading').classList.add('hidden');
+        document.getElementById('graph-empty').classList.remove('hidden');
+        showNotif('Aucune donnée de graphe disponible pour ce joueur.', 'error');
+        return;
+      }
 
       // Filter by min weight
-      const filteredLinks = data.links.filter(l => l.weight >= minW);
+      const filteredLinks = (data.links || []).filter(l => l.weight >= minW);
       const keptIds = new Set();
       filteredLinks.forEach(l => { keptIds.add(l.source); keptIds.add(l.target); });
       // Always keep center
@@ -2784,11 +2808,11 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
     const bodyH = document.getElementById('club-top-h');
     const bodyF = document.getElementById('club-top-f');
-    bodyH.innerHTML = data.top_h.length
-      ? data.top_h.map((p, i) => playerRow(p, i)).join('')
+    bodyH.innerHTML = (data.top_h || []).length
+      ? (data.top_h || []).map((p, i) => playerRow(p, i)).join('')
       : '<tr><td colspan="4" class="py-6 text-center text-slate-400 text-sm">Aucun joueur classé</td></tr>';
-    bodyF.innerHTML = data.top_f.length
-      ? data.top_f.map((p, i) => playerRow(p, i)).join('')
+    bodyF.innerHTML = (data.top_f || []).length
+      ? (data.top_f || []).map((p, i) => playerRow(p, i)).join('')
       : '<tr><td colspan="4" class="py-6 text-center text-slate-400 text-sm">Aucune joueuse classée</td></tr>';
 
     if (window.lucide) lucide.createIcons();
@@ -2808,12 +2832,9 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     const q = inp.value.trim();
     if (q.length < 2) { ac.hidden = true; return; }
     t = setTimeout(async () => {
-      const data = await apiFetch(`/api/clubs?top=10&q=${encodeURIComponent(q)}`);
-      if (!data) return;
-      // Filter client-side by name match
-      const matches = data.filter(c => c.nom.toUpperCase().includes(q.toUpperCase())).slice(0, 8);
-      if (!matches.length) { ac.hidden = true; return; }
-      ac.innerHTML = matches.map(c => `
+      const data = await apiFetch(`/api/clubs?top=8&q=${encodeURIComponent(q)}`);
+      if (!data || !data.length) { ac.hidden = true; return; }
+      ac.innerHTML = data.map(c => `
         <div class="px-3 py-2 hover:bg-teal-50 cursor-pointer text-sm lb-club-item"
           data-val="${c.nom}">
           <span class="font-medium">${c.nom}</span>
@@ -3092,7 +3113,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       if (titleEl)    titleEl.textContent    = `${suggestions.length} partenaire${suggestions.length !== 1 ? 's' : ''} suggéré${suggestions.length !== 1 ? 's' : ''} pour ${suggCurrentLabel}`;
       if (subtitleEl) subtitleEl.textContent = 'Trié par score de compatibilité décroissant';
 
-      if (suggestions.length === 0) {
+      if (!suggestions || !suggestions.length) {
         grid.innerHTML = `<div class="col-span-3 text-center text-slate-400 py-12 text-sm">
           Aucun partenaire trouvé — essaie d'élargir les critères ou vérifie que le serveur est démarré.
         </div>`;
