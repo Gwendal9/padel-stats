@@ -263,6 +263,58 @@
     background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%; animation: shimmer 1.6s infinite linear;
   }
+
+  /* ── Spotlight ⌘K ─────────────────────────────────────── */
+  #spotlight-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 12vh;
+  }
+  #spotlight-overlay.hidden { display: none; }
+  #spotlight-box {
+    width: 100%; max-width: 560px; background: #fff;
+    border-radius: 14px; box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.12);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  #spotlight-input-wrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid #e2e8f0;
+  }
+  #spotlight-input {
+    flex: 1; border: none; outline: none; font-size: 16px;
+    color: #0f172a; background: transparent;
+  }
+  #spotlight-input::placeholder { color: #94a3b8; }
+  #spotlight-results {
+    max-height: 380px; overflow-y: auto; padding: 6px 0;
+  }
+  .sp-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    color: #94a3b8; text-transform: uppercase;
+    padding: 8px 16px 4px;
+  }
+  .sp-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; cursor: pointer; transition: background .1s;
+  }
+  .sp-item:hover, .sp-item.sp-active { background: #f0fdfa; }
+  .sp-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sp-label { font-size: 14px; font-weight: 500; color: #0f172a; }
+  .sp-sub   { font-size: 12px; color: #64748b; margin-top: 1px; }
+  .sp-empty { padding: 24px 16px; text-align: center; color: #94a3b8; font-size: 14px; }
+  .sp-footer {
+    display: flex; gap: 16px; align-items: center;
+    padding: 10px 16px; border-top: 1px solid #f1f5f9;
+    font-size: 11px; color: #94a3b8;
+  }
+  .sp-footer kbd {
+    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px;
+    padding: 1px 5px; font-size: 11px; color: #64748b; margin-right: 4px;
+  }
 </style>
 </head>
 
@@ -1167,7 +1219,7 @@ async function loadDashboardStats() {
 
   // ── Charts ───────────────────────────────────────────────────────────────
   // Pyramide âges
-  if (chartPyramid) {
+  if (chartPyramid && stats.pyramid?.hommes?.length) {
     const hommes = stats.pyramid.hommes.map(v => -v);
     chartPyramid.data.datasets[0].data = hommes;
     chartPyramid.data.datasets[1].data = stats.pyramid.femmes;
@@ -1176,7 +1228,7 @@ async function loadDashboardStats() {
   }
 
   // Activité mensuelle
-  if (chartTournois) {
+  if (chartTournois && stats.monthly?.labels?.length) {
     chartTournois.data.labels = stats.monthly.labels;
     chartTournois.data.datasets[0].data = stats.monthly.data;
     chartTournois.update();
@@ -1201,7 +1253,7 @@ async function loadDashboardStats() {
   });
 
   // Top villes / régions
-  if (chartRegions) {
+  if (chartRegions && stats.top_villes?.length) {
     chartRegions.data.labels = stats.top_villes.map(v => v.ville);
     chartRegions.data.datasets[0].data = stats.top_villes.map(v => v.nb);
     chartRegions.update();
@@ -1848,6 +1900,24 @@ darkStyles.textContent = `
   body.dark-mode .text-slate-900 { color:#e2e8f0 !important; }
   body.dark-mode .row-me, body.dark-mode .row-me td { background:#2d2106 !important; }
   body.dark-mode .leaderboard-scroll { scrollbar-color:#334155 #1e293b; }
+  body.dark-mode .nav-sidebar { background:#1e293b; border-color:#334155; }
+  body.dark-mode .nav-item { color:#cbd5e1; }
+  body.dark-mode .nav-item:hover { background:#334155; color:#e2e8f0; }
+  body.dark-mode .nav-item.active { background:#0d9488; color:#fff; }
+  body.dark-mode .section-title { color:#94a3b8; }
+  body.dark-mode .kpi-value { color:#e2e8f0; }
+  body.dark-mode .kpi-sub { color:#64748b; }
+  body.dark-mode .badge { background:#334155; color:#cbd5e1; }
+  body.dark-mode .bg-white { background:#1e293b !important; }
+  body.dark-mode #spotlight-box { background:#1e293b; }
+  body.dark-mode #spotlight-input-wrap { border-color:#334155; }
+  body.dark-mode #spotlight-input { color:#e2e8f0; }
+  body.dark-mode .sp-item:hover, body.dark-mode .sp-item.sp-active { background:#0f2d2b; }
+  body.dark-mode .sp-footer { border-color:#334155; }
+  body.dark-mode .sp-footer kbd { background:#334155; border-color:#475569; color:#cbd5e1; }
+  body.dark-mode .sp-label { color:#e2e8f0; }
+  body.dark-mode .sp-sub { color:#94a3b8; }
+  body.dark-mode .chart-skel { background:#1e293b; }
 `;
 document.head.appendChild(darkStyles);
 

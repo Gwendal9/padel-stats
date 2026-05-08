@@ -44,7 +44,8 @@ def get_schema(sq_conn, table: str) -> list[tuple]:
 def create_table(pg_conn, table: str, schema: list[tuple]):
     pk_cols = [c[0] for c in schema if c[2]]
     col_defs = ", ".join(f'"{c[0]}" {c[1]}' for c in schema)
-    pk_clause = f", PRIMARY KEY ({', '.join(f\"{c}\" for c in pk_cols)})" if pk_cols else ""
+    pk_quoted = ", ".join('"' + c + '"' for c in pk_cols)
+    pk_clause = f", PRIMARY KEY ({pk_quoted})" if pk_cols else ""
     ddl = f'CREATE TABLE IF NOT EXISTS "{table}" ({col_defs}{pk_clause});'
     with pg_conn.cursor() as cur:
         cur.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE;')

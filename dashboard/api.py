@@ -154,7 +154,8 @@ def route_stats():
     try:
         if USE_POSTGRES:
             month_rows = fetchall("""
-                SELECT TO_CHAR(MIN(date_tournoi::date), 'MM/YYYY') AS mois,
+                SELECT TO_CHAR(DATE_TRUNC('month', date_tournoi::date), 'Mon YYYY') AS mois,
+                       DATE_TRUNC('month', date_tournoi::date) AS mois_sort,
                        COUNT(DISTINCT id_tournoi) AS nb
                 FROM participations
                 WHERE date_tournoi IS NOT NULL
@@ -181,10 +182,16 @@ def route_stats():
                     monthly[mois] += 1
                 except Exception:
                     continue
+            MONTH_ABBR = {
+                '01':'Jan','02':'Fév','03':'Mar','04':'Avr','05':'Mai','06':'Jun',
+                '07':'Jul','08':'Aoû','09':'Sep','10':'Oct','11':'Nov','12':'Déc'
+            }
             def _sort_key(m):
                 mm, yyyy = m.split("/")
                 return (int(yyyy), int(mm))
-            last_12 = sorted(monthly.items(), key=lambda x: _sort_key(x[0]))[-12:]
+            raw_12 = sorted(monthly.items(), key=lambda x: _sort_key(x[0]))[-12:]
+            last_12 = [(MONTH_ABBR.get(m.split('/')[0], m.split('/')[0]) + ' ' + m.split('/')[1], nb)
+                       for m, nb in raw_12]
     except Exception:
         last_12 = []
 
