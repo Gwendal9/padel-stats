@@ -859,10 +859,11 @@
           <option>Couleur : classement moyen</option><option>Couleur : nb licenciés</option><option>Couleur : nb tournois</option>
         </select>
         <select class="px-3 py-2 rounded-lg border border-slate-200 bg-white"><option>Toutes régions</option><option>Île-de-France</option><option>PACA</option></select>
-        <div class="relative flex-1 min-w-48">
-          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-          <input type="text" placeholder="Trouver un club..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 w-full">
-        </div>
+        <button class="btn-ghost flex items-center gap-2 text-sm" onclick="openSpotlight()">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+          <span class="text-slate-500">Rechercher un club…</span>
+          <kbd class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" id="map-shortcut-badge">⌘K</kbd>
+        </button>
       </div>
       <div id="map" class="card"></div>
       <div class="text-xs text-slate-500 mt-2 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i>Aperçu : 5 clubs principaux. La vraie map affichera ~3 000 clubs FFT.</div>
@@ -1056,6 +1057,11 @@ document.querySelectorAll('[data-view]').forEach(el => {
     document.querySelector(`.nav-item[data-view="${v}"]`)?.classList.add('active');
     document.getElementById('page-title').textContent = titles[v]?.[0] || '';
     document.getElementById('page-subtitle').textContent = titles[v]?.[1] || '';
+    // Vider la barre de recherche globale à chaque changement de vue
+    const gs = document.getElementById('global-search');
+    if (gs) gs.value = '';
+    const acg = document.getElementById('ac-global');
+    if (acg) acg.hidden = true;
     if (v === 'map') setTimeout(() => map.invalidateSize(), 100);
     if (v === 'graph') {
       // Reset graph view state if no player loaded yet
@@ -1293,8 +1299,8 @@ async function loadDashboardTops() {
   const elH = document.getElementById('dash-top5-h');
   const elF = document.getElementById('dash-top5-f');
 
-  if (elH && resH) elH.innerHTML = resH.players.map((p,i) => top5Row(p,i+1)).join('');
-  if (elF && resF) elF.innerHTML = resF.players.map((p,i) => top5Row(p,i+1)).join('');
+  if (elH && resH?.players?.length) elH.innerHTML = resH.players.map((p,i) => top5Row(p,i+1)).join('');
+  if (elF && resF?.players?.length) elF.innerHTML = resF.players.map((p,i) => top5Row(p,i+1)).join('');
   if (window.lucide) lucide.createIcons();
 }
 loadDashboardTops();
@@ -1975,13 +1981,7 @@ function loadDefaultPlayer() {
   try { return JSON.parse(localStorage.getItem(LS_PLAYER)); } catch { return null; }
 }
 
-// Pré-remplir la barre de recherche globale si un joueur est mémorisé
-(function applyStoredPlayer() {
-  const p = loadDefaultPlayer();
-  if (!p) return;
-  const inp = document.getElementById('global-search');
-  if (inp && !inp.value) inp.value = p.nom_complet || '';
-})();
+// (global-search est un déclencheur Spotlight — pas de pré-remplissage)
 
 // ── 4. Badge "À son meilleur" ────────────────────────────────────────────────
 
@@ -2032,22 +2032,7 @@ function setupAutocomplete(inputId, popupId, onSelect) {
   input.addEventListener('blur',    ()  => setTimeout(() => { popup.hidden = true; }, 150));
 }
 
-// Recherche globale → profil joueur
-setupAutocomplete('global-search', 'ac-global', player => {
-  const inp = document.getElementById('global-search');
-  if (inp) inp.value = player.nom_complet;
-  saveDefaultPlayer(player);
-  loadPlayerProfile(player.id);
-});
-
-// Entrée sur la recherche globale → charge le premier résultat
-document.getElementById('global-search')?.addEventListener('keydown', async e => {
-  if (e.key !== 'Enter') return;
-  const q = e.target.value.trim();
-  if (q.length < 2) return;
-  const results = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=1`);
-  if (results && results.length) { saveDefaultPlayer(results[0]); loadPlayerProfile(results[0].id); e.target.value = results[0].nom_complet; }
-});
+// Recherche globale → Spotlight (⌘K) — pas d'autocomplete direct
 
 // Recherche leaderboard → filtre
 setupAutocomplete('lb-search', 'ac-lb', player => {
@@ -3341,6 +3326,8 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   const hintEl  = document.getElementById('sp-shortcut-hint');
   if (badgeEl) badgeEl.textContent = shortcutLabel;
   if (hintEl)  hintEl.textContent  = shortcutLabel;
+  const mapBadge = document.getElementById('map-shortcut-badge');
+  if (mapBadge) mapBadge.textContent = shortcutLabel;
 
   const overlay = document.getElementById('spotlight-overlay');
   const inp     = document.getElementById('spotlight-input');
@@ -3348,6 +3335,9 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   let spTimer = null, spActive = -1, spItems = [];
 
   window.closeSpotlight = function() {
+    inp.value = '';
+    results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
+    spActive = -1; spItems = [];
     overlay.classList.add('hidden');
     inp.value = '';
     results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
@@ -3460,6 +3450,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
         const action = el.dataset.action;
         closeSpotlight();
         if (action === 'player') {
+          saveDefaultPlayer({ id: el.dataset.id, nom_complet: el.dataset.name });
           loadPlayerProfile(el.dataset.id);
         } else if (action === 'club') {
           document.querySelector('[data-view="club"]')?.click();
