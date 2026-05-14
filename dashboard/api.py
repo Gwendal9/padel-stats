@@ -14,6 +14,7 @@ Routes :
   GET /api/health                    → santé
 """
 import os
+import re
 import sys
 import datetime
 from collections import defaultdict
@@ -104,7 +105,21 @@ def route_stats():
           SUM(CASE WHEN classement BETWEEN 5001 AND 20000 THEN 1 ELSE 0 END) AS c5k_20k,
           SUM(CASE WHEN classement BETWEEN 20001 AND 40000 THEN 1 ELSE 0 END) AS c20k_40k,
           SUM(CASE WHEN classement BETWEEN 40001 AND 80000 THEN 1 ELSE 0 END) AS c40k_80k,
-          SUM(CASE WHEN classement > 80000 THEN 1 ELSE 0 END)               AS c80kplus
+          SUM(CASE WHEN classement > 80000 THEN 1 ELSE 0 END)               AS c80kplus,
+          SUM(CASE WHEN classement <= 100 AND sexe='H' THEN 1 ELSE 0 END)                AS top100_h,
+          SUM(CASE WHEN classement BETWEEN 101 AND 1000 AND sexe='H' THEN 1 ELSE 0 END)  AS c100_1k_h,
+          SUM(CASE WHEN classement BETWEEN 1001 AND 5000 AND sexe='H' THEN 1 ELSE 0 END) AS c1k_5k_h,
+          SUM(CASE WHEN classement BETWEEN 5001 AND 20000 AND sexe='H' THEN 1 ELSE 0 END) AS c5k_20k_h,
+          SUM(CASE WHEN classement BETWEEN 20001 AND 40000 AND sexe='H' THEN 1 ELSE 0 END) AS c20k_40k_h,
+          SUM(CASE WHEN classement BETWEEN 40001 AND 80000 AND sexe='H' THEN 1 ELSE 0 END) AS c40k_80k_h,
+          SUM(CASE WHEN classement > 80000 AND sexe='H' THEN 1 ELSE 0 END)               AS c80kplus_h,
+          SUM(CASE WHEN classement <= 100 AND sexe='F' THEN 1 ELSE 0 END)                AS top100_f,
+          SUM(CASE WHEN classement BETWEEN 101 AND 1000 AND sexe='F' THEN 1 ELSE 0 END)  AS c100_1k_f,
+          SUM(CASE WHEN classement BETWEEN 1001 AND 5000 AND sexe='F' THEN 1 ELSE 0 END) AS c1k_5k_f,
+          SUM(CASE WHEN classement BETWEEN 5001 AND 20000 AND sexe='F' THEN 1 ELSE 0 END) AS c5k_20k_f,
+          SUM(CASE WHEN classement BETWEEN 20001 AND 40000 AND sexe='F' THEN 1 ELSE 0 END) AS c20k_40k_f,
+          SUM(CASE WHEN classement BETWEEN 40001 AND 80000 AND sexe='F' THEN 1 ELSE 0 END) AS c40k_80k_f,
+          SUM(CASE WHEN classement > 80000 AND sexe='F' THEN 1 ELSE 0 END)               AS c80kplus_f
         FROM joueurs WHERE classement IS NOT NULL
     """) or {}
 
@@ -154,14 +169,14 @@ def route_stats():
     try:
         if USE_POSTGRES:
             month_rows = fetchall("""
-                SELECT TO_CHAR(DATE_TRUNC('month', date_tournoi::date), 'Mon YYYY') AS mois,
-                       DATE_TRUNC('month', date_tournoi::date) AS mois_sort,
+                SELECT TO_CHAR(DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')), 'Mon YYYY') AS mois,
+                       DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')) AS mois_sort,
                        COUNT(DISTINCT id_tournoi) AS nb
                 FROM participations
                 WHERE date_tournoi IS NOT NULL
-                  AND date_tournoi ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                GROUP BY DATE_TRUNC('month', date_tournoi::date)
-                ORDER BY DATE_TRUNC('month', date_tournoi::date) DESC
+                  AND date_tournoi ~ '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                GROUP BY DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY'))
+                ORDER BY DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')) DESC
                 LIMIT 12
             """)
             last_12 = [(r["mois"], r["nb"]) for r in reversed(month_rows)]
@@ -246,6 +261,18 @@ def route_stats():
             ranking.get("c20k_40k", 0), ranking.get("c40k_80k", 0),
             ranking.get("c80kplus", 0),
         ],
+        "ranking_dist_h": [
+            ranking.get("top100_h", 0), ranking.get("c100_1k_h", 0),
+            ranking.get("c1k_5k_h", 0), ranking.get("c5k_20k_h", 0),
+            ranking.get("c20k_40k_h", 0), ranking.get("c40k_80k_h", 0),
+            ranking.get("c80kplus_h", 0),
+        ],
+        "ranking_dist_f": [
+            ranking.get("top100_f", 0), ranking.get("c100_1k_f", 0),
+            ranking.get("c1k_5k_f", 0), ranking.get("c5k_20k_f", 0),
+            ranking.get("c20k_40k_f", 0), ranking.get("c40k_80k_f", 0),
+            ranking.get("c80kplus_f", 0),
+        ],
         "pyramid": {
             "labels": ["<18", "18-25", "26-35", "36-45", "46-55", "56-65", "65+"],
             "hommes": pyramid["H"],
@@ -265,12 +292,13 @@ def route_leaderboard():
     from db import fetchall, fetchone
     current_year = datetime.date.today().year
 
-    sexe   = request.args.get("sexe", "H").upper()
-    club   = request.args.get("club", "").strip()
-    q      = request.args.get("q", "").strip()
-    age    = request.args.get("age", "")
-    offset = max(0, int(request.args.get("offset", 0)))
-    limit  = min(int(request.args.get("limit", 50)), 100)
+    sexe          = request.args.get("sexe", "H").upper()
+    club          = request.args.get("club", "").strip()
+    club_variants = request.args.getlist("club_variant")  # liste de noms exacts
+    q             = request.args.get("q", "").strip()
+    age           = request.args.get("age", "")
+    offset        = max(0, int(request.args.get("offset", 0)))
+    limit         = min(int(request.args.get("limit", 50)), 100)
 
     conditions = ["j.classement IS NOT NULL"]
     params = []
@@ -281,8 +309,14 @@ def route_leaderboard():
 
     ville  = request.args.get("ville", "").strip()
 
-    if club:
-        conditions.append("j.club_nom LIKE ?")
+    if club_variants:
+        # Filtre multi-variantes : IN liste exacte
+        placeholders = ",".join(["?" ] * len(club_variants))
+        conditions.append(f"j.club_nom IN ({placeholders})")
+        params.extend(club_variants)
+    elif club:
+        like_op = "ILIKE" if USE_POSTGRES else "LIKE"
+        conditions.append(f"j.club_nom {like_op} ?")
         params.append("%" + club + "%")
 
     if ville:
@@ -323,14 +357,14 @@ def route_leaderboard():
     )
 
     def fmt(r):
-        age_val = None
-        try:
-            if r.get("naissance") and str(r["naissance"]).isdigit():
-                age_val = current_year - int(r["naissance"])
-        except Exception:
-            pass
         prenom = (r.get("prenom") or "").strip()
         nom    = r.get("nom") or ""
+        naissance_annee = None
+        try:
+            if r.get("naissance") and str(r["naissance"]).isdigit():
+                naissance_annee = int(r["naissance"])
+        except Exception:
+            pass
         return {
             "id":                  r["id_fft"],
             "nom":                 nom,
@@ -341,7 +375,7 @@ def route_leaderboard():
             "club":                r["club_nom"] or "",
             "ville":               r["ville"] or "",
             "sexe":                r["sexe"] or "",
-            "age":                 age_val,
+            "naissance_annee":     naissance_annee,
             "nb_tournois":         r["nb_tournois"] or 0,
         }
 
@@ -391,31 +425,66 @@ def route_movers():
     })
 
 
+_CLUB_PREFIXES = re.compile(
+    r'^(?:T\.?C\.?\s+|A\.?S\.?\s+|U\.?S\.?\s+|C\.?A\.?\s+|S\.?C\.?\s+|'
+    r'CLUB\s+|CERCLE\s+|TENNIS\s+CLUB\s+)',
+    re.IGNORECASE
+)
+
+def _normalize_club(name: str) -> str:
+    """Supprime les préfixes courants pour permettre la fusion des variantes."""
+    return _CLUB_PREFIXES.sub('', name).upper().strip()
+
+
 @app.get("/api/clubs")
 def route_clubs():
     from db import fetchall
     top = min(int(request.args.get("top", 100)), 500)
     q   = request.args.get("q", "").strip()
+    like_op = "ILIKE" if USE_POSTGRES else "LIKE"
+
     if q:
-        rows = fetchall("""
-            SELECT club_nom, ville, COUNT(*) AS nb_joueurs
+        rows = fetchall(f"""
+            SELECT club_nom, MAX(ville) AS ville, COUNT(*) AS nb_joueurs
             FROM joueurs
             WHERE club_nom IS NOT NULL AND club_nom != ''
-              AND ville    IS NOT NULL AND ville    != ''
-              AND club_nom LIKE ?
-            GROUP BY club_nom, ville
+              AND club_nom {like_op} ?
+            GROUP BY club_nom
             ORDER BY nb_joueurs DESC LIMIT ?
-        """, ("%" + q + "%", top))
+        """, ("%" + q + "%", top * 4))  # fetch more to allow merging
     else:
         rows = fetchall("""
-            SELECT club_nom, ville, COUNT(*) AS nb_joueurs
+            SELECT club_nom, MAX(ville) AS ville, COUNT(*) AS nb_joueurs
             FROM joueurs
             WHERE club_nom IS NOT NULL AND club_nom != ''
-              AND ville    IS NOT NULL AND ville    != ''
-            GROUP BY club_nom, ville
+            GROUP BY club_nom
             ORDER BY nb_joueurs DESC LIMIT ?
-        """, (top,))
-    return jsonify([{"nom": r["club_nom"], "ville": r["ville"], "nb": r["nb_joueurs"]} for r in rows])
+        """, (top * 4,))
+
+    # ── Fusionner les variantes par nom normalisé ────────────────────────────
+    # Ex: "TC LES LILAS" et "LES LILAS" → même clé "LES LILAS", 1 entrée fusionnée
+    merged: dict[str, dict] = {}
+    for r in rows:
+        key = _normalize_club(r["club_nom"])
+        if not key:
+            continue
+        if key not in merged:
+            merged[key] = {"nom": r["club_nom"], "ville": r["ville"],
+                           "nb": r["nb_joueurs"], "variants": [r["club_nom"]]}
+        else:
+            merged[key]["nb"] += r["nb_joueurs"]
+            merged[key]["variants"].append(r["club_nom"])
+            # Garder le nom de variante avec le plus de licenciés
+            if r["nb_joueurs"] > merged[key]["nb"] - r["nb_joueurs"]:
+                merged[key]["nom"] = r["club_nom"]
+                merged[key]["ville"] = r["ville"]
+
+    result = sorted(merged.values(), key=lambda x: -x["nb"])[:top]
+    return jsonify([
+        {"nom": e["nom"], "ville": e["ville"], "nb": e["nb"],
+         "variants": e["variants"]}
+        for e in result
+    ])
 
 
 @app.get("/api/tournaments")
@@ -423,35 +492,29 @@ def route_tournaments():
     from db import fetchall
     q     = request.args.get("q", "").strip()
     limit = min(int(request.args.get("limit", 20)), 50)
+    # Tri chronologique: dates stockées en DD/MM/YYYY → besoin de TO_DATE en PG
+    _date_sort = "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else \
+                 "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
     if q:
-        rows = fetchall("""
+        rows = fetchall(f"""
             SELECT t.id_tournoi, t.nom, t.categorie,
                    MIN(p.date_tournoi) AS date_tournoi,
                    COUNT(DISTINCT p.id_joueur) AS nb_joueurs
             FROM tournois t
             JOIN participations p ON p.id_tournoi = t.id_tournoi
-            WHERE t.nom ILIKE ?
+            WHERE t.nom {'ILIKE' if USE_POSTGRES else 'LIKE'} ?
             GROUP BY t.id_tournoi, t.nom, t.categorie
-            ORDER BY date_tournoi DESC LIMIT ?
-        """, ("%" + q + "%", limit)) if USE_POSTGRES else fetchall("""
-            SELECT t.id_tournoi, t.nom, t.categorie,
-                   MIN(p.date_tournoi) AS date_tournoi,
-                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
-            FROM tournois t
-            JOIN participations p ON p.id_tournoi = t.id_tournoi
-            WHERE t.nom LIKE ?
-            GROUP BY t.id_tournoi, t.nom, t.categorie
-            ORDER BY date_tournoi DESC LIMIT ?
+            ORDER BY {_date_sort} LIMIT ?
         """, ("%" + q + "%", limit))
     else:
-        rows = fetchall("""
+        rows = fetchall(f"""
             SELECT t.id_tournoi, t.nom, t.categorie,
                    MIN(p.date_tournoi) AS date_tournoi,
                    COUNT(DISTINCT p.id_joueur) AS nb_joueurs
             FROM tournois t
             JOIN participations p ON p.id_tournoi = t.id_tournoi
             GROUP BY t.id_tournoi, t.nom, t.categorie
-            ORDER BY date_tournoi DESC LIMIT ?
+            ORDER BY {_date_sort} LIMIT ?
         """, (limit,))
     return jsonify([{
         "id": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
@@ -541,22 +604,22 @@ def route_club():
         SELECT ville FROM joueurs WHERE club_nom = ? AND ville IS NOT NULL LIMIT 1
     """, (nom,)) or {}
 
-    # Top joueurs hommes
+    # Top joueurs hommes (tous les membres classés)
     top_h = fetchall("""
         SELECT id_fft, nom, prenom, classement, meilleur_classement,
                (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois
         FROM joueurs j
         WHERE club_nom = ? AND sexe = 'H' AND classement IS NOT NULL
-        ORDER BY classement ASC LIMIT 8
+        ORDER BY classement ASC LIMIT 100
     """, (nom,))
 
-    # Top joueurs femmes
+    # Top joueurs femmes (toutes les membres classées)
     top_f = fetchall("""
         SELECT id_fft, nom, prenom, classement, meilleur_classement,
                (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois
         FROM joueurs j
         WHERE club_nom = ? AND sexe = 'F' AND classement IS NOT NULL
-        ORDER BY classement ASC LIMIT 8
+        ORDER BY classement ASC LIMIT 100
     """, (nom,))
 
     def fmt(r):

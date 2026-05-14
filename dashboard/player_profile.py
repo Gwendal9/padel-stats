@@ -6,9 +6,10 @@ Fonctions exportées :
   get_player_profile(id)     → profil complet (stats, trophy shelf, partenaires, championnats)
 """
 import re
+import datetime
 from collections import defaultdict
 
-from db import fetchall, fetchone, fetchval
+from db import fetchall, fetchone, fetchval, USE_POSTGRES
 
 # Catégories "journées classiques" ordonnées par niveau
 CAT_CLASSIQUES = ["P25", "P50", "P100", "P250", "P500", "P1000", "P1500", "P2000", "P3000"]
@@ -49,9 +50,9 @@ def search_players(q: str, limit: int = 20) -> list[dict]:
 
 
 def _fmt_joueur(r: dict) -> dict:
-    age = None
+    naissance_annee = None
     if r.get("naissance") and str(r["naissance"]).isdigit():
-        age = 2026 - int(r["naissance"])
+        naissance_annee = int(r["naissance"])
     return {
         "id":                  r["id_fft"],
         "nom":                 r["nom"] or "",
@@ -62,7 +63,9 @@ def _fmt_joueur(r: dict) -> dict:
         "club":                r["club_nom"] or "",
         "ville":               r["ville"] or "",
         "sexe":                r["sexe"] or "",
-        "age":                 age,
+        # On ne stocke que l'année de naissance → l'âge peut être faux de ±1 an
+        # selon si l'anniversaire est passé ou non ; on expose l'année brute.
+        "naissance_annee":     naissance_annee,
     }
 
 
@@ -93,14 +96,17 @@ def get_player_profile(player_id: str) -> dict | None:
     joueur = _fmt_joueur(base)
 
     # ── Toutes ses participations ─────────────────────────────────────────
+    # Dates stored as DD/MM/YYYY → must convert for correct chronological sort.
+    _date_order = ("TO_DATE(p.date_tournoi, 'DD/MM/YYYY')" if USE_POSTGRES
+                   else "SUBSTR(p.date_tournoi,7,4)||SUBSTR(p.date_tournoi,4,2)||SUBSTR(p.date_tournoi,1,2)")
     parts = fetchall(
-        """
+        f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
                p.date_tournoi, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi
         FROM participations p
         JOIN tournois t ON p.id_tournoi = t.id_tournoi
         WHERE p.id_joueur = ?
-        ORDER BY p.date_tournoi DESC
+        ORDER BY {_date_order} DESC
         """,
         (player_id,),
     )

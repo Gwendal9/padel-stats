@@ -9,6 +9,7 @@ Critères de scoring (sur 100) :
   Bonus      : Ami d'ami réseau (+15)
   Bonus      : Âge proche ±5 ans (+5)
 """
+import datetime
 from collections import defaultdict
 
 from db import fetchall, fetchone
@@ -34,7 +35,8 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
     ref_cl    = ref["classement"] or 0
     ref_ville = (ref["ville"] or "").upper().strip()
     ref_sexe  = ref["sexe"] or "H"
-    ref_age   = 2026 - int(ref["naissance"]) if ref["naissance"] and str(ref["naissance"]).isdigit() else None
+    _year     = datetime.date.today().year
+    ref_age   = _year - int(ref["naissance"]) if ref["naissance"] and str(ref["naissance"]).isdigit() else None
 
     # ── Partenaires déjà joués (à exclure) ───────────────────────────────
     deja_joue = set()
@@ -125,7 +127,7 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
 
         # — Âge proche (+5 pts) —
         if ref_age and c.get("naissance") and str(c["naissance"]).isdigit():
-            c_age = 2026 - int(c["naissance"])
+            c_age = _year - int(c["naissance"])
             if abs(c_age - ref_age) <= 5:
                 score += 5
                 tags.append("âge_proche")

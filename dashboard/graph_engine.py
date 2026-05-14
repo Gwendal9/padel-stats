@@ -83,6 +83,7 @@ class GraphEngine:
 
         self._loaded = True
         print(f"[GraphEngine] {len(self.player_info):,} joueurs · {len(rows):,} liens chargés")
+        self._build_anon_megahubs()
 
     def _ensure_loaded(self):
         if not self._loaded:
@@ -147,6 +148,34 @@ class GraphEngine:
 
     # ── Ego graph ────────────────────────────────────────────────────────────
 
+    # IDs des mega-hubs anonymes (calculés au chargement) — faux liens à exclure totalement
+    _anon_megahubs: set = set()
+    # Seuil : un anonyme lié à plus de ANON_HUB_THRESHOLD joueurs différents = artefact
+    ANON_HUB_THRESHOLD = 50
+
+    def _build_anon_megahubs(self):
+        """Identifie les anonymes dont le degré est anormalement élevé (hubs poubelles)."""
+        self._anon_megahubs = set()
+        for pid, neighbors in self.graph.items():
+            info = self.player_info.get(pid, {})
+            nom = (info.get("nom", "") or "").upper().strip()
+            if nom == "ANONYME" and len(neighbors) > self.ANON_HUB_THRESHOLD:
+                self._anon_megahubs.add(pid)
+        # L'ID vide est toujours un mega-hub (saisie manquante)
+        if "" in self.graph:
+            self._anon_megahubs.add("")
+        print(f"[GraphEngine] {len(self._anon_megahubs)} mega-hub(s) anonyme(s) exclus du graphe")
+
+    def _is_anon_megahub(self, pid: str) -> bool:
+        """Vrai si ce joueur est un hub poubelle à exclure des traversées."""
+        return pid in self._anon_megahubs
+
+    def _is_anonymous(self, pid: str) -> bool:
+        """Vrai si le joueur est un 'Joueur Anonyme' (petit ou mega-hub)."""
+        info = self.player_info.get(pid, {})
+        nom = (info.get("nom", "") or "").upper().strip()
+        return nom == "ANONYME"
+
     def ego_graph(self, player_id: str, depth: int = 2) -> dict:
         self._ensure_loaded()
 
@@ -162,25 +191,39 @@ class GraphEngine:
             if dist >= depth:
                 continue
             for neighbor, poids in self.graph.get(node, {}).items():
+                # Exclure les mega-hubs (faux liens entre ~20k joueurs)
+                if self._is_anon_megahub(neighbor):
+                    continue
+                # Les petits anonymes (1 seul vrai partenaire) : inclure mais sans aller plus loin
+                is_anon = self._is_anonymous(neighbor)
                 link_key = (min(node, neighbor), max(node, neighbor))
                 link_set.add((link_key[0], link_key[1], poids))
                 if neighbor not in visited:
                     visited[neighbor] = dist + 1
-                    queue.append((neighbor, dist + 1))
+                    # Ne pas traverser depuis un anonyme (évite de relier des inconnus)
+                    if not is_anon:
+                        queue.append((neighbor, dist + 1))
 
         nodes = []
         for pid, degree in visited.items():
             info = self.player_info.get(pid, {})
-            label = f"{info.get('prenom', '')} {info.get('nom', '')}".strip() or pid
+            is_anon = self._is_anonymous(pid)
+            # Pour les anonymes : label neutre avec le nb de tournois joués
+            if is_anon:
+                nb_tournois_anon = self.graph.get(player_id, {}).get(pid, 1)
+                label = f"Partenaire inconnu ({nb_tournois_anon} tournoi{'s' if nb_tournois_anon > 1 else ''})"
+            else:
+                label = f"{info.get('prenom', '')} {info.get('nom', '')}".strip() or pid
             nodes.append({
-                "id":         pid,
-                "label":      label,
-                "classement": info.get("classement"),
-                "club":       info.get("club", ""),
-                "sexe":       info.get("sexe", ""),
-                "ville":      info.get("ville", ""),
-                "degree":     degree,
-                "is_center":  pid == player_id,
+                "id":           pid,
+                "label":        label,
+                "classement":   info.get("classement"),
+                "club":         info.get("club", ""),
+                "sexe":         info.get("sexe", ""),
+                "ville":        info.get("ville", ""),
+                "degree":       degree,
+                "is_center":    pid == player_id,
+                "is_anonymous": is_anon,
             })
 
         links = [
