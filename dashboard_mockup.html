@@ -715,10 +715,12 @@
           <div class="card card-stat">
             <div class="label">Meilleur H</div>
             <div class="value" id="club-best-h">—</div>
+            <div class="delta text-slate-500" id="club-rang-h"></div>
           </div>
           <div class="card card-stat">
             <div class="label">Meilleur F</div>
             <div class="value" id="club-best-f">—</div>
+            <div class="delta text-slate-500" id="club-rang-f"></div>
           </div>
           <div class="card card-stat">
             <div class="label">Top 100</div>
@@ -829,6 +831,45 @@
           <div id="tourn-search-ac" class="ac-popup" hidden></div>
         </div>
         <span class="text-xs text-slate-400">Ou clique sur un tournoi depuis le profil d'un joueur</span>
+      </div>
+
+      <!-- Category stats panel -->
+      <div id="cat-stats-panel" class="card p-5 mb-5">
+        <div class="flex items-center justify-between mb-4">
+          <div class="font-semibold text-sm flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-violet-500"></i>
+            Statistiques par catégorie
+          </div>
+          <div class="tabs" id="cat-stats-tabs">
+            <span class="tab active" data-tab="size">Taille tournois</span>
+            <span class="tab" data-tab="cities">Villes</span>
+          </div>
+        </div>
+        <!-- Size tab -->
+        <div id="cat-tab-size">
+          <canvas id="cat-size-chart" height="200"></canvas>
+        </div>
+        <!-- Cities tab -->
+        <div id="cat-tab-cities" class="hidden">
+          <div class="flex gap-3 mb-3 flex-wrap" id="cat-city-filter">
+            <!-- category buttons will be injected here -->
+          </div>
+          <div id="cat-city-table" class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase">
+                <tr>
+                  <th class="text-left py-2 px-3">Ville</th>
+                  <th class="text-right py-2 px-3">Tournois organisés</th>
+                  <th class="text-right py-2 px-3">% de la catégorie</th>
+                </tr>
+              </thead>
+              <tbody id="cat-city-body">
+                <tr><td colspan="3" class="py-4 text-center text-slate-400 text-xs">Sélectionnez une catégorie</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="cat-stats-loading" class="py-6 text-center text-slate-400 text-sm hidden">Chargement…</div>
       </div>
 
       <!-- Recent tournaments list (default) -->
@@ -1161,7 +1202,7 @@ Chart.defaults.color = '#64748b';
 // ══════════════════════════════════════════════════════════════════════════════
 const CAT_COLOR = {
   'P2000':'#b45309','P1500':'#d97706','P1000':'#0d9488',
-  'P750' :'#0891b2','P500' :'#6366f1','P250' :'#8b5cf6','P100' :'#94a3b8',
+  'P500' :'#6366f1','P250' :'#8b5cf6','P100' :'#94a3b8',
 };
 
 function posScore(p) {
@@ -1394,7 +1435,7 @@ function buildParcoursChart(parcours) {
   const scores = parcours.map(e => posScore(parseInt(e.position) || 99));
   // Couleur par catégorie de tournoi, intensité selon la place atteinte
   const CAT_HUES = {
-    'P25':22,'P50':38,'P100':78,'P250':162,'P500':198,'P750':218,
+    'P25':22,'P50':38,'P100':78,'P250':162,'P500':198,
     'P1000':248,'P1500':268,'P2000':318,'P3000':352
   };
   function parcoursColor(pos, categorie) {
@@ -1475,8 +1516,8 @@ function buildParcoursChart(parcours) {
 
 // ── Rendu complet du profil joueur ────────────────────────────────────────────
 function renderProfile(data) {
-  const MEDAL = ['','🥇','🥈','🥉','4e','5e'];
-  const BADGE_CAT = { P2000:'badge-cat-elite',P1500:'badge-cat-elite',P1000:'badge-cat-pro',P750:'badge-cat-pro',P500:'badge-cat-pro',P250:'badge-cat-mid',P100:'badge-cat-mid',P50:'badge-cat-low',P25:'badge-cat-low' };
+  const MEDAL = ['','🥇','🥈','🥉','🎖️','🏅'];
+  const BADGE_CAT = { P2000:'badge-cat-elite',P1500:'badge-cat-elite',P1000:'badge-cat-pro',P500:'badge-cat-pro',P250:'badge-cat-mid',P100:'badge-cat-mid',P50:'badge-cat-low',P25:'badge-cat-low' };
   const initials = ((data.prenom||'')[0]||'')+((data.nom||'')[0]||'');
   const pct = data.classement ? Math.round((1 - data.classement/153291)*100) : 0;
   const topPct = 100 - pct;
@@ -1487,14 +1528,14 @@ function renderProfile(data) {
   const nbDemis    = dist[3] || 0;
 
   // Trophy shelf rows
-  const CAT_ORDER = ['P25','P50','P100','P250','P500','P750','P1000','P1500','P2000','P3000'];
+  const CAT_ORDER = ['P25','P50','P100','P250','P500','P1000','P1500','P2000','P3000'];
   const shelfRows = Object.keys(data.trophy_shelf||{})
     .sort((a,b)=>CAT_ORDER.indexOf(b)-CAT_ORDER.indexOf(a))
     .map(cat => {
       const counts = data.trophy_shelf[cat];
       // Les clés de counts viennent du backend en string ("1","2"...) — accès forcé en string
       const medals = [1,2,3,4,5].filter(p=>counts[String(p)]>0)
-        .map(p=>`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${p===1?'bg-amber-100 text-amber-800':p===2?'bg-slate-100 text-slate-600':p===3?'bg-orange-100 text-orange-700':'bg-slate-50 text-slate-500'} text-[12px] font-semibold">${MEDAL[p]||p+'e'} ${counts[String(p)]}</span>`).join('');
+        .map(p=>`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${p===1?'bg-amber-100 text-amber-800':p===2?'bg-slate-100 text-slate-600':p===3?'bg-orange-100 text-orange-700':p===4?'bg-blue-50 text-blue-600':'bg-purple-50 text-purple-500'} text-[12px] font-semibold">${MEDAL[p]||p+'e'}${p>=4?` <span class="font-normal opacity-70">(${p}e)</span>`:''} ${counts[String(p)]}</span>`).join('');
       const total = [1,2,3,4,5].reduce((s,p)=>s+(counts[String(p)]||0),0);
       return `<div class="trophy-cat flex items-center gap-3 py-2.5 border-b border-slate-100">
         <div style="width:52px;flex-shrink:0"><span class="badge ${BADGE_CAT[cat]||'badge-cat-mid'} text-[11px]">${cat}</span></div>
@@ -2333,7 +2374,6 @@ function lbRowHtml(p, rank) {
   return `<tr class="${rowClass}" data-player-id="${p.id}" style="cursor:pointer" onclick="loadPlayerProfile('${p.id}')">
     <td class="py-3 px-4">${rankBadge}</td>
     <td class="py-3 px-4"><div class="flex items-center gap-2">
-      <div class="avatar av-sm" style="background:${color};font-size:11px;flex-shrink:0">${inits}</div>
       <span class="font-medium">${p.nom_complet}</span>
       ${isMe ? '<span class="badge badge-gold">toi</span>' : ''}
     </div></td>
@@ -2344,7 +2384,7 @@ function lbRowHtml(p, rank) {
     <td class="py-3 px-4 text-right">${(() => {
       const diff = p.classement && p.meilleur_classement ? p.classement - p.meilleur_classement : null;
       if (diff === null) return '<span class="trend text-slate-400">—</span>';
-      if (diff === 0)    return '<span class="trend text-teal-600 font-semibold" title="À son meilleur">★</span>';
+      if (diff === 0)    return '<span class="badge-atbest" title="À son meilleur niveau">⭐ Best</span>';
       if (diff < 0)      return `<span class="trend text-emerald-600">▲${Math.abs(diff).toLocaleString('fr-FR')}</span>`;
       return `<span class="trend text-red-400">▼${diff.toLocaleString('fr-FR')}</span>`;
     })()}</td>
@@ -2912,8 +2952,16 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       showNotif(`Graph limité à ${MAX_NODES} nœuds les plus connectés (sur ${keptIds.size} au total)`, 'info');
     }
 
-    // Stocker pour expansion ultérieure
-    gCurrentGraphData = { nodes: data.nodes || [], links: data.links || [], rawData: data };
+    // Stocker pour expansion ultérieure — normaliser source/target en strings (D3 les remplace par des objets)
+    gCurrentGraphData = {
+      nodes: data.nodes || [],
+      links: (data.links || []).map(l => ({
+        ...l,
+        source: typeof l.source === 'object' ? l.source.id : l.source,
+        target: typeof l.target === 'object' ? l.target.id : l.target,
+      })),
+      rawData: data
+    };
 
     // Stats
     document.getElementById('gstat-nodes').textContent = filteredNodes.length.toLocaleString();
@@ -2946,6 +2994,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
       // Fusionner avec les données actuelles
       // Les nouveaux nœuds/liens sont marqués _expanded:true pour être colorés différemment
+      // Normaliser source/target en strings (D3 les remplace par des objets après simulation)
       const existingIds  = new Set(gCurrentGraphData.nodes.map(n => n.id));
       const existingLinks= new Set(gCurrentGraphData.links.map(l => {
         const s = typeof l.source === 'object' ? l.source.id : l.source;
@@ -2953,7 +3002,11 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
         return `${s}|${t}`;
       }));
       const mergedNodes = [...gCurrentGraphData.nodes];
-      const mergedLinks = [...gCurrentGraphData.links];
+      const mergedLinks = gCurrentGraphData.links.map(l => ({
+        ...l,
+        source: typeof l.source === 'object' ? l.source.id : l.source,
+        target: typeof l.target === 'object' ? l.target.id : l.target,
+      }));
 
       newData.nodes.forEach(n => {
         if (!existingIds.has(n.id)) {
@@ -3154,6 +3207,183 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   loadRecentTournaments();
 })();
 
+// ── Category stats panel ─────────────────────────────────────────────────────
+(function() {
+  const CAT_ORDER_STATS = ['P25','P50','P100','P250','P500','P1000','P1500','P2000','P3000'];
+  const CAT_COLORS = {
+    P25:'#f59e0b', P50:'#f97316', P100:'#ef4444', P250:'#a855f7',
+    P500:'#8b5cf6', P1000:'#6366f1', P1500:'#3b82f6', P2000:'#06b6d4', P3000:'#10b981'
+  };
+
+  let _catData = null;
+  let _sizeChart = null;
+  let _selectedCat = null;
+
+  async function loadCatStats() {
+    if (_catData) { renderCatStats(); return; }
+    document.getElementById('cat-stats-loading')?.classList.remove('hidden');
+    _catData = await apiFetch('/api/stats/categories');
+    document.getElementById('cat-stats-loading')?.classList.add('hidden');
+    if (_catData) renderCatStats();
+  }
+
+  function renderCatStats() {
+    // Sort by CAT_ORDER_STATS
+    const sorted = (_catData || []).slice().sort((a, b) => {
+      const ai = CAT_ORDER_STATS.indexOf(a.categorie);
+      const bi = CAT_ORDER_STATS.indexOf(b.categorie);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+
+    // Size chart
+    renderSizeChart(sorted);
+
+    // City filter buttons
+    const filterDiv = document.getElementById('cat-city-filter');
+    if (filterDiv) {
+      filterDiv.innerHTML = sorted.map(d => `
+        <button class="cat-city-btn px-3 py-1 rounded-full text-xs font-semibold border transition-all"
+          style="border-color:${CAT_COLORS[d.categorie]||'#94a3b8'};color:${CAT_COLORS[d.categorie]||'#94a3b8'}"
+          data-cat="${d.categorie}">${d.categorie} (${d.nb_tournois})</button>
+      `).join('');
+      filterDiv.querySelectorAll('.cat-city-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterDiv.querySelectorAll('.cat-city-btn').forEach(b => b.classList.remove('selected-cat'));
+          btn.classList.add('selected-cat');
+          btn.style.background = CAT_COLORS[btn.dataset.cat] || '#94a3b8';
+          btn.style.color = 'white';
+          // Reset others
+          filterDiv.querySelectorAll('.cat-city-btn:not(.selected-cat)').forEach(b => {
+            b.style.background = '';
+            b.style.color = CAT_COLORS[b.dataset.cat] || '#94a3b8';
+          });
+          renderCityTable(btn.dataset.cat, sorted);
+        });
+      });
+    }
+  }
+
+  function renderSizeChart(sorted) {
+    const canvas = document.getElementById('cat-size-chart');
+    if (!canvas) return;
+    if (_sizeChart) { _sizeChart.destroy(); _sizeChart = null; }
+    const labels = sorted.map(d => d.categorie);
+    const avgs   = sorted.map(d => d.avg_joueurs);
+    const mins   = sorted.map(d => d.min_joueurs);
+    const maxs   = sorted.map(d => d.max_joueurs);
+    const colors = sorted.map(d => CAT_COLORS[d.categorie] || '#94a3b8');
+    _sizeChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Moy. joueurs',
+            data: avgs,
+            backgroundColor: colors.map(c => c + 'cc'),
+            borderColor: colors,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+          {
+            label: 'Min',
+            data: mins,
+            type: 'line',
+            borderColor: '#94a3b8',
+            backgroundColor: 'transparent',
+            borderDash: [4, 3],
+            pointRadius: 3,
+            borderWidth: 1.5,
+          },
+          {
+            label: 'Max',
+            data: maxs,
+            type: 'line',
+            borderColor: '#475569',
+            backgroundColor: 'transparent',
+            borderDash: [4, 3],
+            pointRadius: 3,
+            borderWidth: 1.5,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              afterLabel: (ctx) => {
+                if (ctx.datasetIndex !== 0) return '';
+                const d = sorted[ctx.dataIndex];
+                return `Tournois : ${d.nb_tournois} · Min ${d.min_joueurs} · Max ${d.max_joueurs}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+          x: { ticks: { font: { size: 12, weight: '600' } } }
+        }
+      }
+    });
+  }
+
+  function renderCityTable(cat, sorted) {
+    const body = document.getElementById('cat-city-body');
+    if (!body) return;
+    const entry = sorted.find(d => d.categorie === cat);
+    if (!entry || !entry.top_villes || !entry.top_villes.length) {
+      body.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400 text-xs">Aucune donnée</td></tr>';
+      return;
+    }
+    const total = entry.top_villes.reduce((s, v) => s + v.nb, 0);
+    body.innerHTML = entry.top_villes.map((v, i) => {
+      const pct = total ? Math.round(v.nb / total * 100) : 0;
+      return `<tr class="border-t border-slate-50 hover:bg-slate-50 text-sm">
+        <td class="py-2 px-3 font-medium">${i === 0 ? '🥇 ' : ''}${v.ville}</td>
+        <td class="py-2 px-3 text-right text-slate-600">${v.nb.toLocaleString('fr-FR')}</td>
+        <td class="py-2 px-3 text-right">
+          <div class="flex items-center justify-end gap-2">
+            <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width:${pct}%;background:${CAT_COLORS[cat]||'#94a3b8'}"></div>
+            </div>
+            <span class="text-xs text-slate-500 w-8 text-right">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Tab switching
+  document.getElementById('cat-stats-tabs')?.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.getElementById('cat-stats-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const which = tab.dataset.tab;
+      document.getElementById('cat-tab-size').classList.toggle('hidden', which !== 'size');
+      document.getElementById('cat-tab-cities').classList.toggle('hidden', which !== 'cities');
+      if (which === 'size' && _catData) {
+        // re-render chart (may have been hidden when Chart.js tried to draw)
+        const sorted = (_catData || []).slice().sort((a, b) => {
+          const ai = CAT_ORDER_STATS.indexOf(a.categorie);
+          const bi = CAT_ORDER_STATS.indexOf(b.categorie);
+          return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+        });
+        renderSizeChart(sorted);
+      }
+    });
+  });
+
+  // Load when navigating to tournament view
+  document.querySelector('[data-view="tournament"]')?.addEventListener('click', () => {
+    loadCatStats();
+  });
+
+  // Also load on page init (tournament view might be default)
+  loadCatStats();
+})();
+
 // ── Club profile ─────────────────────────────────────────────────────────────
 (function() {
   const inp = document.getElementById('club-search-input');
@@ -3222,6 +3452,10 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     document.getElementById('club-best-f').textContent = data.best_f ? '#' + data.best_f.toLocaleString('fr-FR') : '—';
     document.getElementById('club-top100').textContent = data.top100 ?? '—';
     document.getElementById('club-avg').textContent   = data.avg_rank ? '#' + data.avg_rank.toLocaleString('fr-FR') : '—';
+    const rangH = document.getElementById('club-rang-h');
+    const rangF = document.getElementById('club-rang-f');
+    if (rangH) rangH.textContent = data.rang_h ? `🏆 ${data.rang_h}e club de France` : '';
+    if (rangF) rangF.textContent = data.rang_f ? `🏆 ${data.rang_f}e club de France` : '';
 
     const bodyH = document.getElementById('club-top-h');
     const bodyF = document.getElementById('club-top-f');
@@ -3362,7 +3596,8 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
       function pctile(rank) {
         if (!rank) return null;
-        return Math.round((1 - Number(rank) / TOTAL_JOUEURS) * 100);
+        // Top X% = dans les X% meilleurs joueurs → plus petit = meilleur
+        return Math.max(1, Math.round(Number(rank) / TOTAL_JOUEURS * 100));
       }
 
       const metrics = [
@@ -3382,7 +3617,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
           label: 'Top % des joueurs',
           vA: pctile(profA.classement), vB: pctile(profB.classement),
           fmt: v => v !== null ? `Top ${v}%` : '—',
-          better: 'higher',
+          better: 'lower',
         },
         {
           label: 'Tournois disputés',
@@ -3418,11 +3653,11 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
           : ['text-slate-400', 'text-indigo-700 font-bold'];
       }
 
-      // Bar visuelle pour classement
+      // Bar visuelle pour classement — plus longue = meilleur (rank bas = bon joueur)
       function rankBar(rank, total) {
         if (!rank) return '';
         const pct = Math.max(2, Math.min(98, (1 - rank / total) * 100));
-        return `<div class="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+        return `<div class="w-full bg-slate-100 rounded-full h-1.5 mt-1" title="Top ${Math.max(1,Math.round(rank/total*100))}% des joueurs">
           <div class="h-1.5 rounded-full bg-current opacity-40" style="width:${pct.toFixed(1)}%"></div>
         </div>`;
       }

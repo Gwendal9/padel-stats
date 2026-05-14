@@ -601,7 +601,12 @@ def route_club():
     """, (nom,)) or {}
 
     ville_row = fetchone("""
-        SELECT ville FROM joueurs WHERE club_nom = ? AND ville IS NOT NULL LIMIT 1
+        SELECT ville, COUNT(*) AS cnt
+        FROM joueurs
+        WHERE club_nom = ? AND ville IS NOT NULL AND ville != ''
+        GROUP BY ville
+        ORDER BY cnt DESC
+        LIMIT 1
     """, (nom,)) or {}
 
     # Top joueurs hommes (tous les membres classés)
@@ -622,6 +627,36 @@ def route_club():
         ORDER BY classement ASC LIMIT 100
     """, (nom,))
 
+    # Club ranking: count clubs with a better (lower) best player rank
+    rang_h_row = fetchone("""
+        SELECT COUNT(*) AS rang
+        FROM (
+            SELECT club_nom, MIN(classement) AS best
+            FROM joueurs
+            WHERE sexe = 'H' AND classement IS NOT NULL AND club_nom IS NOT NULL AND club_nom != ''
+            GROUP BY club_nom
+        ) sub
+        WHERE sub.best < (
+            SELECT MIN(classement) FROM joueurs WHERE club_nom = ? AND sexe = 'H' AND classement IS NOT NULL
+        )
+    """, (nom,)) or {}
+    rang_f_row = fetchone("""
+        SELECT COUNT(*) AS rang
+        FROM (
+            SELECT club_nom, MIN(classement) AS best
+            FROM joueurs
+            WHERE sexe = 'F' AND classement IS NOT NULL AND club_nom IS NOT NULL AND club_nom != ''
+            GROUP BY club_nom
+        ) sub
+        WHERE sub.best < (
+            SELECT MIN(classement) FROM joueurs WHERE club_nom = ? AND sexe = 'F' AND classement IS NOT NULL
+        )
+    """, (nom,)) or {}
+
+    # +1 to get 1-based rank; None if no ranked player in that sex
+    rang_h = (int(rang_h_row.get("rang") or 0) + 1) if stats.get("best_h") else None
+    rang_f = (int(rang_f_row.get("rang") or 0) + 1) if stats.get("best_f") else None
+
     def fmt(r):
         return {
             "id": r["id_fft"], "nom": r["nom"] or "", "prenom": r["prenom"] or "",
@@ -641,9 +676,81 @@ def route_club():
         "avg_rank":   int(stats.get("avg_rank") or 0) if stats.get("avg_rank") else None,
         "top100":     int(stats.get("top100") or 0),
         "top1000":    int(stats.get("top1000") or 0),
+        "rang_h":     rang_h,
+        "rang_f":     rang_f,
         "top_h":      [fmt(r) for r in top_h],
         "top_f":      [fmt(r) for r in top_f],
     })
+
+
+@app.get("/api/stats/categories")
+def route_stats_categories():
+    """
+    Retourne pour chaque catégorie de tournoi :
+      - nb_tournois, avg/min/max joueurs par tournoi
+      - top 10 villes (inférées depuis le nom du tournoi ou la ville du club organisateur)
+    Les noms de tournoi contiennent souvent "TC <NOM_CLUB>" → on joint avec joueurs.club_nom
+    pour récupérer la ville la plus fréquente associée à ce club.
+    """
+    from db import fetchall
+
+    # Stats de taille par catégorie
+    cat_stats = fetchall("""
+        SELECT
+          t.categorie,
+          COUNT(DISTINCT t.id_tournoi)                                    AS nb_tournois,
+          ROUND(AVG(sub.nb_joueurs))                                      AS avg_joueurs,
+          MIN(sub.nb_joueurs)                                             AS min_joueurs,
+          MAX(sub.nb_joueurs)                                             AS max_joueurs
+        FROM tournois t
+        JOIN (
+          SELECT id_tournoi, COUNT(DISTINCT id_joueur) AS nb_joueurs
+          FROM participations
+          GROUP BY id_tournoi
+        ) sub ON sub.id_tournoi = t.id_tournoi
+        WHERE t.categorie IS NOT NULL
+        GROUP BY t.categorie
+        ORDER BY nb_tournois DESC
+    """)
+
+    # Top villes par catégorie : on cherche la ville la plus fréquente des joueurs
+    # qui ont participé à des tournois de cette catégorie
+    # (approximation : ville du club du joueur = ville du tournoi)
+    city_rows = fetchall("""
+        SELECT
+          t.categorie,
+          j.ville,
+          COUNT(DISTINCT t.id_tournoi) AS nb
+        FROM tournois t
+        JOIN participations p ON p.id_tournoi = t.id_tournoi
+        JOIN joueurs j ON j.id_fft = p.id_joueur
+        WHERE t.categorie IS NOT NULL
+          AND j.ville IS NOT NULL AND j.ville != ''
+        GROUP BY t.categorie, j.ville
+        ORDER BY t.categorie, nb DESC
+    """)
+
+    # Group city rows per category, keep top 10
+    from collections import defaultdict as _dd
+    city_by_cat = _dd(list)
+    for r in city_rows:
+        cat = r["categorie"]
+        if len(city_by_cat[cat]) < 10:
+            city_by_cat[cat].append({"ville": r["ville"], "nb": r["nb"]})
+
+    result = []
+    for r in cat_stats:
+        cat = r["categorie"]
+        result.append({
+            "categorie":    cat,
+            "nb_tournois":  r["nb_tournois"],
+            "avg_joueurs":  int(r["avg_joueurs"] or 0),
+            "min_joueurs":  r["min_joueurs"],
+            "max_joueurs":  r["max_joueurs"],
+            "top_villes":   city_by_cat.get(cat, []),
+        })
+
+    return jsonify(result)
 
 
 @app.get("/api/health")
