@@ -1,0 +1,6331 @@
+{
+  "PARIS": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "paris": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "BOULOGNE-BILLANCOURT": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Boulogne-Billancourt": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BOULOGNE BILLANCOURT": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "NANTERRE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Nanterre": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "NEUILLY-SUR-SEINE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Neuilly-sur-Seine": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "NEUILLY SUR SEINE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "LEVALLOIS-PERRET": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Levallois-Perret": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "LEVALLOIS PERRET": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "ISSY-LES-MOULINEAUX": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Issy-les-Moulineaux": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "ISSY LES MOULINEAUX": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "CLICHY": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Clichy": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "COLOMBES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Colombes": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "COURBEVOIE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Courbevoie": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "PUTEAUX": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Puteaux": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SURESNES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Suresnes": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "RUEIL-MALMAISON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Rueil-Malmaison": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "RUEIL MALMAISON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "ANTONY": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Antony": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "CLAMART": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Clamart": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "MONTROUGE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Montrouge": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "VANVES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Vanves": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "MEUDON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Meudon": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "MALAKOFF": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Malakoff": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "CHATILLON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Châtillon": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "CHATENAY-MALABRY": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Châtenay-Malabry": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "FONTENAY-AUX-ROSES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Fontenay-aux-Roses": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "GENNEVILLIERS": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Gennevilliers": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "GARCHES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Garches": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "LA GARENNE-COLOMBES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "La Garenne-Colombes": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SAINT-DENIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Saint-Denis": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "MONTREUIL": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Montreuil": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LES LILAS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Les Lilas": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "les lilas": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "AUBERVILLIERS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Aubervilliers": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "AULNAY-SOUS-BOIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Aulnay-sous-Bois": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "AULNAY SOUS BOIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "BOBIGNY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Bobigny": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "BONDY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Bondy": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "NOISY-LE-GRAND": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Noisy-le-Grand": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "NOISY LE GRAND": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "PANTIN": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Pantin": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "SAINT-OUEN": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Saint-Ouen": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "SAINT OUEN": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "BAGNOLET": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Bagnolet": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "DRANCY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Drancy": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "EPINAY-SUR-SEINE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Épinay-sur-Seine": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "EPINAY SUR SEINE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LA COURNEUVE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "La Courneuve": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "NEUILLY-PLAISANCE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Neuilly-Plaisance": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "ROMAINVILLE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Romainville": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "ROSNY-SOUS-BOIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Rosny-sous-Bois": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "ROSNY SOUS BOIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "VILLEMOMBLE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Villemomble": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "STAINS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Stains": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LE PRE-SAINT-GERVAIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Le Pré-Saint-Gervais": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "NOISY-LE-SEC": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Noisy-le-Sec": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "PIERREFITTE-SUR-SEINE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Pierrefitte-sur-Seine": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "CRETEIL": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Créteil": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VINCENNES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Vincennes": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "NOGENT-SUR-MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Nogent-sur-Marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "NOGENT SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "IVRY-SUR-SEINE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Ivry-sur-Seine": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "IVRY SUR SEINE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ALFORTVILLE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Alfortville": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHARENTON-LE-PONT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Charenton-le-Pont": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHARENTON LE PONT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHOISY-LE-ROI": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Choisy-le-Roi": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "FONTENAY-SOUS-BOIS": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Fontenay-sous-Bois": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "FONTENAY SOUS BOIS": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "FRESNES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Fresnes": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "GENTILLY": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Gentilly": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "JOINVILLE-LE-PONT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Joinville-le-Pont": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LE KREMLIN-BICETRE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Le Kremlin-Bicêtre": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "MAISONS-ALFORT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Maisons-Alfort": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "MAISONS ALFORT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ORLY": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Orly": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "SAINT-MAUR-DES-FOSSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Saint-Maur-des-Fossés": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "SAINT MAUR DES FOSSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "THIAIS": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Thiais": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VILLEJUIF": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Villejuif": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VILLENEUVE-LE-ROI": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Villeneuve-le-Roi": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VILLENEUVE-SAINT-GEORGES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Villeneuve-Saint-Georges": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "SAINT-MANDE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Saint-Mandé": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHAMPIGNY-SUR-MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Champigny-sur-Marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHAMPIGNY SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "L'HAY-LES-ROSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "L'Haÿ-les-Roses": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VITRY-SUR-SEINE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Vitry-sur-Seine": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VITRY SUR SEINE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "BRY-SUR-MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Bry-sur-Marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VERSAILLES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Versailles": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "SAINT-GERMAIN-EN-LAYE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Saint-Germain-en-Laye": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "SAINT GERMAIN EN LAYE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MANTES-LA-JOLIE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Mantes-la-Jolie": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "SARTROUVILLE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Sartrouville": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "TRAPPES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Trappes": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VELIZY-VILLACOUBLAY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Vélizy-Villacoublay": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "POISSY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Poissy": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "RAMBOUILLET": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Rambouillet": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "GUYANCOURT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Guyancourt": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "CHATOU": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Chatou": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE VESINET": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Le Vésinet": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MARLY-LE-ROI": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Marly-le-Roi": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LES MUREAUX": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Les Mureaux": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "EVRY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Évry": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "EVRY-COURCOURONNES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "CORBEIL-ESSONNES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Corbeil-Essonnes": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "PALAISEAU": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Palaiseau": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MASSY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Massy": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LONGJUMEAU": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Longjumeau": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "ORSAY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Orsay": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "GIF-SUR-YVETTE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Gif-sur-Yvette": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "DRAVEIL": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Draveil": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "SAVIGNY-SUR-ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Savigny-sur-Orge": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "JUVISY-SUR-ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Juvisy-sur-Orge": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MONTGERON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Montgeron": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LES ULIS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Les Ulis": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MELUN": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Melun": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MEAUX": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Meaux": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "FONTAINEBLEAU": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Fontainebleau": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CHELLES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Chelles": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LAGNY-SUR-MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Lagny-sur-Marne": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "TORCY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Torcy": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "PONTAULT-COMBAULT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Pontault-Combault": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "COMBS-LA-VILLE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Combs-la-Ville": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "NOISIEL": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Noisiel": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MARNE-LA-VALLEE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Marne-la-Vallée": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CERGY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Cergy": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PONTOISE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Pontoise": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ARGENTEUIL": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Argenteuil": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "SARCELLES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Sarcelles": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "GONESSE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Gonesse": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "SAINT-OUEN-L-AUMONE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Saint-Ouen-l'Aumône": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ERMONT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Ermont": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ENGHIEN-LES-BAINS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Enghien-les-Bains": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MONTMORENCY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Montmorency": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PARIS 01": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 1": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 02": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 2": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 03": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 3": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 04": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 4": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 05": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 5": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 06": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 6": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 07": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 7": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 08": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 8": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 09": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 9": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 10": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 10E ARRONDISSEMENT": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 11": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 12": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 13": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 14": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 15": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 16": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 17": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 18": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 19": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "PARIS 20": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "paris 15": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "paris 17": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 17": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 18e Arrondissement": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 8e Arrondissement": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 4e Arrondissement": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 13e Arrondissement": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "Paris 19e Arrondissement": {
+    "dept": "75",
+    "region": "IDF"
+  },
+  "ASNIERES SUR SEINE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "ASNIERES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Asnières-sur-Seine": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BAGNEUX": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Bagneux": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Bagneux ": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BOIS COLOMBES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BOURG LA REINE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Bourg-La-Reine": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "CHAVILLE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "MARNES LA COQUETTE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "LE PLESSIS ROBINSON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "LE PLESSIS-ROBINSON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "VAUCRESSON": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SEVRES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Sèvres": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SÈVRES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BOULOGNE BILLANCOURT ": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Boulogne Billancourt ": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "GAGNY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "NEUILLY SUR MARNE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LIVRY GARGAN": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LE BLANC MESNIL": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LE RAINCY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "MONTFERMEIL": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Montfermeil": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "VILLETANEUSE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "VILLEPINTE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "VAUJOURS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LA PLAINE ST DENIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "GOURNAY SUR MARNE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "DUGNY": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "TREMBLAY EN FRANCE": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "LES PAVILLONS SOUS BOIS": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "VILLEPARISIS": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Saint Denis": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Saint denis ": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Aulnay sous bois": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Aulnay Sous Bois": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Aulnay sous bois ": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Gennevilliers ": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SUCY EN BRIE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Sucy-en-Brie": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Sucy en brie": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Sucy en brie ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Sucy en brie  ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LE PERREUX SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Le Perreux sur marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ST MAUR DES FOSSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ST MANDE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Saint Mande": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Saint Mande ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LA VARENNE ST HILAIRE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LA VARENNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VILLIERS SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Villiers sur Marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VILLECRESNES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "MANDRES LES ROSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LIMEIL BREVANNES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LE PLESSIS TREVISE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Le Plessis-Trévise": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHEVILLY LARUE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHENNEVIERES SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "RUNGIS": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ORMESSON SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "NOISEAU": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Noiseau": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "BOISSY ST LEGER": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ABLON SUR SEINE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "VALENTON": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Valenton": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "SANTENY": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Santeny ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "MAROLLES EN BRIE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "BONNEUIL SUR MARNE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Bonneuil sur marne": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "SERVON": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CRETEIL ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CRÉTEIL": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "L'HAŸ-LES-ROSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "L HAY LES ROSES": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "CHOISY LE ROI": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "ST MAURICE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "JOINVILLE LE PONT": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LE KREMLIN BICETRE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Le KREMELIN bicetre ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LESIGNY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Lésigny": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Lesigny": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "OZOIR LA FERRIERE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "PONTAULT COMBAULT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Pontault Combault": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "ROISSY EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "VAIRES SUR MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "VAIRES-SUR-MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Vaires sur Marne": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GRETZ ARMAINVILLIERS": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BUSSY ST GEORGES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Bussy Saint Georges": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Bussy st Georges": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CHEVRY COSSIGNY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CHESSY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BRIE COMTE ROBERT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "SERRIS": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "EMERAINVILLE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MITRY MORY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CRISENOY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CRECY LA CHAPELLE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CROISSY BEAUBOURG": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "FEROLLES ATTILLY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "FRESNES SUR MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GUERMANTES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GESVRES LE CHAPITRE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GRISY SUISNES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "FONTENAY TRESIGNY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LIEUSAINT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LOGNES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Lognes": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MOISENAY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MONTEVRAIN": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MOUSSY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Moussy le neuf": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Moussy-le-Vieux 77, Seine-et-Marne, Île-de-France": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "NANDY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "PRESLES EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "POMPONNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "RUBELLES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "SAVIGNY LE TEMPLE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "ST THIBAULT DES VIGNES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "THORIGNY SUR MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Thorigny-sur-Marne": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "VARREDDES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BROU SUR CHANTEREINE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CHALIFERT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CHAMPS SUR MARNE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CESSON": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Cesson": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CLAYE SOUILLY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Claye Souilly": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "DAMMARTIN EN GOELE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "ESBLY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GUIGNES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LA HOUSSAYE EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MARLES EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MORTCERF": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "QUINCY VOISINS": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "REAU": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "VIGNY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "SOIGNOLLES EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "PERTHES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LIVERDY EN BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LIVERDY-EN-BRIE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "FAVIERES": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LARCHANT": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Ferrières-en-Brie": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Jablines": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BANNOST VILLEGAGNON": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BEAUTHEIL": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "BOUTIGNY PROUAIS": {
+    "dept": "28",
+    "region": "France"
+  },
+  "THOMERY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "POMMEUSE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Vignely": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Coupvray": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "COUPVRAY": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "SAINTRY SUR SEINE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Gouvernes": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "MILLY LA FORET": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Nanteuil-lès-Meaux": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "CONFLANS STE HONORINE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Conflans-Sainte-Honorine": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE CHESNAY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Le Chesnay-Rocquencourt": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LA CELLE ST CLOUD": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "FEUCHEROLLES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BAILLY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VOISINS LE BRETONNEUX": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MONTESSON": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MANTES LA VILLE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MAISONS LAFFITTE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Maisons laffitte": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Maisons Laffitte": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE PORT MARLY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE MESNIL ST DENIS": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE MESNIL LE ROI": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "JOUY EN JOSAS": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "HOUILLES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "HARDRICOURT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "FONTENAY LE FLEURY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ELANCOURT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "CROISSY SUR SEINE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "CROISSY-SUR-SEINE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Carrières sur seine": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "CARRIERES SOUS POISSY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BOUGIVAL": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BOUAFLE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BOIS D ARCY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BEYNES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BAZEMONT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ANDRESY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ACHERES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Achères": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ACHÈRES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Villiers-Saint-Frédéric": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VILLEPREUX": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VAUX SUR SEINE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VELIZY VILLACOUBLAY": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ST NOM LA BRETECHE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MAREIL SUR MAULDRE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Mareil-sur-Mauldre": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Mareil sur Mauldre": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LOUVECIENNES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LEVIS ST NOM": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LES CLAYES SOUS BOIS": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "LE PECQ": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "CHANTELOUP LES VIGNES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ROCQUENCOURT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Magny-les-Hameaux": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "MAGNANVILLE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "VERNEUIL SUR SEINE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Verneuil sur Seine": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "ST ARNOULT EN YVELINES": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "PLAISIR": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Plaisir": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "Plaisir ": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "JOUY LE MOUTIER": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Jouy-le-Moutier": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ST GERMAIN LES ARPAJON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MARLY LE ROI": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "AUBERGENVILLE": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BUC": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "BREUIL BOIS ROBERT": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "SAINT-GERMAIN-SUR-MORIN": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Saint-Germain-sur-Morin": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "ST BRICE SOUS FORET": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "EAUBONNE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "TAVERNY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "DEUIL LA BARRE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Deuil-la-Barre": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Deuil la Barre": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "COURDIMANCHE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "DOMONT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ST GRATIEN": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "SOISY SOUS MONTMORENCY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Soisy-sous-Montmorency": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "CORMEILLES EN PARISIS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Cormeilles-en-Parisis": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "L ISLE ADAM": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "L'isle adam": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "L'Isle-Adam": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "l'isle adam": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "L'Isle Adam": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "LOUVRES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "GROSLAY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "GOUSSAINVILLE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "HERBLAY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "HERBLAY SUR SEINE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "FRANCONVILLE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ERAGNY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Éragny": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ENNERY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "BEZONS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "BESSANCOURT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "BEAUMONT SUR OISE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "BOISSY L AILLERIE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ANDILLY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MARINES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MERIEL": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MERY SUR OISE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MENUCOURT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MONTIGNY LES CORMEILLES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Montigny-lès-Cormeilles": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MONTMAGNY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MONTGEROULT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MONTSOULT": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MOISSELLES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "NOISY SUR OISE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "OSNY": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PARMAIN": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PRESLES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ST PRIX": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "SANNOIS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "ST LEU LA FORET": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "VAUREAL": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "VIARMES": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MARLY LA VILLE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "LE PLESSIS BOUCHARD": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "L'ISLE ADAM": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PIERRELAYE": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "VEMARS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Vemars": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "MAGNY EN VEXIN": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "PLAILLY": {
+    "dept": "60",
+    "region": "France"
+  },
+  "ST CLOUD": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "ENGHIEN LES BAINS": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "BEAUCHAMP": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Beauchamp": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Beauchamp ": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "Beauvais ": {
+    "dept": "60",
+    "region": "France"
+  },
+  "BEAUVAIS": {
+    "dept": "60",
+    "region": "France"
+  },
+  "Beauvais": {
+    "dept": "60",
+    "region": "France"
+  },
+  "ST GERMAIN LES CORBEIL": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "ATHIS MONS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Athis Mons": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "YERRES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MORSANG SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BRUNOY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "WISSOUS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VILLEBON SUR YVETTE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "STE GENEVIEVE DES BOIS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "NOZAY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MORIGNY CHAMPIGNY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "CHILLY MAZARIN": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VAUGRIGNEUSE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MEREVILLE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LEUVILLE SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LISSES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LA VILLE DU BOIS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "EPINAY SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Épinay-sous-Sénart": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "ECHARCON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "COURCOURONNES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Courcouronnes": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "CERNY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BOUSSY ST ANTOINE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BONDOUFLE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "EVRY GREGY SUR YERRE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "SACLAY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "PARAY VIEILLE POSTE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "QUINCY SOUS SENART": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VILLEMOISSON SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "ST PIERRE DU PERRAY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "TIGERY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Tigery": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VIRY CHATILLON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VERT LE GRAND": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BURES SUR YVETTE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BREUILLET": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "BRETIGNY SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Brétigny sur orge ": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "FORGES LES BAINS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "IGNY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Igny ": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "JUVISY SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MENNECY": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Mennecy": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "RIS ORANGIS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "SAINT VRAIN ": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "SOISY SUR SEINE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VERRIÈRES LE BUISSON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "VERRIERES LE BUISSON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "CORBEIL ESSONNES": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Corbeil Essonne": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "ARPAJON": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "LA FERTE-SOUS-JOUARRE": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "la ferté-sous-jouarre": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LIMOURS": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Limours": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "SAVIGNY SUR ORGE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Longpont sur orge ": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "Lempdes": {
+    "dept": "63",
+    "region": "France"
+  },
+  "longjumeaux": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "STE GENEVIEVE": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "MONTPELLIER": {
+    "dept": "34",
+    "region": "France"
+  },
+  "Montpellier": {
+    "dept": "34",
+    "region": "France"
+  },
+  "NICE": {
+    "dept": "06",
+    "region": "France"
+  },
+  "BORDEAUX": {
+    "dept": "33",
+    "region": "France"
+  },
+  "Bordeaux": {
+    "dept": "33",
+    "region": "France"
+  },
+  "TOULOUSE": {
+    "dept": "31",
+    "region": "France"
+  },
+  "Toulouse": {
+    "dept": "31",
+    "region": "France"
+  },
+  "STRASBOURG": {
+    "dept": "67",
+    "region": "France"
+  },
+  "Strasbourg": {
+    "dept": "67",
+    "region": "France"
+  },
+  "LILLE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "RENNES": {
+    "dept": "35",
+    "region": "France"
+  },
+  "Rennes": {
+    "dept": "35",
+    "region": "France"
+  },
+  "REIMS": {
+    "dept": "51",
+    "region": "France"
+  },
+  "Reims": {
+    "dept": "51",
+    "region": "France"
+  },
+  "MARSEILLE 01": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 06": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 07": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 08": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 09": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 10": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 11": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 12": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARSEILLE 13": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Marseille 7e Arrondissement": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Marseille": {
+    "dept": "13",
+    "region": "France"
+  },
+  "LYON": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 01": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 03": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 04": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 05": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 06": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 07": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 08": {
+    "dept": "69",
+    "region": "France"
+  },
+  "LYON 09": {
+    "dept": "69",
+    "region": "France"
+  },
+  "Lyon 1er Arrondissement": {
+    "dept": "69",
+    "region": "France"
+  },
+  "VILLEURBANNE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "Villeurbanne": {
+    "dept": "69",
+    "region": "France"
+  },
+  "CALUIRE ET CUIRE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "TASSIN LA DEMI LUNE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "ECULLY": {
+    "dept": "69",
+    "region": "France"
+  },
+  "CRAPONNE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "STE FOY LES LYON": {
+    "dept": "69",
+    "region": "France"
+  },
+  "ST CYR AU MONT D OR": {
+    "dept": "69",
+    "region": "France"
+  },
+  "ST GENIS LES OLLIERES": {
+    "dept": "69",
+    "region": "France"
+  },
+  "RILLIEUX LA PAPE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "MEYZIEU": {
+    "dept": "69",
+    "region": "France"
+  },
+  "SATHONAY CAMP": {
+    "dept": "69",
+    "region": "France"
+  },
+  "GREZIEU LA VARENNE": {
+    "dept": "69",
+    "region": "France"
+  },
+  "SOUCIEU EN JARREST": {
+    "dept": "69",
+    "region": "France"
+  },
+  "ST CLAIR DU RHONE": {
+    "dept": "38",
+    "region": "France"
+  },
+  "MEYLAN": {
+    "dept": "38",
+    "region": "France"
+  },
+  "Décines-Charpieu": {
+    "dept": "69",
+    "region": "France"
+  },
+  "Dolomieu": {
+    "dept": "38",
+    "region": "France"
+  },
+  "ANGERS": {
+    "dept": "49",
+    "region": "France"
+  },
+  "Angers": {
+    "dept": "49",
+    "region": "France"
+  },
+  "NANTES": {
+    "dept": "44",
+    "region": "France"
+  },
+  "MARCQ EN BAROEUL": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Marcq-en-Barœul": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Marcq en baroeul ": {
+    "dept": "59",
+    "region": "France"
+  },
+  "VILLENEUVE D ASCQ": {
+    "dept": "59",
+    "region": "France"
+  },
+  "ROUBAIX": {
+    "dept": "59",
+    "region": "France"
+  },
+  "LAMBERSART": {
+    "dept": "59",
+    "region": "France"
+  },
+  "MOUVAUX": {
+    "dept": "59",
+    "region": "France"
+  },
+  "BONDUES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Bondues": {
+    "dept": "59",
+    "region": "France"
+  },
+  "WATTRELOS": {
+    "dept": "59",
+    "region": "France"
+  },
+  "LA MADELEINE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "MONS EN BAROEUL": {
+    "dept": "59",
+    "region": "France"
+  },
+  "PERENCHIES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "LYS LEZ LANNOY": {
+    "dept": "59",
+    "region": "France"
+  },
+  "LANNOY": {
+    "dept": "59",
+    "region": "France"
+  },
+  "ORCHIES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "FROMELLES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "MERIGNIES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "GRUSON": {
+    "dept": "59",
+    "region": "France"
+  },
+  "VENDEVILLE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "FOREST SUR MARQUE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "HALLENNES LEZ HAUBOURDIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Hallennes les Haubourdin": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Hallennes lez Haubourdin": {
+    "dept": "59",
+    "region": "France"
+  },
+  "HAUBOURDIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "ERQUINGHEM LE SEC": {
+    "dept": "59",
+    "region": "France"
+  },
+  "EMMERIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "FOURNES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "QUESNOY SUR DEULE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "BEUVRY LA FORET": {
+    "dept": "59",
+    "region": "France"
+  },
+  "WAHAGNIES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "FERIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "LEFOREST": {
+    "dept": "62",
+    "region": "France"
+  },
+  "NEUVE CHAPELLE": {
+    "dept": "62",
+    "region": "France"
+  },
+  "ANNAY": {
+    "dept": "62",
+    "region": "France"
+  },
+  "ANNEZIN": {
+    "dept": "62",
+    "region": "France"
+  },
+  "RANG DU FLIERS": {
+    "dept": "62",
+    "region": "France"
+  },
+  "BERCK": {
+    "dept": "62",
+    "region": "France"
+  },
+  "BILLY MONTIGNY": {
+    "dept": "62",
+    "region": "France"
+  },
+  "BRUAY LA BUISSIERE": {
+    "dept": "62",
+    "region": "France"
+  },
+  "BOUVIGNY BOYEFFLES": {
+    "dept": "62",
+    "region": "France"
+  },
+  "CHOCQUES": {
+    "dept": "62",
+    "region": "France"
+  },
+  "DUISANS": {
+    "dept": "62",
+    "region": "France"
+  },
+  "LENS": {
+    "dept": "62",
+    "region": "France"
+  },
+  "LIÉVIN": {
+    "dept": "62",
+    "region": "France"
+  },
+  "LIEVEN": {
+    "dept": "62",
+    "region": "France"
+  },
+  "Liévin": {
+    "dept": "62",
+    "region": "France"
+  },
+  "FACHES THUMESNIL": {
+    "dept": "59",
+    "region": "France"
+  },
+  "BEAURAINS": {
+    "dept": "62",
+    "region": "France"
+  },
+  "ARRAS": {
+    "dept": "62",
+    "region": "France"
+  },
+  "PHALEMPIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "HAGUENAU": {
+    "dept": "67",
+    "region": "France"
+  },
+  "Haguenau": {
+    "dept": "67",
+    "region": "France"
+  },
+  "SAVERNE": {
+    "dept": "67",
+    "region": "France"
+  },
+  "SCHILTIGHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "SOUFFELWEYERSHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "SELESTAT": {
+    "dept": "67",
+    "region": "France"
+  },
+  "REICHSTETT": {
+    "dept": "67",
+    "region": "France"
+  },
+  "PFAFFENHOFFEN": {
+    "dept": "67",
+    "region": "France"
+  },
+  "MITTELHAUSBERGEN": {
+    "dept": "67",
+    "region": "France"
+  },
+  "LAMPERTHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "KILSTETT": {
+    "dept": "67",
+    "region": "France"
+  },
+  "HOENHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "ESCHAU": {
+    "dept": "67",
+    "region": "France"
+  },
+  "BISCHWILLER": {
+    "dept": "67",
+    "region": "France"
+  },
+  "BEHLENHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "ALLENWILLER": {
+    "dept": "67",
+    "region": "France"
+  },
+  "LEUTENHEIM": {
+    "dept": "67",
+    "region": "France"
+  },
+  "RHINAU": {
+    "dept": "67",
+    "region": "France"
+  },
+  "STAFFELFELDEN": {
+    "dept": "68",
+    "region": "France"
+  },
+  "MULHOUSE": {
+    "dept": "68",
+    "region": "France"
+  },
+  "Mulhouse": {
+    "dept": "68",
+    "region": "France"
+  },
+  "KINGERSHEIM": {
+    "dept": "68",
+    "region": "France"
+  },
+  "BRUNSTATT": {
+    "dept": "68",
+    "region": "France"
+  },
+  "BRUEBACH": {
+    "dept": "68",
+    "region": "France"
+  },
+  "RIEDISHEIM": {
+    "dept": "68",
+    "region": "France"
+  },
+  "WITTELSHEIM": {
+    "dept": "68",
+    "region": "France"
+  },
+  "ZIMMERSHEIM": {
+    "dept": "68",
+    "region": "France"
+  },
+  "ALTENBACH": {
+    "dept": "68",
+    "region": "France"
+  },
+  "WITRY LES REIMS": {
+    "dept": "51",
+    "region": "France"
+  },
+  "Witry les reims ": {
+    "dept": "51",
+    "region": "France"
+  },
+  "PARGNY LES REIMS": {
+    "dept": "51",
+    "region": "France"
+  },
+  "GRAUVES": {
+    "dept": "51",
+    "region": "France"
+  },
+  "TINQUEUX": {
+    "dept": "51",
+    "region": "France"
+  },
+  "RECY": {
+    "dept": "51",
+    "region": "France"
+  },
+  "SERMIERS": {
+    "dept": "51",
+    "region": "France"
+  },
+  "VILLERS ALLERAND": {
+    "dept": "51",
+    "region": "France"
+  },
+  "BEZANNES": {
+    "dept": "51",
+    "region": "France"
+  },
+  "METZ": {
+    "dept": "57",
+    "region": "France"
+  },
+  "metz": {
+    "dept": "57",
+    "region": "France"
+  },
+  "MONTIGNY LES METZ": {
+    "dept": "57",
+    "region": "France"
+  },
+  "SCY CHAZELLES": {
+    "dept": "57",
+    "region": "France"
+  },
+  "ILLANGE": {
+    "dept": "57",
+    "region": "France"
+  },
+  "GANDRANGE": {
+    "dept": "57",
+    "region": "France"
+  },
+  "REMELFING": {
+    "dept": "57",
+    "region": "France"
+  },
+  "THIONVILLE": {
+    "dept": "57",
+    "region": "France"
+  },
+  "DIESEN": {
+    "dept": "57",
+    "region": "France"
+  },
+  "UCKANGE": {
+    "dept": "57",
+    "region": "France"
+  },
+  "ATTON": {
+    "dept": "54",
+    "region": "France"
+  },
+  "LANEUVEVILLE DEVANT NANCY": {
+    "dept": "54",
+    "region": "France"
+  },
+  "LUDRES": {
+    "dept": "54",
+    "region": "France"
+  },
+  "VILLERS LES NANCY": {
+    "dept": "54",
+    "region": "France"
+  },
+  "TOUL": {
+    "dept": "54",
+    "region": "France"
+  },
+  "BELFORT": {
+    "dept": "90",
+    "region": "France"
+  },
+  "AUDINCOURT": {
+    "dept": "25",
+    "region": "France"
+  },
+  "Audincourt": {
+    "dept": "25",
+    "region": "France"
+  },
+  "BESANCON": {
+    "dept": "25",
+    "region": "France"
+  },
+  "CHALEZE": {
+    "dept": "25",
+    "region": "France"
+  },
+  "CASTELNAU LE LEZ": {
+    "dept": "34",
+    "region": "France"
+  },
+  "BAILLARGUES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VENDARGUES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VAILHAUQUES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VAILHAUQUÈS": {
+    "dept": "34",
+    "region": "France"
+  },
+  "MONTFERRIER SUR LEZ": {
+    "dept": "34",
+    "region": "France"
+  },
+  "CLAPIERS": {
+    "dept": "34",
+    "region": "France"
+  },
+  "COMBAILLAUX": {
+    "dept": "34",
+    "region": "France"
+  },
+  "GRABELS": {
+    "dept": "34",
+    "region": "France"
+  },
+  "PEZILLA LA RIVIERE": {
+    "dept": "66",
+    "region": "France"
+  },
+  "PERPIGNAN": {
+    "dept": "66",
+    "region": "France"
+  },
+  "CANET EN ROUSSILLON": {
+    "dept": "66",
+    "region": "France"
+  },
+  "CABESTANY": {
+    "dept": "66",
+    "region": "France"
+  },
+  "RIVESALTES": {
+    "dept": "66",
+    "region": "France"
+  },
+  "SALSES LE CHATEAU": {
+    "dept": "66",
+    "region": "France"
+  },
+  "ESTAGEL": {
+    "dept": "66",
+    "region": "France"
+  },
+  "ELNE": {
+    "dept": "66",
+    "region": "France"
+  },
+  "ESPIRA DE L AGLY": {
+    "dept": "66",
+    "region": "France"
+  },
+  "BAHO": {
+    "dept": "66",
+    "region": "France"
+  },
+  "MUDAISON": {
+    "dept": "34",
+    "region": "France"
+  },
+  "SUSSARGUES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "SETE": {
+    "dept": "34",
+    "region": "France"
+  },
+  "AGDE": {
+    "dept": "34",
+    "region": "France"
+  },
+  "SERIGNAN": {
+    "dept": "34",
+    "region": "France"
+  },
+  "LODEVE": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VERGEZE": {
+    "dept": "30",
+    "region": "France"
+  },
+  "BEAUCAIRE": {
+    "dept": "30",
+    "region": "France"
+  },
+  "PUJAUT": {
+    "dept": "30",
+    "region": "France"
+  },
+  "ROCHEFORT DU GARD": {
+    "dept": "30",
+    "region": "France"
+  },
+  "JONQUIERES SAINT VINCENT": {
+    "dept": "30",
+    "region": "France"
+  },
+  "CALVISSON": {
+    "dept": "30",
+    "region": "France"
+  },
+  "VILLENEUVE LES AVIGNON": {
+    "dept": "30",
+    "region": "France"
+  },
+  "TOURNEFEUILLE": {
+    "dept": "31",
+    "region": "France"
+  },
+  "BALMA": {
+    "dept": "31",
+    "region": "France"
+  },
+  "AUZIELLE": {
+    "dept": "31",
+    "region": "France"
+  },
+  "ESCALQUENS": {
+    "dept": "31",
+    "region": "France"
+  },
+  "BRUGUIERES": {
+    "dept": "31",
+    "region": "France"
+  },
+  "LAUZERVILLE": {
+    "dept": "31",
+    "region": "France"
+  },
+  "MONTASTRUC": {
+    "dept": "31",
+    "region": "France"
+  },
+  "VILLEBRUMIER": {
+    "dept": "82",
+    "region": "France"
+  },
+  "MONTECH": {
+    "dept": "82",
+    "region": "France"
+  },
+  "MONTAUBAN": {
+    "dept": "82",
+    "region": "France"
+  },
+  "LACOURT ST PIERRE": {
+    "dept": "82",
+    "region": "France"
+  },
+  "LAFRANCAISE": {
+    "dept": "82",
+    "region": "France"
+  },
+  "GAGNAC SUR GARONNE": {
+    "dept": "31",
+    "region": "France"
+  },
+  "PECHABOU": {
+    "dept": "31",
+    "region": "France"
+  },
+  "CEPET": {
+    "dept": "31",
+    "region": "France"
+  },
+  "CÉPET": {
+    "dept": "31",
+    "region": "France"
+  },
+  "LAPEYROUSE FOSSAT": {
+    "dept": "31",
+    "region": "France"
+  },
+  "ST ALBAN LEYSSE": {
+    "dept": "73",
+    "region": "France"
+  },
+  "Cazères-sur-l'Adour": {
+    "dept": "40",
+    "region": "France"
+  },
+  "BAYONNE": {
+    "dept": "64",
+    "region": "France"
+  },
+  "TARNOS": {
+    "dept": "40",
+    "region": "France"
+  },
+  "CAPBRETON": {
+    "dept": "40",
+    "region": "France"
+  },
+  "SARPOURENX": {
+    "dept": "64",
+    "region": "France"
+  },
+  "OLORON STE MARIE": {
+    "dept": "64",
+    "region": "France"
+  },
+  "GUETHARY": {
+    "dept": "64",
+    "region": "France"
+  },
+  "VENDAYS MONTALIVET": {
+    "dept": "33",
+    "region": "France"
+  },
+  "SOULAC SUR MER": {
+    "dept": "33",
+    "region": "France"
+  },
+  "VENSAC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "QUEYRAC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "CARCANS": {
+    "dept": "33",
+    "region": "France"
+  },
+  "PRIGNAC EN MEDOC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "ST GERMAIN D ESTEUIL": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LESPARRE ST HILAIRE": {
+    "dept": "33",
+    "region": "France"
+  },
+  "MERIGNAC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "BEGLES": {
+    "dept": "33",
+    "region": "France"
+  },
+  "FLOIRAC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "ARTIGUES PRES BORDEAUX": {
+    "dept": "33",
+    "region": "France"
+  },
+  "GALGON": {
+    "dept": "33",
+    "region": "France"
+  },
+  "POMEROL": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LIBOURNE": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LEMBRAS": {
+    "dept": "24",
+    "region": "France"
+  },
+  "LUSSAC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "FARGUES ST HILAIRE": {
+    "dept": "33",
+    "region": "France"
+  },
+  "GRADIGNAN": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LE TAILLAN MEDOC": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LE BOUSCAT": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LE HAILLAN": {
+    "dept": "33",
+    "region": "France"
+  },
+  "TALENCE": {
+    "dept": "33",
+    "region": "France"
+  },
+  "BISCARROSSE": {
+    "dept": "40",
+    "region": "France"
+  },
+  "TARBES": {
+    "dept": "65",
+    "region": "France"
+  },
+  "PAU": {
+    "dept": "64",
+    "region": "France"
+  },
+  "BIZANOS": {
+    "dept": "64",
+    "region": "France"
+  },
+  "MAZERES LEZONS": {
+    "dept": "64",
+    "region": "France"
+  },
+  "DENGUIN": {
+    "dept": "64",
+    "region": "France"
+  },
+  "MOURENX": {
+    "dept": "64",
+    "region": "France"
+  },
+  "SOISSONS": {
+    "dept": "02",
+    "region": "France"
+  },
+  "ARGET": {
+    "dept": "09",
+    "region": "France"
+  },
+  "CASSIS": {
+    "dept": "13",
+    "region": "France"
+  },
+  "CARNOUX EN PROVENCE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ALLAUCH": {
+    "dept": "13",
+    "region": "France"
+  },
+  "AIX EN PROVENCE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Aix-en-Provence": {
+    "dept": "13",
+    "region": "France"
+  },
+  "AUBAGNE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Aubagne": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ROQUEFORT LA BEDOULE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "CEYRESTE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARTIGUES": {
+    "dept": "13",
+    "region": "France"
+  },
+  "SALON DE PROVENCE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ST CANNAT": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ST MAXIMIN LA STE BAUME": {
+    "dept": "83",
+    "region": "France"
+  },
+  "ST MAXIMIN": {
+    "dept": "83",
+    "region": "France"
+  },
+  "GIGNAC LA NERTHE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Gignac la Nerthe": {
+    "dept": "13",
+    "region": "France"
+  },
+  "MARIGNANE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "LA BOUILLADISSE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "GARDANNE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "FUVEAU": {
+    "dept": "13",
+    "region": "France"
+  },
+  "PEYPIN": {
+    "dept": "13",
+    "region": "France"
+  },
+  "LE ROVE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "CARRY LE ROUET": {
+    "dept": "13",
+    "region": "France"
+  },
+  "COUDOUX": {
+    "dept": "13",
+    "region": "France"
+  },
+  "PORT DE BOUC": {
+    "dept": "13",
+    "region": "France"
+  },
+  "PAS DES LANCIERS": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ROGNONAS": {
+    "dept": "13",
+    "region": "France"
+  },
+  "Cuges-les-Pins": {
+    "dept": "13",
+    "region": "France"
+  },
+  "TRETS": {
+    "dept": "13",
+    "region": "France"
+  },
+  "VITROLLES": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ST VICTORET": {
+    "dept": "13",
+    "region": "France"
+  },
+  "CHARLEVAL": {
+    "dept": "13",
+    "region": "France"
+  },
+  "CANNES": {
+    "dept": "06",
+    "region": "France"
+  },
+  "LE CANNET": {
+    "dept": "06",
+    "region": "France"
+  },
+  "Le Cannet": {
+    "dept": "06",
+    "region": "France"
+  },
+  "ANTIBES": {
+    "dept": "06",
+    "region": "France"
+  },
+  "Antibes": {
+    "dept": "06",
+    "region": "France"
+  },
+  "MANDELIEU LA NAPOULE": {
+    "dept": "06",
+    "region": "France"
+  },
+  "CAGNES SUR MER": {
+    "dept": "06",
+    "region": "France"
+  },
+  "BEAUSOLEIL": {
+    "dept": "06",
+    "region": "France"
+  },
+  "MENTON": {
+    "dept": "06",
+    "region": "France"
+  },
+  "GRASSE": {
+    "dept": "06",
+    "region": "France"
+  },
+  "ST RAPHAEL": {
+    "dept": "83",
+    "region": "France"
+  },
+  "Saint Raphaël ": {
+    "dept": "83",
+    "region": "France"
+  },
+  "FREJUS": {
+    "dept": "83",
+    "region": "France"
+  },
+  "BANDOL": {
+    "dept": "83",
+    "region": "France"
+  },
+  "TOULON": {
+    "dept": "83",
+    "region": "France"
+  },
+  "HYERES": {
+    "dept": "83",
+    "region": "France"
+  },
+  "LE CASTELLET": {
+    "dept": "83",
+    "region": "France"
+  },
+  "LA CIOTAT": {
+    "dept": "13",
+    "region": "France"
+  },
+  "ROQUEBRUNE SUR ARGENS": {
+    "dept": "83",
+    "region": "France"
+  },
+  "LES ARCS": {
+    "dept": "83",
+    "region": "France"
+  },
+  "CASTELLAR": {
+    "dept": "06",
+    "region": "France"
+  },
+  "SERIGNAN DU COMTAT": {
+    "dept": "84",
+    "region": "France"
+  },
+  "PERNES LES FONTAINES": {
+    "dept": "84",
+    "region": "France"
+  },
+  "SAUMANE-DE-VAUCLUSE": {
+    "dept": "84",
+    "region": "France"
+  },
+  "Cavaillon": {
+    "dept": "84",
+    "region": "France"
+  },
+  "PEYROLLES EN PROVENCE": {
+    "dept": "13",
+    "region": "France"
+  },
+  "LA COLLE SUR LOUP": {
+    "dept": "06",
+    "region": "France"
+  },
+  "Veyrier du lac": {
+    "dept": "74",
+    "region": "France"
+  },
+  "VEYRIER DU LAC": {
+    "dept": "74",
+    "region": "France"
+  },
+  "THONON LES BAINS": {
+    "dept": "74",
+    "region": "France"
+  },
+  "NEYDENS": {
+    "dept": "74",
+    "region": "France"
+  },
+  "ST JULIEN EN GENEVOIS": {
+    "dept": "74",
+    "region": "France"
+  },
+  "PUBLIER": {
+    "dept": "74",
+    "region": "France"
+  },
+  "Publier": {
+    "dept": "74",
+    "region": "France"
+  },
+  "PERRIGNIER": {
+    "dept": "74",
+    "region": "France"
+  },
+  "ETOILE SUR RHONE": {
+    "dept": "26",
+    "region": "France"
+  },
+  "PONT DE L ISERE": {
+    "dept": "26",
+    "region": "France"
+  },
+  "Châteauneuf-sur-Isère": {
+    "dept": "26",
+    "region": "France"
+  },
+  "CREST": {
+    "dept": "26",
+    "region": "France"
+  },
+  "GISORS": {
+    "dept": "27",
+    "region": "France"
+  },
+  "GAILLON": {
+    "dept": "27",
+    "region": "France"
+  },
+  "BREST": {
+    "dept": "29",
+    "region": "France"
+  },
+  "QUEVEN": {
+    "dept": "56",
+    "region": "France"
+  },
+  "PLÉDRAN": {
+    "dept": "22",
+    "region": "France"
+  },
+  "Plédran": {
+    "dept": "22",
+    "region": "France"
+  },
+  "LANNION": {
+    "dept": "22",
+    "region": "France"
+  },
+  "PLOUHA": {
+    "dept": "22",
+    "region": "France"
+  },
+  "PLOUMAGOAR": {
+    "dept": "22",
+    "region": "France"
+  },
+  "BRUZ": {
+    "dept": "35",
+    "region": "France"
+  },
+  "ST ERBLON": {
+    "dept": "35",
+    "region": "France"
+  },
+  "ST AVE": {
+    "dept": "56",
+    "region": "France"
+  },
+  "TRANS SUR ERDRE": {
+    "dept": "44",
+    "region": "France"
+  },
+  "LA CHAPELLE SUR ERDRE": {
+    "dept": "44",
+    "region": "France"
+  },
+  "STE LUCE SUR LOIRE": {
+    "dept": "44",
+    "region": "France"
+  },
+  "BOUCHEMAINE": {
+    "dept": "49",
+    "region": "France"
+  },
+  "PELLOUAILLES LES VIGNES": {
+    "dept": "49",
+    "region": "France"
+  },
+  "Bonchamps les Laval": {
+    "dept": "53",
+    "region": "France"
+  },
+  "SABLE SUR SARTHE": {
+    "dept": "72",
+    "region": "France"
+  },
+  "Doucelles": {
+    "dept": "72",
+    "region": "France"
+  },
+  "Senonches": {
+    "dept": "28",
+    "region": "France"
+  },
+  "LA MEZIERE": {
+    "dept": "35",
+    "region": "France"
+  },
+  "Montgermont": {
+    "dept": "35",
+    "region": "France"
+  },
+  "GUIPAVAS": {
+    "dept": "29",
+    "region": "France"
+  },
+  "BENODET": {
+    "dept": "29",
+    "region": "France"
+  },
+  "LANGRUNE SUR MER": {
+    "dept": "14",
+    "region": "France"
+  },
+  "BIEVILLE BEUVILE": {
+    "dept": "14",
+    "region": "France"
+  },
+  "BIEVILLE BEUVILLE": {
+    "dept": "14",
+    "region": "France"
+  },
+  "Cherbourg-en-Cotentin": {
+    "dept": "50",
+    "region": "France"
+  },
+  "GRANVILLE": {
+    "dept": "50",
+    "region": "France"
+  },
+  "VISSEICHE": {
+    "dept": "35",
+    "region": "France"
+  },
+  "LA CHAPELLE DES FOUGERETZ": {
+    "dept": "35",
+    "region": "France"
+  },
+  "Laillé": {
+    "dept": "35",
+    "region": "France"
+  },
+  "ROUEN": {
+    "dept": "76",
+    "region": "France"
+  },
+  "EVREUX": {
+    "dept": "27",
+    "region": "France"
+  },
+  "Rouvray": {
+    "dept": "76",
+    "region": "France"
+  },
+  "GONFREVILLE L ORCHER": {
+    "dept": "76",
+    "region": "France"
+  },
+  "FROBERVILLE": {
+    "dept": "76",
+    "region": "France"
+  },
+  "NEAUFLES ST MARTIN": {
+    "dept": "27",
+    "region": "France"
+  },
+  "Saint-Clair-sur-Epte": {
+    "dept": "27",
+    "region": "France"
+  },
+  "COURCELLES LES GISORS": {
+    "dept": "27",
+    "region": "France"
+  },
+  "HUDIMESNIL": {
+    "dept": "50",
+    "region": "France"
+  },
+  "Senlis": {
+    "dept": "60",
+    "region": "France"
+  },
+  "SENLIS": {
+    "dept": "60",
+    "region": "France"
+  },
+  "Sceaux": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "SCEAUX": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "BEAUMONT": {
+    "dept": "60",
+    "region": "France"
+  },
+  "CHANTILLY": {
+    "dept": "60",
+    "region": "France"
+  },
+  "CHAMBLY": {
+    "dept": "60",
+    "region": "France"
+  },
+  "MORANGLES": {
+    "dept": "60",
+    "region": "France"
+  },
+  "LAIGNEVILLE": {
+    "dept": "60",
+    "region": "France"
+  },
+  "PONT DU CHATEAU": {
+    "dept": "63",
+    "region": "France"
+  },
+  "BLANZAT": {
+    "dept": "63",
+    "region": "France"
+  },
+  "MARSAT": {
+    "dept": "63",
+    "region": "France"
+  },
+  "VERTAIZON": {
+    "dept": "63",
+    "region": "France"
+  },
+  "CLERMONT FERRAND": {
+    "dept": "63",
+    "region": "France"
+  },
+  "OYONNAX": {
+    "dept": "01",
+    "region": "France"
+  },
+  "FORT DE FRANCE": {
+    "dept": "972",
+    "region": "Martinique"
+  },
+  "SCHOELCHER": {
+    "dept": "972",
+    "region": "Martinique"
+  },
+  "LE VAUCLIN": {
+    "dept": "972",
+    "region": "Martinique"
+  },
+  "LE LAMENTIN": {
+    "dept": "972",
+    "region": "Martinique"
+  },
+  "REMIRE MONTJOLY": {
+    "dept": "973",
+    "region": "Guyane"
+  },
+  "LA SALINE LES BAINS": {
+    "dept": "974",
+    "region": "Réunion"
+  },
+  "L ETANG SALE LES BAINS": {
+    "dept": "974",
+    "region": "Réunion"
+  },
+  "DUMBEA": {
+    "dept": "988",
+    "region": "Nouvelle-Calédonie"
+  },
+  "MTSAMBORO": {
+    "dept": "976",
+    "region": "Mayotte"
+  },
+  "SAINT FRANCOIS": {
+    "dept": "971",
+    "region": "Guadeloupe"
+  },
+  "97180": {
+    "dept": "971",
+    "region": "Guadeloupe"
+  },
+  "95520": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "95310": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "95230": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "95110": {
+    "dept": "95",
+    "region": "IDF"
+  },
+  "94400": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "94140": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "94130": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "93500": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "93150": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "92700": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "92300": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "92140": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "91800": {
+    "dept": "91",
+    "region": "IDF"
+  },
+  "83980": {
+    "dept": "83",
+    "region": "France"
+  },
+  "77280": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "77230": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "77173": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "77150": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "77000": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "69001": {
+    "dept": "69",
+    "region": "France"
+  },
+  "67450": {
+    "dept": "67",
+    "region": "France"
+  },
+  "67000": {
+    "dept": "67",
+    "region": "France"
+  },
+  "44690": {
+    "dept": "44",
+    "region": "France"
+  },
+  "44118": {
+    "dept": "44",
+    "region": "France"
+  },
+  "38410": {
+    "dept": "38",
+    "region": "France"
+  },
+  "33100": {
+    "dept": "33",
+    "region": "France"
+  },
+  "29460": {
+    "dept": "29",
+    "region": "France"
+  },
+  "25320": {
+    "dept": "25",
+    "region": "France"
+  },
+  "21121": {
+    "dept": "21",
+    "region": "France"
+  },
+  "17138": {
+    "dept": "17",
+    "region": "France"
+  },
+  "06100": {
+    "dept": "06",
+    "region": "France"
+  },
+  "AJACCIO": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "PORTO VECCHIO": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "ALATA": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "APPIETTO": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "BASTELICACCIA": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "PIETROSELLA": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "SOTTA": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "PORTICCIO": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "FIGARI": {
+    "dept": "2A",
+    "region": "Corse"
+  },
+  "ALERIA": {
+    "dept": "2B",
+    "region": "Corse"
+  },
+  "L ILE ROUSSE": {
+    "dept": "2B",
+    "region": "Corse"
+  },
+  "ALGAJOLA": {
+    "dept": "2B",
+    "region": "Corse"
+  },
+  "BORGO": {
+    "dept": "2B",
+    "region": "Corse"
+  },
+  "FURIANI": {
+    "dept": "2B",
+    "region": "Corse"
+  },
+  "TOURS": {
+    "dept": "37",
+    "region": "France"
+  },
+  "Tours": {
+    "dept": "37",
+    "region": "France"
+  },
+  "AMBOISE": {
+    "dept": "37",
+    "region": "France"
+  },
+  "SAUMUR": {
+    "dept": "49",
+    "region": "France"
+  },
+  "NIORT": {
+    "dept": "79",
+    "region": "France"
+  },
+  "POITIERS": {
+    "dept": "86",
+    "region": "France"
+  },
+  "CHATELLERAULT": {
+    "dept": "86",
+    "region": "France"
+  },
+  "CHÂTELLERAULT": {
+    "dept": "86",
+    "region": "France"
+  },
+  "VENDEUVRE DU POITOU": {
+    "dept": "86",
+    "region": "France"
+  },
+  "QUINCAY": {
+    "dept": "86",
+    "region": "France"
+  },
+  "JAUNAY CLAN": {
+    "dept": "86",
+    "region": "France"
+  },
+  "JARDRES": {
+    "dept": "86",
+    "region": "France"
+  },
+  "ITEUIL": {
+    "dept": "86",
+    "region": "France"
+  },
+  "iteuil": {
+    "dept": "86",
+    "region": "France"
+  },
+  "Iteuil": {
+    "dept": "86",
+    "region": "France"
+  },
+  "SAINT BENOIT": {
+    "dept": "86",
+    "region": "France"
+  },
+  "ST BENOIT": {
+    "dept": "86",
+    "region": "France"
+  },
+  "BESSINES": {
+    "dept": "79",
+    "region": "France"
+  },
+  "BEAUVOIR SUR NIORT": {
+    "dept": "79",
+    "region": "France"
+  },
+  "LA ROCHELLE": {
+    "dept": "17",
+    "region": "France"
+  },
+  "COZES": {
+    "dept": "17",
+    "region": "France"
+  },
+  "Poligny": {
+    "dept": "39",
+    "region": "France"
+  },
+  "POLIGNY": {
+    "dept": "39",
+    "region": "France"
+  },
+  "LONS LE SAUNIER": {
+    "dept": "39",
+    "region": "France"
+  },
+  "DIGNE LES BAINS": {
+    "dept": "04",
+    "region": "France"
+  },
+  "GRENOBLE": {
+    "dept": "38",
+    "region": "France"
+  },
+  "CLAIX": {
+    "dept": "38",
+    "region": "France"
+  },
+  "ESTRABLIN": {
+    "dept": "38",
+    "region": "France"
+  },
+  "LORETTE": {
+    "dept": "42",
+    "region": "France"
+  },
+  "ST CHAMOND": {
+    "dept": "42",
+    "region": "France"
+  },
+  "Anneyron": {
+    "dept": "26",
+    "region": "France"
+  },
+  "VIENNE": {
+    "dept": "38",
+    "region": "France"
+  },
+  "CHARTRES": {
+    "dept": "28",
+    "region": "France"
+  },
+  "DREUX": {
+    "dept": "28",
+    "region": "France"
+  },
+  "LAVAL": {
+    "dept": "53",
+    "region": "France"
+  },
+  "Perrigny ": {
+    "dept": "89",
+    "region": "France"
+  },
+  "Perrigny": {
+    "dept": "89",
+    "region": "France"
+  },
+  "Pennautier": {
+    "dept": "11",
+    "region": "France"
+  },
+  "Lédignan": {
+    "dept": "30",
+    "region": "France"
+  },
+  "VINEZAC": {
+    "dept": "07",
+    "region": "France"
+  },
+  "LAURAC EN VIVARAIS": {
+    "dept": "07",
+    "region": "France"
+  },
+  "GERVAIS SUR ROUBION": {
+    "dept": "26",
+    "region": "France"
+  },
+  "ST GERVAIS SUR ROUBION": {
+    "dept": "26",
+    "region": "France"
+  },
+  "Dainville": {
+    "dept": "62",
+    "region": "France"
+  },
+  "Briscous": {
+    "dept": "64",
+    "region": "France"
+  },
+  "Pessac": {
+    "dept": "33",
+    "region": "France"
+  },
+  "Hem": {
+    "dept": "59",
+    "region": "France"
+  },
+  "HEM": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Hénin Beaumont ": {
+    "dept": "62",
+    "region": "France"
+  },
+  "TOURCOING": {
+    "dept": "59",
+    "region": "France"
+  },
+  "RONCQ": {
+    "dept": "59",
+    "region": "France"
+  },
+  "RONCHIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "MOUSCRON": {
+    "dept": "99",
+    "region": "Belgique"
+  },
+  "Tournai": {
+    "dept": "99",
+    "region": "Belgique"
+  },
+  "TRIVIERES": {
+    "dept": "99",
+    "region": "Belgique"
+  },
+  "Madrid": {
+    "dept": "99",
+    "region": "Étranger"
+  },
+  "Casablanca": {
+    "dept": "99",
+    "region": "Étranger"
+  },
+  "CASABLANCA": {
+    "dept": "99",
+    "region": "Étranger"
+  },
+  "Rabat ": {
+    "dept": "99",
+    "region": "Étranger"
+  },
+  "MONACO": {
+    "dept": "98",
+    "region": "Monaco"
+  },
+  "TROYES": {
+    "dept": "10",
+    "region": "France"
+  },
+  "CRENEY PRES TROYES": {
+    "dept": "10",
+    "region": "France"
+  },
+  "SAINT-DIZIER": {
+    "dept": "52",
+    "region": "France"
+  },
+  "HUMBECOURT": {
+    "dept": "52",
+    "region": "France"
+  },
+  "HAIRONVILLE": {
+    "dept": "55",
+    "region": "France"
+  },
+  "BRILLON EN BARROIS": {
+    "dept": "55",
+    "region": "France"
+  },
+  "ORLEANS": {
+    "dept": "45",
+    "region": "France"
+  },
+  "FLEURY LES AUBRAIS": {
+    "dept": "45",
+    "region": "France"
+  },
+  "ST JEAN DE BRAYE": {
+    "dept": "45",
+    "region": "France"
+  },
+  "BRICY": {
+    "dept": "45",
+    "region": "France"
+  },
+  "EGRISELLES LE BOCAGE": {
+    "dept": "89",
+    "region": "France"
+  },
+  "egriselles le bocage": {
+    "dept": "89",
+    "region": "France"
+  },
+  "AVROLLES": {
+    "dept": "89",
+    "region": "France"
+  },
+  "COMMISSEY": {
+    "dept": "89",
+    "region": "France"
+  },
+  "SOUCY": {
+    "dept": "89",
+    "region": "France"
+  },
+  "SENS": {
+    "dept": "89",
+    "region": "France"
+  },
+  "AUBE": {
+    "dept": "10",
+    "region": "France"
+  },
+  "DIJON": {
+    "dept": "21",
+    "region": "France"
+  },
+  "Til Chatel": {
+    "dept": "21",
+    "region": "France"
+  },
+  "FISMES": {
+    "dept": "51",
+    "region": "France"
+  },
+  "NARBONNE": {
+    "dept": "11",
+    "region": "France"
+  },
+  "BALARUC LE VIEUX": {
+    "dept": "34",
+    "region": "France"
+  },
+  "FRONTIGNAN": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VILLETELLE": {
+    "dept": "34",
+    "region": "France"
+  },
+  "TEYRAN": {
+    "dept": "34",
+    "region": "France"
+  },
+  "CASTRIES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "LE CRES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "Vendargues": {
+    "dept": "34",
+    "region": "France"
+  },
+  "Vailhauques": {
+    "dept": "34",
+    "region": "France"
+  },
+  "Saint-Mathieu-de-Tréviers": {
+    "dept": "34",
+    "region": "France"
+  },
+  "ST GELY DU FESC": {
+    "dept": "34",
+    "region": "France"
+  },
+  "VILLERS BRETONNEUX": {
+    "dept": "80",
+    "region": "France"
+  },
+  "FAMARS": {
+    "dept": "59",
+    "region": "France"
+  },
+  "VALENCIENNES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "DOUAI": {
+    "dept": "59",
+    "region": "France"
+  },
+  "DENAIN": {
+    "dept": "59",
+    "region": "France"
+  },
+  "EMERCHICOURT": {
+    "dept": "59",
+    "region": "France"
+  },
+  "Nieppe": {
+    "dept": "59",
+    "region": "France"
+  },
+  "HAZEBROUCK": {
+    "dept": "59",
+    "region": "France"
+  },
+  "MERVILLE": {
+    "dept": "59",
+    "region": "France"
+  },
+  "ARMENTIÈRES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "ARMENTIERES": {
+    "dept": "59",
+    "region": "France"
+  },
+  "SETES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "LUNEL": {
+    "dept": "34",
+    "region": "France"
+  },
+  "MONTPELIER": {
+    "dept": "34",
+    "region": "France"
+  },
+  "MARSILLARGUES": {
+    "dept": "34",
+    "region": "France"
+  },
+  "Michery": {
+    "dept": "89",
+    "region": "France"
+  },
+  "Messy": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "longperrier": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "LONGPERRIER": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Moret-Loing-et-Orvanne": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Forges": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Fontenay-Saint-Père": {
+    "dept": "78",
+    "region": "IDF"
+  },
+  "PONTARME": {
+    "dept": "60",
+    "region": "France"
+  },
+  "MOISSY CRAMAYEL": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Moussy-le-Vieux": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "GUJAN MESTRAS": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LA TESTE DE BUCH": {
+    "dept": "33",
+    "region": "France"
+  },
+  "teste de buche": {
+    "dept": "33",
+    "region": "France"
+  },
+  "LORMONT": {
+    "dept": "33",
+    "region": "France"
+  },
+  "MACAU": {
+    "dept": "33",
+    "region": "France"
+  },
+  "SAINT-MALO": {
+    "dept": "35",
+    "region": "France"
+  },
+  "ST MALO": {
+    "dept": "35",
+    "region": "France"
+  },
+  "Saint lucien": {
+    "dept": "76",
+    "region": "France"
+  },
+  "Saintines": {
+    "dept": "60",
+    "region": "France"
+  },
+  "saint jean de luz": {
+    "dept": "64",
+    "region": "France"
+  },
+  "ST JEAN DE LUZ": {
+    "dept": "64",
+    "region": "France"
+  },
+  "velaux": {
+    "dept": "13",
+    "region": "France"
+  },
+  "La Geneytouse": {
+    "dept": "87",
+    "region": "France"
+  },
+  "La Fouillouse": {
+    "dept": "42",
+    "region": "France"
+  },
+  "LA FOUILLOUSE": {
+    "dept": "42",
+    "region": "France"
+  },
+  "TRELISSAC": {
+    "dept": "24",
+    "region": "France"
+  },
+  "SARLAT": {
+    "dept": "24",
+    "region": "France"
+  },
+  "PEROLS": {
+    "dept": "34",
+    "region": "France"
+  },
+  "PIGNANS": {
+    "dept": "83",
+    "region": "France"
+  },
+  "BRIGNOLES": {
+    "dept": "83",
+    "region": "France"
+  },
+  "SIGEAN": {
+    "dept": "11",
+    "region": "France"
+  },
+  "Chauconin-Neufmontiers": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Chavot-Courcourt": {
+    "dept": "51",
+    "region": "France"
+  },
+  "AUVE": {
+    "dept": "51",
+    "region": "France"
+  },
+  "Esby": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Couternon": {
+    "dept": "21",
+    "region": "France"
+  },
+  "Cuffy": {
+    "dept": "18",
+    "region": "France"
+  },
+  "MEHUN SUR YEVRE": {
+    "dept": "18",
+    "region": "France"
+  },
+  "SAINT MANDE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "nanterre": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "garches": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "courbevoie": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "boulogne billancourt": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "VILLENEUVE LA GARENNE": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Neuilly sur Seine": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Neuilly sur Seine ": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "NEUILLY": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "La Queue-en-Brie": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LA QUEUE EN BRIE": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "Noisy le grand": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "Levallois": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Saint-Martin": {
+    "dept": "978",
+    "region": "Saint-Martin"
+  },
+  "ST MARTIN": {
+    "dept": "978",
+    "region": "Saint-Martin"
+  },
+  "Chatillon": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Brie": {
+    "dept": "77",
+    "region": "IDF"
+  },
+  "Arcueil ": {
+    "dept": "94",
+    "region": "IDF"
+  },
+  "LA GARENNE COLOMBES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "NOISY LE SEC": {
+    "dept": "93",
+    "region": "IDF"
+  },
+  "FONTENAY AUX ROSES": {
+    "dept": "92",
+    "region": "IDF"
+  },
+  "Bornel": {
+    "dept": "60",
+    "region": "France"
+  },
+  "BRY SUR MARNE": {
+    "dept": "94"
+  },
+  "ST OUEN": {
+    "dept": "41"
+  },
+  "NEUILLY PLAISANCE": {
+    "dept": "93"
+  },
+  "ST OUEN L AUMONE": {
+    "dept": "95"
+  },
+  "ST GERMAIN EN LAYE": {
+    "dept": "78"
+  },
+  "ST DENIS": {
+    "dept": "974"
+  },
+  "MERU": {
+    "dept": "60"
+  },
+  "AURIOL": {
+    "dept": "13"
+  },
+  "SALEILLES": {
+    "dept": "66"
+  },
+  "LAGNY SUR MARNE": {
+    "dept": "77"
+  },
+  "CROIX": {
+    "dept": "59"
+  },
+  "CHATENAY MALABRY": {
+    "dept": "92"
+  },
+  "WASQUEHAL": {
+    "dept": "59"
+  },
+  "ST ANDRE LEZ LILLE": {
+    "dept": "59"
+  },
+  "MARQUETTE LEZ LILLE": {
+    "dept": "59"
+  },
+  "MARCOUSSIS": {
+    "dept": "91"
+  },
+  "MANTES LA JOLIE": {
+    "dept": "78"
+  },
+  "LA SEYNE SUR MER": {
+    "dept": "83"
+  },
+  "BAILLET EN FRANCE": {
+    "dept": "95"
+  },
+  "YEBLES": {
+    "dept": "77"
+  },
+  "VILLENEUVE ST GEORGES": {
+    "dept": "94"
+  },
+  "VILLENEUVE LES MAGUELONE": {
+    "dept": "34"
+  },
+  "VILLE D AVRAY": {
+    "dept": "92"
+  },
+  "VIGNEUX SUR SEINE": {
+    "dept": "91"
+  },
+  "ST ZACHARIE": {
+    "dept": "83"
+  },
+  "ST GILLES LES BAINS": {
+    "dept": "22"
+  },
+  "ST FRANCOIS": {
+    "dept": "79"
+  },
+  "ST DIDIER AU MONT D OR": {
+    "dept": "69"
+  },
+  "ST CYR SUR MER": {
+    "dept": "83"
+  },
+  "ST CYR SUR LOIRE": {
+    "dept": "37"
+  },
+  "ST AUNES": {
+    "dept": "34"
+  },
+  "ROUSSILLON": {
+    "dept": "38"
+  },
+  "ROQUEVAIRE": {
+    "dept": "13"
+  },
+  "Perpignan": {
+    "dept": "66"
+  },
+  "PRECY SUR OISE": {
+    "dept": "60"
+  },
+  "PLAN DE CUQUES": {
+    "dept": "13"
+  },
+  "Nantes": {
+    "dept": "44"
+  },
+  "NANS LES PINS": {
+    "dept": "83"
+  },
+  "MEUDON LA FORET": {
+    "dept": "45"
+  },
+  "Les Pavillons-sous-Bois": {
+    "dept": "93"
+  },
+  "LE PUY STE REPARADE": {
+    "dept": "13"
+  },
+  "LE COUDRAY MONTCEAUX": {
+    "dept": "91"
+  },
+  "LE BEAUSSET": {
+    "dept": "83"
+  },
+  "LAILLE": {
+    "dept": "35"
+  },
+  "LA CADIERE D AZUR": {
+    "dept": "83"
+  },
+  "LA BAULE ESCOUBLAC": {
+    "dept": "44"
+  },
+  "HELLEMMES LILLE": {
+    "dept": "59"
+  },
+  "GIF SUR YVETTE": {
+    "dept": "91"
+  },
+  "GEMENOS": {
+    "dept": "13"
+  },
+  "CROSNE": {
+    "dept": "91"
+  },
+  "CORNEILLA DEL VERCOL": {
+    "dept": "66"
+  },
+  "COMBS LA VILLE": {
+    "dept": "77"
+  },
+  "CLERMONT": {
+    "dept": "60"
+  },
+  "CHAMPAGNE SUR SEINE": {
+    "dept": "77"
+  },
+  "CARRIERES SUR SEINE": {
+    "dept": "78"
+  },
+  "CADOLIVE": {
+    "dept": "13"
+  },
+  "BRINDAS": {
+    "dept": "69"
+  },
+  "BOURRON MARLOTTE": {
+    "dept": "77"
+  },
+  "BEAULIEU": {
+    "dept": "34"
+  },
+  "Échirolles": {
+    "dept": "38"
+  },
+  "sauvian": {
+    "dept": "34"
+  },
+  "rouquefort la bedoule": {
+    "dept": "13"
+  },
+  "coupvray": {
+    "dept": "77"
+  },
+  "chambly": {
+    "dept": "60"
+  },
+  "cesson": {
+    "dept": "77"
+  },
+  "boulogne-billancourt": {
+    "dept": "92"
+  },
+  "amnéville": {
+    "dept": "57"
+  },
+  "Willems": {
+    "dept": "59"
+  },
+  "Wattignies": {
+    "dept": "59"
+  },
+  "WICKERSCHWIHR": {
+    "dept": "68"
+  },
+  "WERVICQ SUD": {
+    "dept": "59"
+  },
+  "WAMBRECHIES": {
+    "dept": "59"
+  },
+  "Villeneuve-d'Ascq": {
+    "dept": "59"
+  },
+  "Villeneuve Loubet ": {
+    "dept": "06"
+  },
+  "Villeneuve La Riviere ": {
+    "dept": "66"
+  },
+  "Vigneux sur Seine": {
+    "dept": "91"
+  },
+  "Vert le Grand": {
+    "dept": "91"
+  },
+  "Vaucresson ": {
+    "dept": "92"
+  },
+  "VOUILLE": {
+    "dept": "86"
+  },
+  "VILLENEUVE/YONNE": {
+    "dept": "89"
+  },
+  "VILLENEUVE LES SABLONS": {
+    "dept": "60"
+  },
+  "VILLENEUVE LES MAGUELONES": {
+    "dept": "34"
+  },
+  "VILLENEUVE LA RIVIERE": {
+    "dept": "66"
+  },
+  "VILLEMADE": {
+    "dept": "82"
+  },
+  "VILLELONGUE DELS MONTS": {
+    "dept": "66"
+  },
+  "VILLEBOUGIS": {
+    "dept": "89"
+  },
+  "VILLABE": {
+    "dept": "91"
+  },
+  "VIC SUR AISNE": {
+    "dept": "02"
+  },
+  "VETRAZ MONTHOUX": {
+    "dept": "74"
+  },
+  "VERTOU": {
+    "dept": "44"
+  },
+  "VERNEUIL SUR VIENNE": {
+    "dept": "87"
+  },
+  "VENISSIEUX": {
+    "dept": "69"
+  },
+  "VENDAT": {
+    "dept": "03"
+  },
+  "VEDENE": {
+    "dept": "84"
+  },
+  "VAUGNERAY": {
+    "dept": "69"
+  },
+  "VANNES": {
+    "dept": "56"
+  },
+  "VALROS": {
+    "dept": "34"
+  },
+  "Tourcoing": {
+    "dept": "59"
+  },
+  "Tassin-la-Demi-Lune": {
+    "dept": "69"
+  },
+  "TRIEL SUR SEINE": {
+    "dept": "78"
+  },
+  "TORTEFONTAINE": {
+    "dept": "62"
+  },
+  "THEMERICOURT": {
+    "dept": "95"
+  },
+  "TALUYERS": {
+    "dept": "69"
+  },
+  "St Étienne du Gres": {
+    "dept": "13"
+  },
+  "St Martin d'Uriage": {
+    "dept": "38"
+  },
+  "Savenay": {
+    "dept": "44"
+  },
+  "Saumane-de-Vaucluse": {
+    "dept": "84"
+  },
+  "Sansais": {
+    "dept": "79"
+  },
+  "Sannois": {
+    "dept": "95"
+  },
+  "Saint-Ouen-sur-Seine": {
+    "dept": "93"
+  },
+  "Saint-Maurice-sur-Adour": {
+    "dept": "40"
+  },
+  "Saint-Lambert": {
+    "dept": "78"
+  },
+  "Saint-Germain-lès-Corbeil": {
+    "dept": "91"
+  },
+  "Saint folquin": {
+    "dept": "62"
+  },
+  "Saint Vrain ": {
+    "dept": "91"
+  },
+  "Sailly sur la lys": {
+    "dept": "62"
+  },
+  "STE EULALIE": {
+    "dept": "33"
+  },
+  "STE COLOMBE": {
+    "dept": "69"
+  },
+  "ST WITZ": {
+    "dept": "95"
+  },
+  "ST THOMAS LA GARDE": {
+    "dept": "42"
+  },
+  "ST THIBERY": {
+    "dept": "34"
+  },
+  "ST SYLVESTRE CAPPEL": {
+    "dept": "59"
+  },
+  "ST SIMON": {
+    "dept": "15"
+  },
+  "ST SAVIN": {
+    "dept": "38"
+  },
+  "ST REMY DE PROVENCE": {
+    "dept": "13"
+  },
+  "ST QUENTIN": {
+    "dept": "02"
+  },
+  "ST PIERRE ES CHAMPS": {
+    "dept": "60"
+  },
+  "ST PIERRE DE MANNEVILLE": {
+    "dept": "76"
+  },
+  "ST PIERRE D IRUBE": {
+    "dept": "64"
+  },
+  "ST PAUL DES LANDES": {
+    "dept": "15"
+  },
+  "ST PAUL": {
+    "dept": "974"
+  },
+  "ST PANTALEON DE LARCHE": {
+    "dept": "19"
+  },
+  "ST OMER CAPELLE": {
+    "dept": "62"
+  },
+  "ST NAZAIRE DE PEZAN": {
+    "dept": "34"
+  },
+  "ST NAZAIRE": {
+    "dept": "44"
+  },
+  "ST MAURICE L EXIL": {
+    "dept": "38"
+  },
+  "ST MARTIN DU TERTRE": {
+    "dept": "95"
+  },
+  "ST MARTIN DE LA BRASQUE": {
+    "dept": "84"
+  },
+  "ST MARTIN D ABLOIS": {
+    "dept": "51"
+  },
+  "ST LAURENT DE MURE": {
+    "dept": "69"
+  },
+  "ST JORIOZ": {
+    "dept": "74"
+  },
+  "ST JEAN DE BEAUREGARD": {
+    "dept": "91"
+  },
+  "ST JANS CAPPEL": {
+    "dept": "59"
+  },
+  "ST GERVAIS": {
+    "dept": "85"
+  },
+  "ST FORGET": {
+    "dept": "78"
+  },
+  "ST DENIS LES REBAIS": {
+    "dept": "77"
+  },
+  "ST CYPRIEN PLAGE": {
+    "dept": "66"
+  },
+  "ST CREPIN IBOUVILLERS": {
+    "dept": "60"
+  },
+  "ST BONNET DE MURE": {
+    "dept": "69"
+  },
+  "ST AUBIN DES BOIS": {
+    "dept": "28"
+  },
+  "ST ANDRE": {
+    "dept": "974"
+  },
+  "ST ALEXANDRE": {
+    "dept": "30"
+  },
+  "ST ALBAN": {
+    "dept": "81"
+  },
+  "SOURCIEUX LES MINES": {
+    "dept": "69"
+  },
+  "SOUFFLENHEIM": {
+    "dept": "67"
+  },
+  "SORGUES": {
+    "dept": "84"
+  },
+  "SIMANDRES": {
+    "dept": "69"
+  },
+  "SEYSSUEL": {
+    "dept": "38"
+  },
+  "SANARY SUR MER": {
+    "dept": "83"
+  },
+  "SALAISE SUR SANNE": {
+    "dept": "38"
+  },
+  "SAINT-OUEN-L'AUMÔNE": {
+    "dept": "95"
+  },
+  "SAINT VINCENT DE TYROSSE": {
+    "dept": "40"
+  },
+  "SAINT GERMAIN SUR RHÔNE": {
+    "dept": "74"
+  },
+  "SAILLY SUR LA LYS": {
+    "dept": "62"
+  },
+  "ROYAN": {
+    "dept": "17"
+  },
+  "ROMILLE": {
+    "dept": "35"
+  },
+  "ROCHES PREMARIE ANDILLE": {
+    "dept": "86"
+  },
+  "RIVIERE SALEE": {
+    "dept": "972"
+  },
+  "RESTIGNE": {
+    "dept": "37"
+  },
+  "Pont eveque": {
+    "dept": "38"
+  },
+  "Pertuis": {
+    "dept": "84"
+  },
+  "Paris ": {
+    "dept": "75"
+  },
+  "Palavas-les-Flots": {
+    "dept": "34"
+  },
+  "PUISEUX EN FRANCE": {
+    "dept": "95"
+  },
+  "PRADES LE LEZ": {
+    "dept": "34"
+  },
+  "POUZIOUX LA JARRIE": {
+    "dept": "17"
+  },
+  "POURCIEUX": {
+    "dept": "83"
+  },
+  "POUILLY": {
+    "dept": "57"
+  },
+  "PORT D ENVAUX": {
+    "dept": "17"
+  },
+  "PORT CAMARGUE": {
+    "dept": "78"
+  },
+  "PLOEREN": {
+    "dept": "56"
+  },
+  "PLAN D AUPS STE BAUME": {
+    "dept": "83"
+  },
+  "PIERREFITTE SUR SEINE": {
+    "dept": "55"
+  },
+  "PIA": {
+    "dept": "66"
+  },
+  "PETIT BOURG": {
+    "dept": "971"
+  },
+  "PELISSANNE": {
+    "dept": "13"
+  },
+  "PACE": {
+    "dept": "35"
+  },
+  "Orgeval": {
+    "dept": "78"
+  },
+  "ORVAULT": {
+    "dept": "44"
+  },
+  "ORTAFFA": {
+    "dept": "66"
+  },
+  "ORGERES": {
+    "dept": "35"
+  },
+  "OLLIERES": {
+    "dept": "83"
+  },
+  "NOTRE DAME DE L ISLE": {
+    "dept": "27"
+  },
+  "NOGENT SUR MARNE ": {
+    "dept": "94"
+  },
+  "NOGENT LE ROI": {
+    "dept": "28"
+  },
+  "NEUVILLE EN FERRAIN": {
+    "dept": "59"
+  },
+  "NESMY": {
+    "dept": "85"
+  },
+  "NANCY": {
+    "dept": "54"
+  },
+  "Morsbronn": {
+    "dept": "67"
+  },
+  "Morsang sur Orge": {
+    "dept": "91"
+  },
+  "Melesse": {
+    "dept": "35"
+  },
+  "MOURS": {
+    "dept": "95"
+  },
+  "MORNAS": {
+    "dept": "84"
+  },
+  "MORIERES": {
+    "dept": "28"
+  },
+  "MORET SUR LOING": {
+    "dept": "77"
+  },
+  "MORANGIS": {
+    "dept": "91"
+  },
+  "MONTSEVEROUX": {
+    "dept": "38"
+  },
+  "MONTS": {
+    "dept": "37"
+  },
+  "MONTIGNY LE BRETONNEUX": {
+    "dept": "78"
+  },
+  "MONTBOUTON": {
+    "dept": "90"
+  },
+  "MONT SUR MEURTHE": {
+    "dept": "54"
+  },
+  "MONISTROL SUR LOIRE": {
+    "dept": "43"
+  },
+  "MIOS": {
+    "dept": "33"
+  },
+  "MIGNALOUX BEAUVOIR": {
+    "dept": "86"
+  },
+  "MEULAN": {
+    "dept": "78"
+  },
+  "MESCHERS SUR GIRONDE": {
+    "dept": "17"
+  },
+  "MERE": {
+    "dept": "78"
+  },
+  "MAZAN": {
+    "dept": "84"
+  },
+  "MAULE": {
+    "dept": "78"
+  },
+  "MAUGUIO": {
+    "dept": "34"
+  },
+  "MARSEILLE 15": {
+    "dept": "13"
+  },
+  "MARSEILLE": {
+    "dept": "13"
+  },
+  "MARMANDE": {
+    "dept": "47"
+  },
+  "MARIGNE LAILLE": {
+    "dept": "72"
+  },
+  "MARCK": {
+    "dept": "62"
+  },
+  "MARCHIENNES": {
+    "dept": "59"
+  },
+  "MARAUSSAN": {
+    "dept": "34"
+  },
+  "MAGNY LE HONGRE": {
+    "dept": "77"
+  },
+  "L’isle adam": {
+    "dept": "95"
+  },
+  "L’HAŸ-LES-ROSES": {
+    "dept": "94"
+  },
+  "Lyon 2e Arrondissement": {
+    "dept": "69"
+  },
+  "Lyon": {
+    "dept": "69"
+  },
+  "Loos": {
+    "dept": "59"
+  },
+  "Le Pouget": {
+    "dept": "34"
+  },
+  "Le Perreux-sur-Marne": {
+    "dept": "94"
+  },
+  "LUZINAY": {
+    "dept": "38"
+  },
+  "LUYNES": {
+    "dept": "37"
+  },
+  "LOURDES": {
+    "dept": "65"
+  },
+  "LORGIES": {
+    "dept": "62"
+  },
+  "LONGEVILLE SUR MER": {
+    "dept": "85"
+  },
+  "LONGAGES": {
+    "dept": "31"
+  },
+  "LIZY SUR OURCQ": {
+    "dept": "77"
+  },
+  "LIMOGES": {
+    "dept": "87"
+  },
+  "LIMAY": {
+    "dept": "78"
+  },
+  "LILLE LOMME": {
+    "dept": "59"
+  },
+  "LEZENNES": {
+    "dept": "59"
+  },
+  "LESCURE D ALBIGEOIS": {
+    "dept": "81"
+  },
+  "LES TROIS ILETS": {
+    "dept": "972"
+  },
+  "LES ISSARDS": {
+    "dept": "09"
+  },
+  "LEFFRINCKOUCKE": {
+    "dept": "59"
+  },
+  "LE TOUQUET PARIS PLAGE": {
+    "dept": "62"
+  },
+  "LE RHEU": {
+    "dept": "35"
+  },
+  "LE PRE ST GERVAIS": {
+    "dept": "93"
+  },
+  "LE PORT-MARLY": {
+    "dept": "78"
+  },
+  "LE PLESSIS GROHAN": {
+    "dept": "27"
+  },
+  "LE MEE SUR SEINE": {
+    "dept": "77"
+  },
+  "LE MANS": {
+    "dept": "72"
+  },
+  "LE LAVANDOU": {
+    "dept": "83"
+  },
+  "LE GOSIER": {
+    "dept": "971"
+  },
+  "LE FRECHE": {
+    "dept": "40"
+  },
+  "LE FRANCOIS": {
+    "dept": "972"
+  },
+  "LE COUDRAY": {
+    "dept": "28"
+  },
+  "LE BOURGET": {
+    "dept": "93"
+  },
+  "LE BELLAY EN VEXIN": {
+    "dept": "95"
+  },
+  "LAVAU SUR LOIRE": {
+    "dept": "44"
+  },
+  "LAURE": {
+    "dept": "63"
+  },
+  "LAMORLAYE": {
+    "dept": "60"
+  },
+  "LAMBRES LEZ DOUAI": {
+    "dept": "59"
+  },
+  "LAMBALLE": {
+    "dept": "22"
+  },
+  "LADON": {
+    "dept": "45"
+  },
+  "LACANAU": {
+    "dept": "33"
+  },
+  "LA TERRASSE SUR DORLAY": {
+    "dept": "42"
+  },
+  "LA REMUEE": {
+    "dept": "76"
+  },
+  "LA RAVOIRE": {
+    "dept": "73"
+  },
+  "LA MONTAGNE": {
+    "dept": "44"
+  },
+  "LA GRANDE MOTTE": {
+    "dept": "34"
+  },
+  "LA FRETTE SUR SEINE": {
+    "dept": "95"
+  },
+  "LA CHAPELLE ST LAUD": {
+    "dept": "49"
+  },
+  "LA CHAPELLE EN SERVAL": {
+    "dept": "60"
+  },
+  "L'isle Adam": {
+    "dept": "95"
+  },
+  "KOLBSHEIM": {
+    "dept": "67"
+  },
+  "KESKASTEL": {
+    "dept": "67"
+  },
+  "Jaunay marigny": {
+    "dept": "86"
+  },
+  "JUVIGNAC": {
+    "dept": "34"
+  },
+  "JUNAS": {
+    "dept": "30"
+  },
+  "JOYEUSE": {
+    "dept": "07"
+  },
+  "JARDIN": {
+    "dept": "38"
+  },
+  "IVRY LE TEMPLE": {
+    "dept": "60"
+  },
+  "Houplines": {
+    "dept": "59"
+  },
+  "Harfleur ": {
+    "dept": "76"
+  },
+  "Halluin": {
+    "dept": "59"
+  },
+  "HEROUVILLE ST CLAIR": {
+    "dept": "14"
+  },
+  "HALLUIN": {
+    "dept": "59"
+  },
+  "HALLENNES-LEZ-HAUBOURDIN": {
+    "dept": "59"
+  },
+  "Graveson": {
+    "dept": "13"
+  },
+  "Givors": {
+    "dept": "69"
+  },
+  "GUICHEN": {
+    "dept": "35"
+  },
+  "GUERARD": {
+    "dept": "77"
+  },
+  "GRIGNY": {
+    "dept": "91"
+  },
+  "GRENAY": {
+    "dept": "62"
+  },
+  "GRENADE SUR L ADOUR": {
+    "dept": "40"
+  },
+  "GREASQUE": {
+    "dept": "13"
+  },
+  "GRANS": {
+    "dept": "13"
+  },
+  "GORRON": {
+    "dept": "53"
+  },
+  "GIVRAND": {
+    "dept": "85"
+  },
+  "GERBEPAL": {
+    "dept": "88"
+  },
+  "GAVAUDUN": {
+    "dept": "47"
+  },
+  "GARGES LES GONESSE": {
+    "dept": "95"
+  },
+  "GALLARGUES LE MONTUEUX": {
+    "dept": "30"
+  },
+  "Fresnoy-en-thelle": {
+    "dept": "60"
+  },
+  "Fondettes": {
+    "dept": "37"
+  },
+  "FREPILLON": {
+    "dept": "95"
+  },
+  "FRELINGHIEN": {
+    "dept": "59"
+  },
+  "FOUJU": {
+    "dept": "77"
+  },
+  "FONTENAY LE COMTE": {
+    "dept": "85"
+  },
+  "FONTAINE ETOUPEFOUR": {
+    "dept": "14"
+  },
+  "FLOTTEMANVILLE HAGUE": {
+    "dept": "50"
+  },
+  "FEURS": {
+    "dept": "42"
+  },
+  "Esbly": {
+    "dept": "77"
+  },
+  "Enghien les bains": {
+    "dept": "95"
+  },
+  "EPERNAY": {
+    "dept": "51"
+  },
+  "EGUILLES": {
+    "dept": "13"
+  },
+  "ECHALAS": {
+    "dept": "69"
+  },
+  "Divonne-les-Bains": {
+    "dept": "01"
+  },
+  "DRUMETTAZ CLARAFOND": {
+    "dept": "73"
+  },
+  "DOUE": {
+    "dept": "77"
+  },
+  "DONNEMAIN ST MAMES": {
+    "dept": "28"
+  },
+  "DOMMARTIN": {
+    "dept": "69"
+  },
+  "DECINES CHARPIEU": {
+    "dept": "69"
+  },
+  "DAX": {
+    "dept": "40"
+  },
+  "DAGNEUX": {
+    "dept": "01"
+  },
+  "Croix": {
+    "dept": "59"
+  },
+  "CUREL": {
+    "dept": "52"
+  },
+  "CROIX ROUGE": {
+    "dept": "44"
+  },
+  "CREVIN": {
+    "dept": "35"
+  },
+  "CRESPIERES": {
+    "dept": "78"
+  },
+  "COURMAS": {
+    "dept": "51"
+  },
+  "COULOMMIERS": {
+    "dept": "77"
+  },
+  "COULAINES": {
+    "dept": "72"
+  },
+  "COUBRON": {
+    "dept": "93"
+  },
+  "CORMONTREUIL": {
+    "dept": "51"
+  },
+  "CORBAS": {
+    "dept": "69"
+  },
+  "CONDRIEU": {
+    "dept": "69"
+  },
+  "CONDECOURT": {
+    "dept": "95"
+  },
+  "CONCARNEAU": {
+    "dept": "29"
+  },
+  "COLOMBIERS": {
+    "dept": "34"
+  },
+  "CLERMONT-FERRAND": {
+    "dept": "63"
+  },
+  "CIRES LES MELLO": {
+    "dept": "60"
+  },
+  "CHÂTENAY-MALABRY": {
+    "dept": "92"
+  },
+  "CHÂTENAY MALABRY": {
+    "dept": "92"
+  },
+  "CHOISY EN BRIE": {
+    "dept": "77"
+  },
+  "CHAVENAY": {
+    "dept": "78"
+  },
+  "CHARS": {
+    "dept": "95"
+  },
+  "CHARLY": {
+    "dept": "69"
+  },
+  "CHARENTILLY": {
+    "dept": "37"
+  },
+  "CHAPONNAY": {
+    "dept": "69"
+  },
+  "CHANTEPIE": {
+    "dept": "35"
+  },
+  "CHAMPEAUX": {
+    "dept": "77"
+  },
+  "CHAMBRY": {
+    "dept": "77"
+  },
+  "CHAMALIERES": {
+    "dept": "63"
+  },
+  "CHALLANS": {
+    "dept": "85"
+  },
+  "CESSON SEVIGNE": {
+    "dept": "35"
+  },
+  "CAYENNE": {
+    "dept": "973"
+  },
+  "CAURO": {
+    "dept": "2A"
+  },
+  "CASES DE PENE": {
+    "dept": "66"
+  },
+  "CARCASSONNE": {
+    "dept": "11"
+  },
+  "CANOHES": {
+    "dept": "66"
+  },
+  "CALAIS": {
+    "dept": "62"
+  },
+  "CAILLOUX SUR FONTAINES": {
+    "dept": "69"
+  },
+  "Butry-sur-Oise": {
+    "dept": "95"
+  },
+  "Bruges": {
+    "dept": "33"
+  },
+  "Brindas": {
+    "dept": "69"
+  },
+  "Billère": {
+    "dept": "64"
+  },
+  "Berre": {
+    "dept": "67"
+  },
+  "Beaulieu-sur-Mer": {
+    "dept": "06"
+  },
+  "Beaucamps-Ligny": {
+    "dept": "59"
+  },
+  "Bais": {
+    "dept": "35"
+  },
+  "BRUSSEY": {
+    "dept": "70"
+  },
+  "BRUGES": {
+    "dept": "33"
+  },
+  "BRIERES LES SCELLES": {
+    "dept": "91"
+  },
+  "BOUSBECQUE": {
+    "dept": "59"
+  },
+  "BOURGTHEROULDE INFREVILLE": {
+    "dept": "27"
+  },
+  "BOURG ST BERNARD": {
+    "dept": "31"
+  },
+  "BORDERES ET LAMENSANS": {
+    "dept": "40"
+  },
+  "BONNIEUX": {
+    "dept": "84"
+  },
+  "BONNEVILLE LA LOUVET": {
+    "dept": "14"
+  },
+  "BONNEUIL EN FRANCE": {
+    "dept": "95"
+  },
+  "BOMPAS": {
+    "dept": "66"
+  },
+  "BOISSISE LE ROI": {
+    "dept": "77"
+  },
+  "BOIS GRENIER": {
+    "dept": "59"
+  },
+  "BIEVRES": {
+    "dept": "91"
+  },
+  "BIEUJAC": {
+    "dept": "33"
+  },
+  "BEUVRAGES": {
+    "dept": "59"
+  },
+  "BERG": {
+    "dept": "67"
+  },
+  "BELLEVILLE": {
+    "dept": "54"
+  },
+  "BELLEU": {
+    "dept": "02"
+  },
+  "BELFLOU": {
+    "dept": "11"
+  },
+  "BEGAAR": {
+    "dept": "40"
+  },
+  "BEDARRIDES": {
+    "dept": "84"
+  },
+  "BEAUVOISIN": {
+    "dept": "30"
+  },
+  "BEAUMONT LES NONAINS": {
+    "dept": "60"
+  },
+  "BAVANS": {
+    "dept": "25"
+  },
+  "BARBIZON": {
+    "dept": "77"
+  },
+  "BARBENTANE": {
+    "dept": "13"
+  },
+  "BAILLEUL": {
+    "dept": "59"
+  },
+  "BAGES": {
+    "dept": "66"
+  },
+  "Asnières sur Seine": {
+    "dept": "92"
+  },
+  "Asnieres sur seine": {
+    "dept": "92"
+  },
+  "Armentieres": {
+    "dept": "59"
+  },
+  "Arcueil": {
+    "dept": "94"
+  },
+  "Ajaccio": {
+    "dept": "2A"
+  },
+  "AVRILLE": {
+    "dept": "49"
+  },
+  "AVON": {
+    "dept": "77"
+  },
+  "AUXERRE": {
+    "dept": "89"
+  },
+  "AUCH": {
+    "dept": "32"
+  },
+  "AUCAMVILLE": {
+    "dept": "31"
+  },
+  "AUBIGNY": {
+    "dept": "80"
+  },
+  "AUBERS": {
+    "dept": "59"
+  },
+  "AUBENAS": {
+    "dept": "07"
+  },
+  "ARPAJON SUR CERE": {
+    "dept": "15"
+  },
+  "ARMENTIERES EN BRIE": {
+    "dept": "77"
+  },
+  "ARLES": {
+    "dept": "13"
+  },
+  "ANTEZANT LA CHAPELLE": {
+    "dept": "17"
+  },
+  "ANGOULEME": {
+    "dept": "16"
+  },
+  "AMPHION LES BAINS": {
+    "dept": "74"
+  },
+  "ALLOUVILLE BELLEFOSSE": {
+    "dept": "76"
+  },
+  "ALES": {
+    "dept": "30"
+  },
+  "AIMARGUES": {
+    "dept": "30"
+  },
+  "AIGREFEUILLE SUR MAINE": {
+    "dept": "44"
+  },
+  "AIGLEVILLE": {
+    "dept": "27"
+  },
+  "AGNETZ": {
+    "dept": "60"
+  },
+  "94000": {
+    "dept": "94"
+  },
+  "92150": {
+    "dept": "92"
+  },
+  "69420": {
+    "dept": "69"
+  },
+  "51110": {
+    "dept": "51"
+  },
+  "38500": {
+    "dept": "38"
+  },
+  "38200": {
+    "dept": "38"
+  },
+  "30650": {
+    "dept": "30"
+  },
+  "13530": {
+    "dept": "13"
+  }
+}

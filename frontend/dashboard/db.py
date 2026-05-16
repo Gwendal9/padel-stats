@@ -11,7 +11,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 USE_POSTGRES = bool(DATABASE_URL)
 
 # Toujours défini (utilisé par graph_engine et autres modules en mode SQLite)
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "tenup.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "backend", "tenup.db")
 
 if USE_POSTGRES:
     import psycopg2
@@ -169,4 +169,4 @@ def fetchval(query: str, params: tuple = ()):
                 return row[0] if row else None
         else:
             row = conn.execute(query, params).fetchone()
-            return row[0] if row else None
+            return row[0] 

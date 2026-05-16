@@ -18,15 +18,22 @@
 
 <style>
   :root {
-    --primary: #0d9488;       /* teal-600 */
-    --primary-dark: #0f766e;
-    --primary-light: #ccfbf1;
-    --accent: #f59e0b;        /* amber-500 */
-    --bg: #f8fafc;
+    --primary: #9ba2ff;       /* pervenche */
+    --primary-dark: #7b84e8;
+    --primary-light: #eeeeff;
+    --accent: #dfbbb1;        /* nude rose */
+    --accent-dark: #c49a8e;
+    --success: #60a561;       /* vert succès */
+    --bg: #f8f7f5;
     --surface: #ffffff;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --muted: #64748b;
+    --border: #e0dde8;
+    --text: #1e2030;
+    --muted: #7a7890;
+    --sidebar: #373f51;
+    --sidebar-hover: rgba(155,162,255,0.08);
+    --sidebar-active-bg: rgba(155,162,255,0.15);
+    --sidebar-active-color: #9ba2ff;
+    --sidebar-muted: #6a7285;
   }
 
   * { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
@@ -44,8 +51,8 @@
   .card-stat .value { font-size: 28px; font-weight: 700; line-height: 1.1; }
   .card-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
   .card-stat .delta { font-size: 11px; margin-top: 6px; }
-  .delta-up { color: #10b981; }
-  .delta-down { color: #ef4444; }
+  .delta-up { color: #60a561; }
+  .delta-down { color: #e05a5a; }
 
   /* Nav */
   .nav-item {
@@ -54,14 +61,14 @@
     border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
-    color: #cbd5e1;
+    color: #a0a8be;
     transition: all 0.15s;
   }
-  .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+  .nav-item:hover { background: rgba(155,162,255,0.08); color: #d0d4f0; }
   .nav-item.active {
-    background: rgba(13,148,136,0.15);
-    color: #5eead4;
-    box-shadow: inset 3px 0 0 #14b8a6;
+    background: rgba(155,162,255,0.15);
+    color: #9ba2ff;
+    box-shadow: inset 3px 0 0 #9ba2ff;
   }
   .nav-item .lucide { width: 16px; height: 16px; }
 
@@ -93,13 +100,13 @@
 
   /* Badges */
   .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-  .badge-gold   { background: #fef3c7; color: #b45309; }
-  .badge-silver { background: #f1f5f9; color: #475569; }
-  .badge-bronze { background: #fed7aa; color: #c2410c; }
-  .badge-cat-elite { background: #fef3c7; color: #b45309; }
-  .badge-cat-pro   { background: #ccfbf1; color: #115e59; }
-  .badge-cat-mid   { background: #e0e7ff; color: #4338ca; }
-  .badge-cat-low   { background: #f1f5f9; color: #64748b; }
+  .badge-gold   { background: #f5efe8; color: #9a6a30; }
+  .badge-silver { background: #eeeeff; color: #5558a0; }
+  .badge-bronze { background: #faeae8; color: #a06040; }
+  .badge-cat-elite { background: #f5efe8; color: #9a6a30; }
+  .badge-cat-pro   { background: #eeeeff; color: #5558a0; }
+  .badge-cat-mid   { background: #f0eeff; color: #6060c0; }
+  .badge-cat-low   { background: #f0f0f5; color: #7a7890; }
 
   /* Views — fade + slide */
   .view { display: none; }
@@ -171,17 +178,17 @@
   }
   .row-me {
     position: sticky; bottom: 0; z-index: 10;
-    background: #fffbeb !important;
-    box-shadow: 0 -2px 0 0 #f59e0b;
+    background: #f0eeff !important;
+    box-shadow: 0 -2px 0 0 #9ba2ff;
   }
-  .row-me td { background: #fffbeb !important; }
+  .row-me td { background: #f0eeff !important; }
 
   /* badge at-best */
   .badge-atbest {
-    background: linear-gradient(135deg,#fef9c3,#fde68a);
-    color: #92400e; font-size: 10px; font-weight: 700;
+    background: #eeeeff;
+    color: #5558a0; font-size: 10px; font-weight: 700;
     padding: 2px 7px; border-radius: 20px;
-    border: 1px solid #fcd34d; white-space: nowrap;
+    border: 1px solid #c0c8ff; white-space: nowrap;
   }
 
   /* Player avatar */
@@ -198,12 +205,12 @@
 
   /* Wrapped (Spotify-like) */
   .wrapped {
-    background: linear-gradient(135deg, #14b8a6 0%, #6366f1 50%, #ec4899 100%);
+    background: linear-gradient(135deg, #373f51 0%, #4a4d7a 50%, #6b6fa8 100%);
     color: white; border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
   }
   .wrapped::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15), transparent 50%);
+    background: radial-gradient(circle at 80% 20%, rgba(155,162,255,0.2), transparent 50%);
   }
 
   /* Sortable table chevron */
@@ -298,7 +305,7 @@
     display: flex; align-items: center; gap: 10px;
     padding: 8px 16px; cursor: pointer; transition: background .1s;
   }
-  .sp-item:hover, .sp-item.sp-active { background: #f0fdfa; }
+  .sp-item:hover, .sp-item.sp-active { background: #f0eeff; }
   .sp-icon {
     width: 32px; height: 32px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -323,41 +330,41 @@
 <div class="flex">
 
   <!-- ─── Sidebar ──────────────────────────────────────────────────── -->
-  <aside class="w-60 bg-slate-900 text-white min-h-screen p-4 fixed flex flex-col">
+  <aside class="w-60 text-white min-h-screen p-4 fixed flex flex-col" style="background:#373f51;">
     <div class="flex items-center gap-3 px-2 py-3 mb-4">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg">
-        <i data-lucide="zap" class="text-white"></i>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(155,162,255,0.2);border:1px solid rgba(155,162,255,0.3);">
+        <i data-lucide="zap" style="color:#9ba2ff;"></i>
       </div>
       <div>
-        <div class="font-bold text-base leading-tight">Padel Stats</div>
-        <div class="text-xs text-slate-400">FFT · France</div>
+        <div class="font-bold text-base leading-tight" style="color:#e8eaf8;">Padel Stats</div>
+        <div class="text-xs" style="color:#6a7285;">FFT · France</div>
       </div>
     </div>
 
-    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2">Vue d'ensemble</div>
+    <div class="text-[10px] uppercase tracking-wider font-semibold px-3 py-2" style="color:#6a7285;">Vue d'ensemble</div>
     <nav class="space-y-0.5">
       <a href="#" data-view="dashboard" class="nav-item active"><i data-lucide="layout-dashboard"></i><span>Tableau de bord</span></a>
       <a href="#" data-view="leaderboard" class="nav-item"><i data-lucide="trophy"></i><span>Classement</span></a>
-      <a href="#" data-view="movers" class="nav-item"><i data-lucide="trending-up"></i><span>Top progressions</span></a>
     </nav>
 
-    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2 mt-4">Profils</div>
+    <div class="text-[10px] uppercase tracking-wider font-semibold px-3 py-2 mt-4" style="color:#6a7285;">Profils</div>
     <nav class="space-y-0.5">
+      <a href="#" data-view="mon-profil" id="nav-mon-profil" class="nav-item hidden"><i data-lucide="star"></i><span id="nav-mon-profil-label">Mon profil</span></a>
       <a href="#" data-view="player" class="nav-item"><i data-lucide="user"></i><span>Joueur</span></a>
       <a href="#" data-view="club" class="nav-item"><i data-lucide="building-2"></i><span>Club</span></a>
       <a href="#" data-view="tournament" class="nav-item"><i data-lucide="medal"></i><span>Tournoi</span></a>
       <a href="#" data-view="compare" class="nav-item"><i data-lucide="users"></i><span>Comparateur</span></a>
     </nav>
 
-    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 py-2 mt-4">Exploration</div>
+    <div class="text-[10px] uppercase tracking-wider font-semibold px-3 py-2 mt-4" style="color:#6a7285;">Exploration</div>
     <nav class="space-y-0.5">
       <a href="#" data-view="map" class="nav-item"><i data-lucide="map-pin"></i><span>Carte de France</span></a>
       <a href="#" data-view="graph" class="nav-item"><i data-lucide="git-branch"></i><span>Graphe partenaires</span></a>
       <a href="#" data-view="partners" class="nav-item"><i data-lucide="hand-coins"></i><span>Suggesteur</span></a>
     </nav>
 
-    <div class="mt-auto pt-4 border-t border-slate-800 text-[11px] text-slate-500 px-2 leading-relaxed">
-      <div class="flex items-center gap-1 mb-1"><i data-lucide="database" class="w-3 h-3"></i><span class="font-semibold text-slate-400">Base actuelle</span></div>
+    <div class="mt-auto pt-4 text-[11px] px-2 leading-relaxed" style="border-top:1px solid rgba(255,255,255,0.08);color:#6a7285;">
+      <div class="flex items-center gap-1 mb-1"><i data-lucide="database" class="w-3 h-3"></i><span class="font-semibold" style="color:#9ba2ff;">Base actuelle</span></div>
       <span id="sb-joueurs">…</span> joueurs<br>
       <span id="sb-participations">…</span> participations<br>
       <span id="sb-tournois">…</span> tournois<br>
@@ -395,7 +402,7 @@
         <button id="theme-toggle" class="btn-ghost flex items-center justify-center w-9 h-9 p-0" title="Changer de thème">
           <i data-lucide="moon" class="w-4 h-4"></i>
         </button>
-        <button class="btn-primary flex items-center gap-2"><i data-lucide="user-circle" class="w-4 h-4"></i>Mon profil</button>
+        <button id="btn-mon-profil" onclick="openProfileModal()" class="btn-primary flex items-center gap-2"><i data-lucide="user-circle" class="w-4 h-4"></i><span id="btn-profil-label">Mon profil</span></button>
       </div>
     </div>
 
@@ -517,40 +524,26 @@
         </div>
       </div>
 
-      <!-- Row 3 : Distribution classements -->
+      <!-- Row 3 : Population par niveau + Top clubs par tranche -->
       <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="card p-5">
-          <div class="flex items-center justify-between mb-1">
-            <div class="font-semibold">Répartition des classements</div>
-            <div class="tabs" id="rankdist-tabs" style="transform:scale(0.85);transform-origin:right">
-              <div class="tab active" data-rankdist="all">Tous</div>
-              <div class="tab" data-rankdist="H">♂ H</div>
-              <div class="tab" data-rankdist="F">♀ F</div>
-            </div>
+          <div class="font-semibold mb-1 flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
+            Population par niveau
           </div>
-          <div class="text-xs text-slate-400 mb-3">Distribution des joueurs par niveau — classements H et F sont indépendants</div>
-          <div class="chart-wrap">
-            <canvas id="chart-club-dist" height="180"></canvas>
-            <div class="chart-skel" id="skel-rankdist">
-              <div class="chart-skel-bar" style="height:30%"></div><div class="chart-skel-bar" style="height:50%"></div>
-              <div class="chart-skel-bar" style="height:80%"></div><div class="chart-skel-bar" style="height:95%"></div>
-              <div class="chart-skel-bar" style="height:75%"></div><div class="chart-skel-bar" style="height:45%"></div>
-              <div class="chart-skel-bar" style="height:20%"></div>
-            </div>
+          <div class="text-xs text-slate-400 mb-4">Licenciés par tranche · <span class="text-blue-500">♂</span> hommes — <span class="text-pink-500">♀</span> femmes</div>
+          <div id="niveau-dist-body" class="space-y-3">
+            ${[1,2,3,4,5].map(()=>`<div class="skeleton sk-text" style="height:38px;border-radius:8px"></div>`).join('')}
           </div>
         </div>
         <div class="card p-5">
-          <div class="font-semibold mb-1">Top 10 clubs</div>
-          <div class="text-xs text-slate-400 mb-3">Par nombre de joueurs licenciés</div>
-          <div class="chart-wrap">
-            <canvas id="chart-top-clubs" height="180"></canvas>
-            <div class="chart-skel" id="skel-top-clubs">
-              <div class="chart-skel-bar" style="height:95%"></div><div class="chart-skel-bar" style="height:80%"></div>
-              <div class="chart-skel-bar" style="height:70%"></div><div class="chart-skel-bar" style="height:60%"></div>
-              <div class="chart-skel-bar" style="height:50%"></div><div class="chart-skel-bar" style="height:40%"></div>
-              <div class="chart-skel-bar" style="height:32%"></div><div class="chart-skel-bar" style="height:25%"></div>
-              <div class="chart-skel-bar" style="height:18%"></div><div class="chart-skel-bar" style="height:12%"></div>
-            </div>
+          <div class="font-semibold mb-1 flex items-center gap-2">
+            <i data-lucide="bar-chart" class="w-4 h-4 text-teal-500"></i>
+            Top clubs par tranche de classement
+          </div>
+          <div class="text-xs text-slate-400 mb-4">Clubs avec le plus de joueurs dans chaque niveau</div>
+          <div id="rank-clubs-body" class="space-y-3">
+            ${[1,2,3,4,5].map(()=>`<div class="skeleton sk-text" style="height:36px;border-radius:8px"></div>`).join('')}
           </div>
         </div>
       </div>
@@ -576,6 +569,16 @@
 
     <!-- ═════ LEADERBOARD ══════════════════════════════════════════════ -->
     <section class="view" id="view-leaderboard">
+      <!-- Mode toggle: joueurs / clubs -->
+      <div class="flex gap-2 mb-3">
+        <div class="tabs" id="lb-mode-tabs">
+          <div class="tab active" data-mode="players"><i data-lucide="user" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>Par joueurs</div>
+          <div class="tab" data-mode="clubs"><i data-lucide="building-2" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>Par clubs</div>
+        </div>
+      </div>
+
+      <!-- ── VUE JOUEURS ── -->
+      <div id="lb-players-view">
       <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
         <div class="tabs" id="lb-sex-tabs">
           <div class="tab active" data-sex="H">♂ Hommes</div>
@@ -611,7 +614,7 @@
               <th class="text-left py-3 px-4">Ville</th>
               <th class="text-right py-3 px-4" data-sort>Meilleur</th>
               <th class="text-right py-3 px-4" data-sort>Tournois</th>
-              <th class="text-right py-3 px-4" title="Écart entre classement actuel et meilleur classement historique (pas une tendance temporelle — calculable quand on aura 2 mois de données). ▲ = meilleur que le record · ▼ = en dessous du record">Δ hist. <span style="font-size:10px;opacity:0.6">ⓘ</span></th>
+              <th class="text-right py-3 px-4" title="Variation mensuelle de classement (depuis la dernière mise à jour FFT). ▲ = progression · ▼ = recul · — = pas de données">Δ mois <span style="font-size:10px;opacity:0.6">ⓘ</span></th>
             </tr>
           </thead>
           <tbody id="lb-tbody">
@@ -624,32 +627,47 @@
           <div class="text-xs text-slate-400">Scroll pour charger plus</div>
         </div>
       </div>
+      </div><!-- /#lb-players-view -->
+
+      <!-- ── VUE CLUBS ── -->
+      <div id="lb-clubs-view" style="display:none">
+        <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
+          <span class="text-sm text-slate-500 font-medium">Trier par&nbsp;:</span>
+          <div class="tabs" id="club-sort-tabs">
+            <div class="tab active" data-csort="best_h">⚡ Meilleur ♂</div>
+            <div class="tab" data-csort="best_f">⚡ Meilleur ♀</div>
+            <div class="tab" data-csort="avg_rank_h">📊 Moy. ♂</div>
+            <div class="tab" data-csort="avg_rank_f">📊 Moy. ♀</div>
+            <div class="tab" data-csort="nb_tournois">🏆 Tournois (12m)</div>
+          </div>
+          <div class="ml-auto text-xs text-slate-400" id="club-rank-counter"></div>
+        </div>
+        <div class="card overflow-hidden">
+          <div style="max-height:70vh;overflow-y:auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] font-semibold tracking-wider sticky top-0 z-20">
+              <tr>
+                <th class="text-left py-3 px-4 w-8">#</th>
+                <th class="text-left py-3 px-4">Club</th>
+                <th class="text-left py-3 px-4">Ville</th>
+                <th class="text-right py-3 px-3">Joueurs</th>
+                <th class="text-right py-3 px-3">Meilleur ♂</th>
+                <th class="text-right py-3 px-3">Meilleur ♀</th>
+                <th class="text-right py-3 px-3">Moy. ♂</th>
+                <th class="text-right py-3 px-3">Moy. ♀</th>
+                <th class="text-right py-3 px-3">Tournois 12m</th>
+              </tr>
+            </thead>
+            <tbody id="club-rank-tbody">
+              <tr><td colspan="9" class="py-8 text-center text-slate-400 text-sm">Sélectionnez un critère</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div><!-- /#lb-clubs-view -->
     </section>
 
     <!-- ═════ MOVERS ═══════════════════════════════════════════════════ -->
-    <section class="view" id="view-movers">
-      <div class="card p-4 mb-4 flex gap-3 items-center">
-        <div class="text-xs text-slate-400 italic flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Snapshot Avril 2025 — comparaison classement actuel vs meilleur classement historique (pas de tendance temporelle avec un seul mois)
-        </div>
-        <div class="flex-1"></div>
-        <select id="movers-sexe" class="px-3 py-2 rounded-lg border border-slate-200 bg-white" onchange="loadMovers()"><option value="">Tous</option><option value="H">Hommes</option><option value="F">Femmes</option></select>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4" id="movers-grid">
-        <div class="card p-5">
-          <div class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Au sommet de leur carrière</div>
-          <div class="text-xs text-slate-400 mb-4">Joueurs actuellement à leur meilleur classement historique</div>
-          <div class="space-y-3" id="movers-hausse"><div class="skeleton sk-text" style="height:56px;border-radius:8px"></div></div>
-        </div>
-        <div class="card p-5">
-          <div class="font-semibold mb-1 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i> Plus grosses chutes de carrière</div>
-          <div class="text-xs text-slate-400 mb-4">Écart le plus important entre classement actuel et meilleur historique</div>
-          <div class="space-y-3" id="movers-baisse"><div class="skeleton sk-text" style="height:56px;border-radius:8px"></div></div>
-        </div>
-      </div>
-    </section>
 
     <!-- ═════ PLAYER PROFILE ═══════════════════════════════════════════ -->
     <section class="view" id="view-player">
@@ -666,6 +684,194 @@
       </div>
       <div id="profile-content" hidden></div>
     </section>
+
+    <!-- ═════ MON PROFIL ═══════════════════════════════════════════════ -->
+    <section class="view" id="view-mon-profil">
+      <div class="wrapped mb-6 flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-widest opacity-75 mb-1">Mon espace</div>
+          <div id="mp-title" class="text-2xl font-bold mb-1">Mon profil</div>
+          <div id="mp-subtitle" class="text-sm opacity-90">Tes statistiques et tes joueurs suivis</div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openSetupPlayer()" class="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Changer de joueur lié">
+            <i data-lucide="link" class="w-3.5 h-3.5"></i> Changer de joueur
+          </button>
+          <button onclick="authLogout()" class="bg-white/10 hover:bg-white/20 text-white text-sm px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Déconnexion
+          </button>
+        </div>
+      </div>
+
+      <!-- Profil lié ou invitation à lier -->
+      <div id="mp-player-linked" class="hidden mb-6">
+        <div class="card flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl flex-shrink-0" id="mp-avatar">??</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-slate-800 text-lg truncate" id="mp-player-name">—</div>
+            <div class="text-sm text-slate-500" id="mp-player-meta">—</div>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-bold text-indigo-600" id="mp-rank">—</div>
+            <div class="text-xs text-slate-400">classement FFT</div>
+          </div>
+        </div>
+        <!-- KPIs -->
+        <div class="grid grid-cols-3 gap-3 mt-3">
+          <div class="card card-stat"><div class="label">Tournois</div><div class="value" id="mp-nb-tournois">—</div></div>
+          <div class="card card-stat"><div class="label">Victoires</div><div class="value" id="mp-victoires">—</div></div>
+          <div class="card card-stat"><div class="label">Pos. moyenne</div><div class="value" id="mp-pos-moy">—</div></div>
+        </div>
+        <div class="mt-3">
+          <button onclick="loadPlayerProfile(window._mpPlayerFftId);document.querySelector('[data-view=player]').click()"
+            class="btn-primary w-full text-sm py-2 flex items-center justify-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Voir mes stats complètes
+          </button>
+        </div>
+      </div>
+      <div id="mp-no-player" class="hidden mb-6">
+        <div class="card text-center py-8 border-2 border-dashed border-slate-200">
+          <i data-lucide="link" class="w-8 h-8 mx-auto mb-3 text-slate-300"></i>
+          <p class="text-sm text-slate-500 mb-3">Lie ton profil FFT pour voir tes stats ici</p>
+          <button onclick="openSetupPlayer()" class="btn-primary text-sm px-4 py-2 mx-auto">Lier mon profil FFT</button>
+        </div>
+      </div>
+
+      <!-- Favoris -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-slate-700 flex items-center gap-2">
+            <i data-lucide="heart" class="w-4 h-4 text-rose-500"></i> Joueurs suivis
+          </h3>
+          <span class="text-xs text-slate-400" id="mp-fav-count">—</span>
+        </div>
+        <div id="mp-favorites-list">
+          <div class="text-sm text-slate-400 text-center py-6">Chargement…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════ MODAL LOGIN / PROFIL ═══════════════════════════════════════ -->
+    <!-- Backdrop -->
+    <div id="profile-modal-backdrop" class="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm items-center justify-center"
+         style="display:none"
+         onclick="if(event.target===this)closeProfileModal()">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+
+        <!-- ── Écran : choix visiteur / créer profil ── -->
+        <div id="pm-screen-welcome" class="">
+          <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white text-center">
+            <div class="text-3xl mb-2">🎾</div>
+            <h2 class="text-xl font-bold">Padel Stats</h2>
+            <p class="text-sm opacity-80 mt-1">Accède à tes statistiques personnelles</p>
+          </div>
+          <div class="p-6 space-y-3">
+            <button onclick="pmShowScreen('login')" class="w-full btn-primary py-3 flex items-center justify-center gap-2 text-base">
+              <i data-lucide="user-circle" class="w-5 h-5"></i> Créer / accéder à mon profil
+            </button>
+            <button onclick="closeProfileModal()" class="w-full py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm">
+              <i data-lucide="eye" class="w-4 h-4"></i> Continuer en visiteur
+            </button>
+            <p class="text-center text-xs text-slate-400 pt-1">
+              En visiteur tu peux tout consulter, mais pas sauvegarder tes favoris.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Écran : login email ── -->
+        <div id="pm-screen-login" class="hidden">
+          <div class="flex items-center gap-3 p-4 border-b border-slate-100">
+            <button onclick="pmShowScreen('welcome')" class="text-slate-400 hover:text-slate-600 transition">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="font-semibold text-slate-800">Connexion par email</h2>
+          </div>
+          <div class="p-6">
+            <p class="text-sm text-slate-500 mb-4">
+              Saisis ton adresse email. On t'envoie un lien magique — aucun mot de passe.
+            </p>
+            <div class="space-y-3">
+              <input id="pm-email" type="email" placeholder="ton@email.com" autocomplete="email"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm transition"
+                onkeydown="if(event.key==='Enter')pmSendMagicLink()">
+              <button onclick="pmSendMagicLink()" id="pm-send-btn"
+                class="w-full btn-primary py-3 flex items-center justify-center gap-2">
+                <i data-lucide="send" class="w-4 h-4"></i> Recevoir mon lien de connexion
+              </button>
+            </div>
+            <div id="pm-login-feedback" class="hidden mt-4 p-3 rounded-xl text-sm"></div>
+          </div>
+        </div>
+
+        <!-- ── Écran : dev mode (lien affiché) ── -->
+        <div id="pm-screen-devlink" class="hidden">
+          <div class="flex items-center gap-3 p-4 border-b border-slate-100">
+            <button onclick="pmShowScreen('login')" class="text-slate-400 hover:text-slate-600 transition">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="font-semibold text-slate-800">Mode développement</h2>
+          </div>
+          <div class="p-6">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p class="text-xs text-amber-700 font-medium mb-1">⚡ SMTP non configuré — lien affiché directement</p>
+              <p class="text-xs text-amber-600">En production, ce lien serait envoyé par email.</p>
+            </div>
+            <p class="text-xs text-slate-500 mb-2">Clique sur le lien ci-dessous pour te connecter :</p>
+            <a id="pm-dev-link" href="#" class="block break-all text-indigo-600 hover:underline text-xs font-mono p-3 bg-slate-50 rounded-lg border border-slate-200"
+               onclick="event.preventDefault();pmHandleDevLink(this.href)">—</a>
+            <p class="text-xs text-slate-400 mt-3 text-center">Valable 15 minutes · usage unique</p>
+          </div>
+        </div>
+
+        <!-- ── Écran : setup joueur FFT ── -->
+        <div id="pm-screen-setup" class="hidden">
+          <div class="flex items-center gap-3 p-4 border-b border-slate-100">
+            <h2 class="font-semibold text-slate-800">Lier ton profil FFT</h2>
+            <button onclick="closeProfileModal()" class="ml-auto text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+          </div>
+          <div class="p-6">
+            <p class="text-sm text-slate-500 mb-4">Recherche ton nom dans la base FFT pour lier ton compte à tes données de classement.</p>
+            <div class="relative mb-3">
+              <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input id="pm-player-search" type="text" placeholder="Prénom Nom…" autocomplete="off"
+                class="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm transition">
+              <div id="pm-player-ac" class="ac-popup" hidden></div>
+            </div>
+            <div id="pm-player-selected" class="hidden mb-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-sm flex-shrink-0" id="pm-sel-avatar">??</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-indigo-800 text-sm truncate" id="pm-sel-name">—</div>
+                <div class="text-xs text-indigo-600" id="pm-sel-meta">—</div>
+              </div>
+              <button onclick="pmClearSelectedPlayer()" class="text-indigo-400 hover:text-indigo-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="pmConfirmPlayer()" id="pm-confirm-btn"
+              class="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" disabled>
+              <i data-lucide="check" class="w-4 h-4"></i> Confirmer ce joueur
+            </button>
+            <button onclick="pmSkipPlayerLink()" class="w-full mt-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition text-center">
+              Passer cette étape pour l'instant
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Écran : succès ── -->
+        <div id="pm-screen-success" class="hidden">
+          <div class="p-8 text-center">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="check-circle" class="w-8 h-8 text-emerald-600"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Profil créé !</h2>
+            <p class="text-sm text-slate-500 mb-6" id="pm-success-msg">Ton compte est prêt.</p>
+            <button onclick="closeProfileModal();navToMonProfil()" class="btn-primary px-6 py-2.5">Voir mon profil →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════ TOAST FAVORIS ══════════════════════════════════════════════ -->
+    <!-- Réutilise le système de notif existant -->
 
     <section class="view" id="view-club">
 
@@ -710,25 +916,67 @@
           </div>
         </div>
 
-        <!-- KPI cards -->
+        <!-- KPI cards : 2 lignes × 4 -->
         <div class="grid grid-cols-4 gap-3 mb-6">
+          <!-- Ligne 1 -->
           <div class="card card-stat">
-            <div class="label">Meilleur H</div>
-            <div class="value" id="club-best-h">—</div>
-            <div class="delta text-slate-500" id="club-rang-h"></div>
+            <div class="label">Meilleur ♂</div>
+            <div class="value text-blue-600" id="club-best-h">—</div>
+            <div class="delta" id="club-rang-h"></div>
           </div>
           <div class="card card-stat">
-            <div class="label">Meilleur F</div>
-            <div class="value" id="club-best-f">—</div>
-            <div class="delta text-slate-500" id="club-rang-f"></div>
+            <div class="label">Meilleur ♀</div>
+            <div class="value text-pink-600" id="club-best-f">—</div>
+            <div class="delta" id="club-rang-f"></div>
           </div>
+          <div class="card card-stat">
+            <div class="label">Moy. classement ♂</div>
+            <div class="value text-blue-600" id="club-avg-h">—</div>
+          </div>
+          <div class="card card-stat">
+            <div class="label">Moy. classement ♀</div>
+            <div class="value text-pink-600" id="club-avg-f">—</div>
+          </div>
+          <!-- Ligne 2 -->
           <div class="card card-stat">
             <div class="label">Top 100</div>
-            <div class="value text-amber-600" id="club-top100">—</div>
+            <div class="flex gap-3 mt-1">
+              <span class="text-xl font-bold text-blue-600" id="club-top100-h">—</span>
+              <span class="text-xl font-bold text-pink-500" id="club-top100-f">—</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5 flex gap-3"><span>♂</span><span>♀</span></div>
           </div>
           <div class="card card-stat">
-            <div class="label">Classement moyen</div>
-            <div class="value" id="club-avg">—</div>
+            <div class="label">Top 1 000</div>
+            <div class="flex gap-3 mt-1">
+              <span class="text-xl font-bold text-blue-600" id="club-top1000-h">—</span>
+              <span class="text-xl font-bold text-pink-500" id="club-top1000-f">—</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5 flex gap-3"><span>♂</span><span>♀</span></div>
+          </div>
+          <div class="card card-stat">
+            <div class="label">Top 10 000</div>
+            <div class="flex gap-3 mt-1">
+              <span class="text-xl font-bold text-blue-600" id="club-top10000-h">—</span>
+              <span class="text-xl font-bold text-pink-500" id="club-top10000-f">—</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5 flex gap-3"><span>♂</span><span>♀</span></div>
+          </div>
+          <div class="card card-stat">
+            <div class="label">Tournois organisés (12m)</div>
+            <div class="value text-indigo-600" id="club-nb-tournois">—</div>
+          </div>
+        </div>
+
+        <!-- Rang par tranche H/F séparés -->
+        <div class="card p-5 mb-4">
+          <div class="font-semibold mb-1 flex items-center gap-2 text-sm">
+            <i data-lucide="medal" class="w-4 h-4 text-amber-500"></i>
+            Classement du club par tranche
+          </div>
+          <div class="text-xs text-slate-400 mb-3">Rang parmi tous les clubs français · classements ♂ et ♀ <strong>indépendants</strong></div>
+          <div id="club-tranches">
+            <div class="skeleton sk-text" style="height:120px;border-radius:10px"></div>
           </div>
         </div>
 
@@ -763,6 +1011,88 @@
         </div>
 
       </div><!-- /club-content -->
+
+      <!-- ── Détection positions partagées ───────────────────────────── -->
+      <div class="card p-5 mt-6" id="shared-pos-panel">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div>
+            <div class="font-semibold text-sm flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+              Détection de positions partagées
+            </div>
+            <div class="text-xs text-slate-400 mt-0.5">Tournois où plusieurs paires ont la même position — ex : 2 paires 7ème au lieu de 7ème &amp; 8ème</div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <select id="sp-pos-max" class="px-2 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+              <option value="4">Top 4 seulement</option>
+              <option value="8" selected>Top 8</option>
+              <option value="16">Top 16</option>
+              <option value="32">Top 32</option>
+            </select>
+            <select id="sp-cat" class="px-2 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+              <option value="">Toutes catégories</option>
+              <option value="P25">P25</option>
+              <option value="P50">P50</option>
+              <option value="P100">P100</option>
+              <option value="P250">P250</option>
+              <option value="P500">P500</option>
+              <option value="P1000">P1000</option>
+              <option value="P1500">P1500</option>
+              <option value="P2000">P2000</option>
+            </select>
+            <button id="sp-load-btn" onclick="loadSharedPositions()"
+              class="btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i> Analyser
+            </button>
+          </div>
+        </div>
+
+        <div id="sp-loading" class="hidden py-8 text-center text-slate-400 text-sm">
+          <div class="inline-block w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+          <div>Analyse en cours… (peut prendre quelques secondes)</div>
+        </div>
+
+        <div id="sp-empty-state" class="py-6 text-center text-slate-300 text-sm">
+          Clique sur Analyser pour détecter les positions partagées suspectes
+        </div>
+
+        <div id="sp-results" class="hidden">
+          <!-- KPIs -->
+          <div class="grid grid-cols-4 gap-3 mb-4" id="sp-kpis"></div>
+
+          <!-- Top clubs sidebar + table -->
+          <div class="flex gap-4">
+            <!-- Top clubs -->
+            <div class="w-52 shrink-0">
+              <div class="text-[11px] uppercase font-semibold text-slate-500 mb-2 tracking-wider">Clubs les + touchés</div>
+              <div id="sp-top-clubs" class="space-y-1"></div>
+            </div>
+            <!-- Incidents table -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-2">
+                <input id="sp-filter" type="text" placeholder="Filtrer par tournoi ou club…"
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs flex-1 max-w-sm focus:outline-none focus:border-amber-400">
+                <span id="sp-count" class="text-xs text-slate-400"></span>
+              </div>
+              <div style="max-height:460px;overflow-y:auto;border-radius:8px;border:1px solid #f1f5f9">
+                <table class="w-full text-xs" id="sp-table">
+                  <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase sticky top-0 z-10">
+                    <tr>
+                      <th class="text-left py-2 px-2 w-20">Date</th>
+                      <th class="text-left py-2 px-2">Tournoi</th>
+                      <th class="text-center py-2 px-2 w-16">Cat.</th>
+                      <th class="text-center py-2 px-2 w-10">Pos.</th>
+                      <th class="text-left py-2 px-2">Paires (même position)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sp-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /shared-pos-panel -->
+
     </section>
 
     <!-- ═════ COMPARATEUR ════════════════════════════════════════════ -->
@@ -1006,6 +1336,9 @@
           </div>
         </div>
         <svg id="ego-svg" width="100%" height="100%" style="display:none"></svg>
+        <!-- Legend overlay — bottom-left inside the canvas -->
+        <div id="graph-legend" class="hidden absolute bottom-3 left-3 z-20 bg-white/90 backdrop-blur-sm border border-slate-100 rounded-xl shadow px-3 py-2 flex flex-wrap gap-x-3 gap-y-1 items-center text-xs text-slate-500 max-w-[90%]">
+        </div>
       </div>
 
       <!-- Context menu nœud (clic sur un nœud non-centre) -->
@@ -1027,16 +1360,6 @@
         class="hidden fixed z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 pointer-events-none text-sm w-52">
       </div>
 
-      <!-- Legend -->
-      <div id="graph-legend" class="hidden mt-3 flex flex-wrap gap-3 items-center text-xs text-slate-500">
-        <span class="font-semibold text-slate-700">Légende :</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span> Top 100</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> Top 1 000</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-blue-400"></span> Top 5 000</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full bg-slate-400"></span> Autre</span>
-        <span class="flex items-center gap-1 ml-4"><span class="inline-block w-8 border-t-2 border-slate-300"></span> 1 tournoi</span>
-        <span class="flex items-center gap-1"><span class="inline-block w-8 border-t-4 border-slate-500"></span> 5+ tournois</span>
-      </div>
 
     </section>
 
@@ -1145,7 +1468,6 @@
 const titles = {
   dashboard:   ['Tableau de bord',     "Vue d'ensemble du padel français"],
   leaderboard: ['Classement',          'Filtres et recherche dans le classement'],
-  movers:      ['Top progressions',    'Plus grosses montées et descentes au classement'],
   player:      ['Profil joueur',       'Statistiques détaillées et palmarès complet'],
   club:        ['Profil club',         'Statistiques d\'un club'],
   tournament:  ['Tournois',            'Recherche et résultats de tournois'],
@@ -1245,18 +1567,7 @@ const chartRegions = makeChart('chart-regions', {
   options:{ indexAxis:'y', plugins:{legend:{display:false}} }
 });
 
-// Chart classements dans la sidebar (était chart-club-dist — rebaptisé)
-const chartRankingDist = makeChart('chart-club-dist', {
-  type:'bar',
-  data:{
-    labels:['Top 100','100–1k','1k–5k','5k–20k','20k–40k','40k–80k','80k+'],
-    datasets:[{ data:[], backgroundColor:['#0f766e','#0d9488','#14b8a6','#5eead4','#a7f3d0','#ccfbf1','#f0fdf4'], borderRadius:6, borderSkipped:false }]
-  },
-  options:{
-    indexAxis:'y', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x.toLocaleString('fr-FR')} joueurs`}} },
-    scales:{ x:{beginAtZero:true}, y:{grid:{display:false}} }
-  }
-});
+// chartRankingDist supprimé — remplacé par "Population par niveau" (rendu HTML)
 
 const chartTournamentDist = makeChart('chart-tournament-dist', {
   type:'bar',
@@ -1341,38 +1652,91 @@ async function loadDashboardStats() {
     document.getElementById('skel-tournois')?.classList.add('hidden');
   }
 
-  // Répartition classements — stocker les 3 séries pour les onglets H/F/Tous
-  window._rankDistAll = stats.ranking_dist   || [];
-  window._rankDistH   = stats.ranking_dist_h || [];
-  window._rankDistF   = stats.ranking_dist_f || [];
-  if (chartRankingDist && window._rankDistAll.length) {
-    chartRankingDist.data.datasets[0].data = window._rankDistAll;
-    chartRankingDist.update();
-    document.getElementById('skel-rankdist')?.classList.add('hidden');
+  // ── Population par niveau — H et F sur des échelles INDEPENDANTES ────────
+  // Les classements H et F sont des pools distincts en padel FFT :
+  // chaque barre H est normalisée par rapport au max H, chaque barre F par rapport au max F.
+  {
+    const rdH = stats.ranking_dist_h || [];
+    const rdF = stats.ranking_dist_f || [];
+    const TRANCHES5 = [
+      { label: 'Top 100',      color: '#ef4444', h: rdH[0]||0, f: rdF[0]||0 },
+      { label: '101–1 000',    color: '#f97316', h: rdH[1]||0, f: rdF[1]||0 },
+      { label: '1 001–5 000',  color: '#a855f7', h: rdH[2]||0, f: rdF[2]||0 },
+      { label: '5 001–20 000', color: '#6366f1', h: rdH[3]||0, f: rdF[3]||0 },
+      { label: '20 000+',      color: '#94a3b8',
+        h: (rdH[4]||0)+(rdH[5]||0)+(rdH[6]||0),
+        f: (rdF[4]||0)+(rdF[5]||0)+(rdF[6]||0) },
+    ];
+    // Echelles indépendantes H et F
+    const maxH = Math.max(...TRANCHES5.map(t => t.h), 1);
+    const maxF = Math.max(...TRANCHES5.map(t => t.f), 1);
+    const el = document.getElementById('niveau-dist-body');
+    if (el) {
+      el.innerHTML = TRANCHES5.map(t => {
+        const wH = Math.round(t.h / maxH * 100);
+        const wF = Math.round(t.f / maxF * 100);
+        return `<div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0 w-24 text-center" style="background:${t.color}">${t.label}</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-blue-500 w-3">♂</span>
+                <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-blue-400 transition-all" style="width:${wH}%"></div>
+                </div>
+                <span class="text-[10px] text-slate-500 w-12 text-right">${t.h.toLocaleString('fr-FR')}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-pink-500 w-3">♀</span>
+                <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-pink-400 transition-all" style="width:${wF}%"></div>
+                </div>
+                <span class="text-[10px] text-slate-500 w-12 text-right">${t.f.toLocaleString('fr-FR')}</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
   }
-  // Activer les onglets H/F/Tous sur la répartition
-  document.querySelectorAll('#rankdist-tabs .tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('#rankdist-tabs .tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const mode = tab.dataset.rankdist;
-      const data = mode === 'H' ? window._rankDistH : mode === 'F' ? window._rankDistF : window._rankDistAll;
-      if (chartRankingDist && data) {
-        chartRankingDist.data.datasets[0].data = data;
-        chartRankingDist.update();
-      }
-    });
-  });
 
-  // Top 10 clubs (appel séparé)
-  apiFetch('/api/clubs?top=10').then(clubs => {
-    if (!clubs || !chartTopClubs) return;
-    // Tri descendant : plus grand club en haut du graphique horizontal
-    const sorted = clubs.slice(0, 10);
-    chartTopClubs.data.labels = sorted.map(c => c.nom.length > 25 ? c.nom.slice(0, 23) + '…' : c.nom);
-    chartTopClubs.data.datasets[0].data = sorted.map(c => c.nb);
-    chartTopClubs.update();
-    document.getElementById('skel-top-clubs')?.classList.add('hidden');
+  // Top clubs par tranche de classement
+  apiFetch('/api/stats/rank_clubs').then(tranches => {
+    const el = document.getElementById('rank-clubs-body');
+    if (!el || !tranches) return;
+    const TRANCHE_COLORS = {
+      'Top 100':       '#ef4444',
+      '101-1 000':     '#f97316',
+      '1 001-5 000':   '#a855f7',
+      '5 001-20 000':  '#6366f1',
+      '20 000+':       '#94a3b8',
+    };
+    el.innerHTML = tranches.map(t => {
+      const color = TRANCHE_COLORS[t.tranche] || '#94a3b8';
+      const max   = t.clubs[0]?.nb || 1;
+      const bars  = t.clubs.slice(0, 3).map((c, i) => {
+        const pct = Math.round(c.nb / max * 100);
+        const name = c.club.length > 28 ? c.club.slice(0, 26) + '…' : c.club;
+        return `<div class="flex items-center gap-2 text-xs">
+          <span class="w-4 text-right text-slate-400 shrink-0">${i+1}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-0.5">
+              <span class="font-medium text-slate-700 truncate">${name}</span>
+              <span class="text-slate-400 shrink-0 ml-1">${c.nb}</span>
+            </div>
+            <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width:${pct}%;background:${color}"></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style="background:${color}">${t.tranche}</span>
+        </div>
+        <div class="space-y-1.5 pl-1">${bars || '<span class="text-xs text-slate-400">—</span>'}</div>
+      </div>`;
+    }).join('');
   });
 
   // Top villes / régions
@@ -1472,6 +1836,76 @@ function buildParcoursChart(parcours) {
     }
   };
 
+  // Custom HTML tooltip
+  const _tooltipEl = (function() {
+    let el = document.getElementById('parcours-tooltip');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'parcours-tooltip';
+      el.style.cssText = `
+        position:fixed;z-index:9999;pointer-events:none;
+        background:white;border:1px solid #e2e8f0;border-radius:12px;
+        box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:0;
+        font-family:Inter,-apple-system,sans-serif;font-size:13px;
+        min-width:220px;max-width:280px;
+        transition:opacity 0.1s ease;opacity:0;
+      `;
+      document.body.appendChild(el);
+    }
+    return el;
+  })();
+
+  function _showParcoursTooltip(e, entry, barColor) {
+    const pos = parseInt(entry.position) || 99;
+    const posEmoji = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':pos<=4?'🎖️':pos<=5?'🏅':'';
+    const posLabel = pos===1?'Vainqueur':pos===2?'Finaliste':pos===3?'Demi-finale':`${pos}e place`;
+    const catBg = {
+      P25:'#f59e0b',P50:'#f97316',P100:'#ef4444',P250:'#a855f7',
+      P500:'#8b5cf6',P1000:'#6366f1',P1500:'#3b82f6',P2000:'#06b6d4',P3000:'#10b981'
+    }[entry.categorie] || '#64748b';
+
+    _tooltipEl.innerHTML = `
+      <div style="background:${barColor};border-radius:11px 11px 0 0;padding:10px 14px 8px">
+        <div style="font-weight:700;font-size:13px;color:white;line-height:1.3;text-shadow:0 1px 2px rgba(0,0,0,0.2)">${entry.tournoi_nom||'—'}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px">${entry.date||''}</div>
+      </div>
+      <div style="padding:10px 14px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="background:${catBg};color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${entry.categorie||''}</span>
+          <span style="font-size:13px;font-weight:600;color:#0f172a">${posEmoji} ${posLabel}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          <div style="background:#f8fafc;border-radius:8px;padding:6px 8px">
+            <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;font-weight:600">Partenaire</div>
+            <div style="font-size:12px;font-weight:600;color:#0f172a;margin-top:2px">${entry.partenaire||'?'}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:6px 8px">
+            <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;font-weight:600">Points</div>
+            <div style="font-size:12px;font-weight:600;color:#0f172a;margin-top:2px">${(entry.points||0).toLocaleString('fr-FR')} pts</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;text-align:center;border-top:1px solid #f1f5f9;padding-top:6px">
+          🖱️ Clic pour voir le tournoi
+        </div>
+      </div>
+    `;
+
+    // Position near cursor, keep inside viewport
+    const tw = 280, th = 200;
+    let left = e.clientX + 14;
+    let top  = e.clientY - 80;
+    if (left + tw > window.innerWidth - 12)  left = e.clientX - tw - 14;
+    if (top + th > window.innerHeight - 12)  top  = window.innerHeight - th - 12;
+    if (top < 8) top = 8;
+    _tooltipEl.style.left  = left + 'px';
+    _tooltipEl.style.top   = top  + 'px';
+    _tooltipEl.style.opacity = '1';
+  }
+
+  function _hideParcoursTooltip() {
+    _tooltipEl.style.opacity = '0';
+  }
+
   chartParcours = new Chart(el, {
     type:'bar', plugins:[labelPlugin],
     data:{ labels: parcours.map(e => e.date||''), datasets:[{ data:scores, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
@@ -1486,18 +1920,21 @@ function buildParcoursChart(parcours) {
           }
         }
       },
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{
-        title: items => (parcours[items[0].dataIndex].tournoi_nom||''),
-        label: items => {
-          const e = parcours[items[0].dataIndex];
-          const pos = parseInt(e.position);
-          const posLabel = pos===1?'🥇 Vainqueur':pos===2?'🥈 Finaliste':pos===3?'🥉 1/2 finale':`${pos}e place`;
-          return [`${e.date}  ·  ${e.categorie}  ·  ${posLabel}`, `${e.points||0} pts · avec ${e.partenaire||'?'}`, 'Clic → voir le tournoi'];
+      onHover: (event, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          _showParcoursTooltip(event.native, parcours[idx], colors[idx]);
+          el.style.cursor = 'pointer';
+        } else {
+          _hideParcoursTooltip();
+          el.style.cursor = 'default';
         }
-      }}},
+      },
+      plugins:{ legend:{display:false}, tooltip:{enabled:false} },
       scales:{ x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,minRotation:30}}, y:{display:false,min:0,max:115} }
     }
   });
+  el.addEventListener('mouseleave', _hideParcoursTooltip);
 
   const legendEl = document.getElementById('parcours-legend');
   if (legendEl) {
@@ -1563,12 +2000,20 @@ function renderProfile(data) {
     const colors = ['bg-teal-600','bg-amber-500','bg-indigo-600','bg-emerald-600','bg-rose-500'];
     const col = colors[Math.floor(Math.random()*colors.length)];
     const posMoyStr = p.pos_moyenne ? `moy. ${p.pos_moyenne}e` : '';
+    const winRate = p.nb_tournois > 0 ? Math.round(p.nb_victoires / p.nb_tournois * 100) : 0;
+    const winColor = winRate >= 50 ? 'text-emerald-600' : winRate >= 25 ? 'text-amber-600' : 'text-slate-400';
     return `<div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
       <div class="flex items-center gap-3">
         <div class="avatar av-md ${col}">${inits}</div>
-        <div><div class="text-sm font-medium">${p.nom_complet}</div><div class="text-xs text-slate-500">${p.nb_tournois} tournois${posMoyStr ? ' · ' + posMoyStr : ''}</div></div>
+        <div>
+          <div class="text-sm font-medium">${p.nom_complet}</div>
+          <div class="text-xs text-slate-500">${p.nb_victoires}🏆 / ${p.nb_tournois} tournois${posMoyStr ? ' · ' + posMoyStr : ''}</div>
+        </div>
       </div>
-      <div class="badge badge-cat-pro">${p.nb_victoires} 🏆</div>
+      <div class="text-right">
+        <div class="text-sm font-bold ${winColor}">${winRate}%</div>
+        <div class="text-[10px] text-slate-400">win rate</div>
+      </div>
     </div>`;
   }).join('');
 
@@ -1603,12 +2048,85 @@ function renderProfile(data) {
             ${data.sexe?`<span class="flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> ${data.sexe==='H'?'Homme':'Femme'}</span>`:''}
           </div>
         </div>
-        <div class="text-right">
-          <div class="text-[11px] uppercase opacity-75 tracking-widest">Classement</div>
-          <div class="text-6xl font-bold leading-none">#${(data.classement||0).toLocaleString('fr-FR')}</div>
-          <div class="flex items-center gap-2 justify-end mt-2">
-            <div class="text-xs opacity-75">Meilleur · #${(data.meilleur_classement||data.classement||0).toLocaleString('fr-FR')}</div>
-            ${data.classement&&data.meilleur_classement&&data.classement<=data.meilleur_classement?'<span class="badge-atbest">⭐ À son meilleur</span>':''}
+        <div class="flex items-center gap-5">
+          ${(()=>{
+            // ── Sparkline à gauche ───────────────────────────────────
+            const hist = data.rang_historique;
+            if (!hist || hist.length < 2) return '';
+            const W = 280, H = 72, PAD = 12;
+            const vals = hist.map(h => h.classement);
+            const minV = Math.min(...vals), maxV = Math.max(...vals);
+            const range = maxV - minV || 1;
+            const toX = i => PAD + (i / (hist.length - 1)) * (W - PAD * 2);
+            // Y inversé : meilleur rang (petit) → haut
+            const toY = v => PAD + ((v - minV) / range) * (H - PAD * 2);
+            const pts = hist.map((h, i) => `${toX(i).toFixed(1)},${toY(h.classement).toFixed(1)}`).join(' ');
+            // Zone remplie sous la courbe
+            const firstX = toX(0), lastX = toX(hist.length-1);
+            const areapts = `${firstX},${H} ` + hist.map((h,i)=>`${toX(i).toFixed(1)},${toY(h.classement).toFixed(1)}`).join(' ') + ` ${lastX},${H}`;
+            const MOIS_FR = ['jan.','fév.','mars','avr.','mai','juin','juil.','août','sep.','oct.','nov.','déc.'];
+            const labels = hist.map((h, i) => {
+              const m = parseInt(h.mois.split('-')[1]) - 1;
+              const lbl = MOIS_FR[m] || h.mois;
+              return `<text x="${toX(i).toFixed(1)}" y="${H + 13}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9" font-family="sans-serif">${lbl}</text>`;
+            }).join('');
+            // Tooltip sur chaque point
+            const dots = hist.map((h, i) => {
+              const isLast = i === hist.length - 1;
+              const cx = toX(i).toFixed(1), cy = toY(h.classement).toFixed(1);
+              return `<circle cx="${cx}" cy="${cy}" r="${isLast ? 4 : 3}" fill="${isLast ? '#6ee7b7' : 'rgba(255,255,255,0.7)'}" stroke="${isLast ? 'rgba(255,255,255,0.4)' : 'none'}" stroke-width="2">
+                <title>#${h.classement.toLocaleString('fr-FR')} — ${h.mois}</title>
+              </circle>`;
+            }).join('');
+            // Ligne de référence meilleur classement
+            const best = Number(data.meilleur_classement);
+            const bestLine = (best && !isNaN(best) && best >= minV && best <= maxV)
+              ? `<line x1="${PAD}" y1="${toY(best).toFixed(1)}" x2="${W-PAD}" y2="${toY(best).toFixed(1)}" stroke="rgba(251,191,36,0.4)" stroke-width="1" stroke-dasharray="3,3"/>`
+              : '';
+            return `<div style="opacity:0.9">
+              <svg width="${W}" height="${H + 18}" viewBox="0 0 ${W} ${H + 18}" style="overflow:visible;display:block">
+                <defs>
+                  <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+                    <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+                  </linearGradient>
+                </defs>
+                ${bestLine}
+                <polygon points="${areapts}" fill="url(#spark-fill)"/>
+                <polyline points="${pts}" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                ${dots}
+                ${labels}
+              </svg>
+            </div>`;
+          })()}
+          <!-- Classement + stats à droite -->
+          <div class="text-right">
+            <div class="text-[11px] uppercase opacity-75 tracking-widest">Classement</div>
+            <div class="text-6xl font-bold leading-none">#${(data.classement||0).toLocaleString('fr-FR')}</div>
+            ${(()=>{
+              const vari = data.variation_classement;
+              if (vari == null || isNaN(Number(vari))) return '';
+              const v = Number(vari);
+              if (v === 0) return '';
+              const sign = v > 0 ? '▲' : '▼';
+              const col  = v > 0 ? '#6ee7b7' : '#fca5a5';
+              const mois = data.classement_date ? ` (${data.classement_date})` : '';
+              return `<div class="text-sm font-semibold mt-1" style="color:${col}">${sign} ${Math.abs(v).toLocaleString('fr-FR')} places ce mois${mois}</div>`;
+            })()}
+            <div class="flex items-center gap-2 justify-end mt-2">
+              ${(()=>{
+                const cl=Number(data.classement), best=Number(data.meilleur_classement);
+                if (!best || isNaN(best)) return '';
+                if (cl <= best) return `<div class="text-xs opacity-75">Meilleur all-time · #${best.toLocaleString('fr-FR')} <span class="badge-atbest">⭐</span></div>`;
+                return `<div class="text-xs opacity-75">Meilleur all-time · #${best.toLocaleString('fr-FR')}</div>`;
+              })()}
+            </div>
+            <div class="flex items-center gap-3 justify-end mt-3 text-xs opacity-85">
+              <span title="Victoires (1ère place)">🏆 ${data.nb_victoires||0} victoire${(data.nb_victoires||0)!==1?'s':''}</span>
+              <span class="opacity-50">·</span>
+              <span title="Tournois joués">🎾 ${data.nb_tournois||0} tournois</span>
+              ${data.nb_tournois>0?`<span class="opacity-50">·</span><span title="Taux de victoire">${Math.round((data.nb_victoires||0)/data.nb_tournois*100)}% win</span>`:''}
+            </div>
           </div>
         </div>
       </div>
@@ -1630,6 +2148,14 @@ function renderProfile(data) {
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
         Trouver partenaire
+      </button>
+      <button id="fav-toggle-btn" onclick="toggleFavorite('${data.id}')"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-rose-200 text-rose-500 text-sm font-medium hover:bg-rose-50 transition-all" title="Ajouter aux favoris">
+        <svg id="fav-icon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <span id="fav-label">Suivre</span>
       </button>
     </div>
 
@@ -1875,7 +2401,7 @@ window.navBack = function() {
   _updateBackBtn();
 };
 
-async function loadPlayerProfile(playerId) {
+window.loadPlayerProfile = async function loadPlayerProfile(playerId) {
   if (!playerId) return;
 
   if (!_skipHistoryPush) {
@@ -2093,52 +2619,181 @@ const CITY_COORDS = {
   'BASSE TERRE':           [15.997, -61.726],  'SAINT PIERRE':    [14.739, -61.067],
   'SAINT DENIS DE LA REUNION': [-20.882, 55.450], 'SAINT PAUL DE LA REUNION': [-21.011, 55.269],
   'MAMOUDZOU':             [-12.780,  45.228],
+
+  // ── Seine-Saint-Denis (93) — est Paris ───────────────────────────────────
+  'GAGNY':                    [48.882,  2.539], 'LIVRY GARGAN':             [48.918,  2.542],
+  'NEUILLY SUR MARNE':        [48.858,  2.547], 'MONTFERMEIL':              [48.900,  2.557],
+
+  // ── Val-de-Marne (94) ─────────────────────────────────────────────────────
+  'SUCY EN BRIE':             [48.769,  2.512], 'LE PERREUX SUR MARNE':     [48.842,  2.506],
+  'LA VARENNE SAINT HILAIRE': [48.796,  2.511], 'BRY SUR MARNE':            [48.837,  2.523],
+  'NEUILLY PLAISANCE':        [48.859,  2.511], 'JOINVILLE LE PONT':        [48.820,  2.474],
+  'CHENNEVIERES SUR MARNE':   [48.800,  2.537], 'LA QUEUE EN BRIE':         [48.789,  2.573],
+  'MANDRES LES ROSES':        [48.705,  2.558], 'VILLECRESNES':             [48.715,  2.545],
+  'LIMEIL BREVANNES':         [48.758,  2.482], 'CHAMPIGNY SUR MARNE':      [48.817,  2.516],
+  'VILLENEUVE SAINT GEORGES': [48.732,  2.451], 'FRESNES':                  [48.757,  2.322],
+  'RUNGIS':                   [48.747,  2.357], 'CHEVILLY LARUE':           [48.771,  2.354],
+  'BOISSY SAINT LEGER':       [48.754,  2.507], 'MAROLLES EN BRIE':         [48.743,  2.586],
+  'ORLY':                     [48.744,  2.400], 'SAINT GERMAIN LES CORBEIL':[48.598,  2.471],
+
+  // ── Hauts-de-Seine (92) — complément ─────────────────────────────────────
+  'BAGNEUX':                  [48.795,  2.310], 'CHATENAY MALABRY':         [48.764,  2.267],
+  'MALAKOFF':                 [48.820,  2.305], 'VANVES':                   [48.824,  2.287],
+  'CHATILLON':                [48.801,  2.297], 'FONTENAY AUX ROSES':       [48.790,  2.287],
+  'SCEAUX':                   [48.777,  2.295], 'LE PLESSIS ROBINSON':      [48.779,  2.265],
+  'ASNIERES SUR SEINE':       [48.917,  2.285], 'BOIS COLOMBES':            [48.921,  2.270],
+
+  // ── Seine-et-Marne (77) ───────────────────────────────────────────────────
+  'LESIGNY':                  [48.735,  2.607], 'OZOIR LA FERRIERE':        [48.772,  2.671],
+  'PONTAULT COMBAULT':        [48.797,  2.609], 'ROISSY EN BRIE':           [48.800,  2.645],
+  'VAIRES SUR MARNE':         [48.875,  2.640], 'EMERAINVILLE':             [48.827,  2.617],
+  'BUSSY SAINT GEORGES':      [48.840,  2.702], 'CHEVRY COSSIGNY':          [48.745,  2.659],
+  'COLLEGIEN':                [48.828,  2.633], 'CHAMPS SUR MARNE':         [48.851,  2.604],
+  'NOISIEL':                  [48.853,  2.629], 'LOGNES':                   [48.836,  2.638],
+  'BAILLY ROMAINVILLIERS':    [48.849,  2.773], 'MONTEVRAIN':               [48.866,  2.743],
+
+  // ── Essonne (91) ──────────────────────────────────────────────────────────
+  'MORSANG SUR ORGE':         [48.660,  2.344], 'SAVIGNY SUR ORGE':         [48.680,  2.345],
+  'SAINTE GENEVIEVE DES BOIS':[48.656,  2.327], 'CHILLY MAZARIN':           [48.718,  2.308],
+  'WISSOUS':                  [48.718,  2.322], 'BRUNOY':                   [48.697,  2.497],
+  'YERRES':                   [48.709,  2.491], 'VILLEMOISSON SUR ORGE':    [48.681,  2.358],
+  'ATHIS MONS':               [48.700,  2.393], 'NOZAY':                    [48.659,  2.269],
+  'VILLEBON SUR YVETTE':      [48.686,  2.252], 'TIGERY':                   [48.614,  2.508],
+  'MORIGNY CHAMPIGNY':        [48.432,  2.211], 'DRAVEIL':                  [48.680,  2.412],
+  'VIRY CHATILLON':           [48.671,  2.380], 'GRIGNY':                   [48.656,  2.394],
+  'SAINT MICHEL SUR ORGE':    [48.635,  2.307], 'SOISY SUR SEINE':          [48.640,  2.461],
+  'BRETIGNY SUR ORGE':        [48.610,  2.302], 'MENNECY':                  [48.567,  2.438],
+
+  // ── Val-d'Oise (95) — complément ─────────────────────────────────────────
+  'EAUBONNE':                 [48.990,  2.279], 'TAVERNY':                  [49.027,  2.230],
+  'SAINT BRICE SOUS FORET':   [49.003,  2.354], 'ERAGNY':                   [49.017,  2.085],
+  'OSNY':                     [49.068,  2.072], 'VAUREAL':                  [49.019,  2.031],
+  'COURDIMANCHE':             [49.029,  2.014], 'ENNERY':                   [49.053,  2.078],
+  'HERBLAY':                  [49.000,  2.173], 'CONFLANS SAINTE HONORINE': [49.000,  2.098],
+  'DEUIL LA BARRE':           [48.972,  2.325], 'FRANCONVILLE':             [48.993,  2.230],
+  'SAINT OUEN L AUMONE':      [49.037,  2.112], 'MARINES':                  [49.153,  1.979],
+  'MERU':                     [49.235,  2.134], 'JOUY LE MOUTIER':          [49.012,  2.041],
+  'PONTOISE':                 [49.051,  2.101], 'SAINT OUEN':               [48.912,  2.333],
+  'PERSAN':                   [49.156,  2.268], 'BEAUMONT SUR OISE':        [49.143,  2.288],
+
+  // ── Yvelines (78) — complément ───────────────────────────────────────────
+  'VOISINS LE BRETONNEUX':    [48.762,  2.059], 'LE CHESNAY':               [48.822,  2.128],
+  'GARCHES':                  [48.843,  2.185], 'LOUVECIENNES':             [48.869,  2.108],
+  'BOUGIVAL':                 [48.870,  2.134], 'PORT MARLY':               [48.882,  2.090],
+  'LES MUREAUX':              [48.983,  1.919], 'GUYANCOURT':               [48.771,  2.071],
+  'ELANCOURT':                [48.782,  2.038], 'TRAPPES':                  [48.774,  2.001],
+  'MAUREPAS':                 [48.762,  1.950], 'POISSY':                   [48.929,  2.046],
+  'MANTES LA JOLIE':          [48.990,  1.716], 'PLAISIR':                  [48.823,  1.955],
+  'MONTIGNY LE BRETONNEUX':   [48.776,  2.035], 'LA VERRIERE':              [48.756,  1.965],
+
+  // ── Nord — complément ─────────────────────────────────────────────────────
+  'MARCQ EN BAROEUL':         [50.668,  3.088], 'WATTRELOS':                [50.702,  3.218],
+  'VILLENEUVE D ASCQ':        [50.617,  3.143], 'CROIX':                    [50.682,  3.148],
+  'WASQUEHAL':                [50.673,  3.121], 'LOOS':                     [50.607,  2.997],
+  'LAMBERSART':               [50.654,  3.026], 'MAUBEUGE':                 [50.277,  3.973],
+  'CAMBRAI':                  [50.176,  3.223], 'SIN LE NOBLE':             [50.361,  3.121],
+  'SECLIN':                   [50.549,  3.035], 'MONS EN BAROEUL':          [50.633,  3.105],
+
+  // ── PACA — complément ─────────────────────────────────────────────────────
+  'CASSIS':                   [43.214,  5.537], 'CARNOUX EN PROVENCE':      [43.254,  5.558],
+  'LA SEYNE SUR MER':         [43.101,  5.878], 'SAINT CYR SUR MER':        [43.176,  5.712],
+  'BANDOL':                   [43.136,  5.753], 'DRAGUIGNAN':               [43.535,  6.465],
+  'LA GARDE':                 [43.125,  6.011], 'BRIGNOLES':                [43.407,  6.062],
+  'SAINT MAXIMIN LA SAINTE BAUME': [43.451, 5.863], 'SOLLIES PONT':         [43.191,  6.038],
+  'ROQUEBRUNE SUR ARGENS':    [43.446,  6.639], 'VIDAUBAN':                 [43.420,  6.432],
+  'LE LUC':                   [43.395,  6.318], 'CUGES LES PINS':           [43.280,  5.702],
+  'GONFARON':                 [43.336,  6.206], 'LA CRAU':                  [43.154,  6.073],
+  'PUGET SUR ARGENS':         [43.455,  6.695], 'FAYENCE':                  [43.628,  6.690],
+
+  // ── Hérault — complément ──────────────────────────────────────────────────
+  'BAILLARGUES':              [43.661,  3.951], 'VENDARGUES':               [43.653,  3.957],
+  'MAUGUIO':                  [43.614,  4.009], 'SAINT AUNES':              [43.649,  3.943],
+  'MONTFERRIER SUR LEZ':      [43.673,  3.870], 'PRADES LE LEZ':            [43.715,  3.856],
+  'SUSSARGUES':               [43.671,  3.940],
+
+  // ── Loire-Atlantique / Pays de la Loire — complément ─────────────────────
+  'SAINT HERBLAIN':           [47.213, -1.606], 'ORVAULT':                  [47.264, -1.624],
+  'CARQUEFOU':                [47.288, -1.492], 'SAINTE LUCE SUR LOIRE':    [47.237, -1.489],
+  'VERTOU':                   [47.169, -1.471], 'REZE':                     [47.188, -1.557],
+  'BOUGUENAIS':               [47.162, -1.614], 'SAINT SEBASTIEN SUR LOIRE':[47.207, -1.502],
+
+  // ── Rhône — complément ────────────────────────────────────────────────────
+  'CHASSIEU':                 [45.730,  4.988], 'JONAGE':                   [45.789,  5.060],
+  'SAINT SYMPHORIEN D OZON':  [45.649,  4.875], 'FEYZIN':                   [45.673,  4.858],
+  'PIERRE BENITE':            [45.706,  4.824], 'IRIGNY':                   [45.689,  4.826],
+  'MIONS':                    [45.672,  4.952], // déjà en haut mais alias sûr
+  'SAINT FONS':               [45.710,  4.854],
+
+  // ── Gironde — complément ──────────────────────────────────────────────────
+  'CESTAS':                   [44.754, -0.692], 'LEOGNAN':                  [44.731, -0.596],
+  'MARTILLAC':                [44.740, -0.557], 'GUJAN MESTRAS':            [44.635, -1.073],
+  'LA TESTE DE BUCH':         [44.622, -1.135], 'CANEJAN':                  [44.789, -0.647],
 };
 
 function normalizeVille(v) {
   if (!v) return '';
   return v.normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')  // supprimer diacritiques (accents) — unicode safe
+    .replace(/[̀-ͯ]/g, '')   // supprimer diacritiques (accents)
     .toUpperCase().trim()
-    .replace(/\s+\d+E?M?E?\s*(ARRONDISSEMENT)?$/i, '') // "PARIS 75016", "PARIS 16E", "MARSEILLE 13008"
-    .replace(/\bSTE[-\s]/g, 'SAINTE ')
-    .replace(/\bST[-\s]/g, 'SAINT ')
-    .replace(/[-]/g, ' ')
+    .replace(/\s*\(.*\)\s*$/, '')                              // retirer "(RHONE)" etc.
+    .replace(/\s+\d{5}\s*$/, '')                               // code postal final "PARIS 75016"
+    .replace(/\s+\d+E?M?E?\s*(ARRONDISSEMENT)?\s*$/i, '')     // "PARIS 16E", "PARIS 16EME"
+    .replace(/\b0?(\d)\b(?=E?M?E?\s*$)/i, '$1')               // "PARIS 07" → chiffre sans 0
+    .replace(/\bSTE(?=[-\s])/g, 'SAINTE')
+    .replace(/\bST(?=[-\s])/g, 'SAINT')
+    .replace(/-/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
+// Pré-calcul des clés normalisées (fait 1 seule fois)
+const _CITY_KEYS_NORM = Object.keys(CITY_COORDS);
+
 function findCityCoords(ville) {
-  // Correspondance exacte
+  if (!ville) return null;
+  // 1. Correspondance exacte
   if (CITY_COORDS[ville]) return CITY_COORDS[ville];
-  // Correspondance partielle : préfixe commun
-  const keys = Object.keys(CITY_COORDS);
-  const exact = keys.find(k => k === ville);
-  if (exact) return CITY_COORDS[exact];
-  const startsWith = keys.find(k => ville.startsWith(k) || k.startsWith(ville));
-  if (startsWith) return CITY_COORDS[startsWith];
-  // Mot principal : chercher le premier mot de 4+ lettres dans les clés
+  // 2. Chercher en ignorant les articles (LE/LA/LES/L' en début)
+  const noArticle = ville.replace(/^(LE |LA |LES |L )/, '');
+  const withArticleMatch = _CITY_KEYS_NORM.find(k => {
+    const kna = k.replace(/^(LE |LA |LES |L )/, '');
+    return kna === noArticle;
+  });
+  if (withArticleMatch) return CITY_COORDS[withArticleMatch];
+  // 3. Correspondance par préfixe (ville contient la clé ou vice-versa)
+  const prefixMatch = _CITY_KEYS_NORM.find(k =>
+    ville.startsWith(k + ' ') || k.startsWith(ville + ' ') || k === ville
+  );
+  if (prefixMatch) return CITY_COORDS[prefixMatch];
+  // 4. Mot significatif (≥5 lettres) au début du nom
   const firstWord = ville.split(' ')[0];
-  if (firstWord.length >= 4) {
-    const match = keys.find(k => k.startsWith(firstWord));
-    if (match) return CITY_COORDS[match];
+  if (firstWord.length >= 5) {
+    const wordMatch = _CITY_KEYS_NORM.find(k => k.startsWith(firstWord));
+    if (wordMatch) return CITY_COORDS[wordMatch];
+  }
+  // 5. Dernier mot significatif (cas "SAINT X SUR Y" → chercher "X")
+  const words = ville.split(' ').filter(w => w.length >= 5 && !['SAINT','SAINTE','SUR','SOUS','LES','LES','DES','BRIE','MARNE','OISE','ORGE','SEINE'].includes(w));
+  for (const w of words) {
+    const wm = _CITY_KEYS_NORM.find(k => k.includes(w));
+    if (wm) return CITY_COORDS[wm];
   }
   return null;
 }
 
 (async function initMapData() {
-  const clubs = await apiFetch('/api/clubs?top=500');
+  const clubs = await apiFetch('/api/clubs?top=1000');
   if (!clubs || !clubs.length) { console.warn('[Map] Aucun club retourné par /api/clubs'); return; }
 
   const maxNb = Math.max(...clubs.map(c => c.nb || 0));
   let placed = 0;
+  const notFound = [];
 
   // Regrouper par coordonnées GPS pour éviter la superposition
   const byCoord = new Map();
   clubs.forEach(c => {
     const ville = normalizeVille(c.ville);
     const ll = findCityCoords(ville);
-    if (!ll) return;
+    if (!ll) { notFound.push(ville || c.ville); return; }
     const key = ll.join(',');
     if (!byCoord.has(key)) byCoord.set(key, { ll, clubs: [] });
     byCoord.get(key).clubs.push(c);
@@ -2164,7 +2819,8 @@ function findCityCoords(ville) {
     placed++;
   });
 
-  console.log(`[Map] ${placed} marqueurs placés sur ${clubs.length} clubs récupérés`);
+  console.log(`[Map] ${placed} marqueurs placés sur ${clubs.length} clubs (${clubs.length - placed} villes non trouvées)`);
+  if (notFound.length) console.debug('[Map] Villes non trouvées:', [...new Set(notFound)].sort().join(', '));
 })();
 
 // (chart-tournament-dist géré par makeChart dans l'init des charts dashboard)
@@ -2382,11 +3038,12 @@ function lbRowHtml(p, rank) {
     <td class="py-3 px-4 text-right text-slate-500 text-sm">${meilleur}</td>
     <td class="py-3 px-4 text-right text-sm">${p.nb_tournois||0}</td>
     <td class="py-3 px-4 text-right">${(() => {
-      const diff = p.classement && p.meilleur_classement ? p.classement - p.meilleur_classement : null;
-      if (diff === null) return '<span class="trend text-slate-400">—</span>';
-      if (diff === 0)    return '<span class="badge-atbest" title="À son meilleur niveau">⭐ Best</span>';
-      if (diff < 0)      return `<span class="trend text-emerald-600">▲${Math.abs(diff).toLocaleString('fr-FR')}</span>`;
-      return `<span class="trend text-red-400">▼${diff.toLocaleString('fr-FR')}</span>`;
+      const vari = p.variation_classement;
+      if (vari == null || isNaN(Number(vari))) return '<span class="text-slate-400 text-xs">—</span>';
+      const v = Number(vari);
+      if (v > 0) return `<span class="text-emerald-600 font-semibold text-xs">▲${v.toLocaleString('fr-FR')}</span>`;
+      if (v < 0) return `<span class="text-red-400 text-xs">▼${Math.abs(v).toLocaleString('fr-FR')}</span>`;
+      return `<span class="text-slate-400 text-xs">→ 0</span>`;
     })()}</td>
   </tr>`;
 }
@@ -2475,42 +3132,168 @@ document.querySelectorAll('#lb-sex-tabs .tab').forEach(tab => {
   io.observe(sentinel);
 })();
 
-// ── Movers — chargement API ──────────────────────────────────────────────────
+// ── Mode toggle : Par joueurs / Par clubs ────────────────────────────────────
+(function() {
+  let _clubRankData = null;
+  let _clubRankSort = 'best_h';
 
-async function loadMovers() {
-  const sexeVal = document.getElementById('movers-sexe')?.value || '';
-  const data = await apiFetch(`/api/movers?sexe=${encodeURIComponent(sexeVal)}&n=8`);
-  if (!data) return;
+  document.querySelectorAll('#lb-mode-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#lb-mode-tabs .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const mode = tab.dataset.mode;
+      document.getElementById('lb-players-view').style.display = mode === 'players' ? '' : 'none';
+      document.getElementById('lb-clubs-view').style.display   = mode === 'clubs'   ? '' : 'none';
+      if (mode === 'clubs' && !_clubRankData) loadClubRankings(_clubRankSort);
+      if (window.lucide) lucide.createIcons();
+    });
+  });
 
-  const PALETTE2 = ['#0d9488','#6366f1','#f59e0b','#ec4899','#10b981','#8b5cf6'];
+  document.querySelectorAll('#club-sort-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#club-sort-tabs .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const newSort = tab.dataset.csort;
+      if (newSort === _clubRankSort && _clubRankData) return; // déjà chargé
+      _clubRankSort = newSort;
+      _clubRankData = null;
+      loadClubRankings(_clubRankSort);
+    });
+  });
 
-  function moverRow(p, isUp) {
-    const inits = (p.nom_complet||'??').split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const color = PALETTE2[Math.abs((p.id||'').charCodeAt?.(0)||0) % PALETTE2.length];
-    const delta = p.delta ? p.delta.toLocaleString('fr-FR') : '';
-    return `<div class="flex items-center gap-3 p-3 rounded-lg ${isUp?'bg-emerald-50/50':'bg-red-50/40'} cursor-pointer" onclick="loadPlayerProfile('${p.id}')">
-      <div class="avatar av-md" style="background:${color}">${inits}</div>
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-sm truncate">${p.nom_complet}</div>
-        <div class="text-xs text-slate-500 truncate">${p.club||'—'} · #${(p.classement||0).toLocaleString('fr-FR')}</div>
-      </div>
-      ${isUp
-        ? `<div class="text-right shrink-0"><div class="text-xs font-bold text-emerald-600">⭐ Record</div></div>`
-        : `<div class="text-right shrink-0"><div class="trend delta-down text-sm font-bold text-red-500">-${delta}</div><div class="text-[10px] text-slate-400">places</div></div>`
-      }
-    </div>`;
+  async function loadClubRankings(sort) {
+    const tbody = document.getElementById('club-rank-tbody');
+    if (!tbody) return;
+    const slowMsg = sort === 'nb_tournois'
+      ? 'Calcul sur 650k participations, patience (~10s)…'
+      : 'Chargement…';
+    tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400 text-sm">
+      <svg class="animate-spin inline w-4 h-4 mr-2 text-teal-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>${slowMsg}</td></tr>`;
+    const timeout = sort === 'nb_tournois' ? 45000 : 15000;
+    const data = await apiFetch(`/api/club_rankings?sort=${sort}&top=200`, timeout);
+    if (!data) {
+      tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-red-400 text-sm">Erreur de chargement — vérifier la console</td></tr>';
+      return;
+    }
+    _clubRankData = data;
+    document.getElementById('club-rank-counter').textContent = `${data.length} clubs`;
+
+    const sortCol = { best_h: 'best_h', best_f: 'best_f', avg_rank_h: 'avg_rank_h', avg_rank_f: 'avg_rank_f', nb_tournois: 'nb_tournois_12m' }[sort] || 'best_h';
+
+    tbody.innerHTML = data.map((c, i) => {
+      const rank = i + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `<span class="text-slate-400">${rank}</span>`;
+      const bH = c.best_h ? `<span class="font-semibold text-blue-600">#${c.best_h.toLocaleString('fr-FR')}</span>` : '<span class="text-slate-300">—</span>';
+      const bF = c.best_f ? `<span class="font-semibold text-pink-600">#${c.best_f.toLocaleString('fr-FR')}</span>` : '<span class="text-slate-300">—</span>';
+      const avgH = c.avg_rank_h ? `#${c.avg_rank_h.toLocaleString('fr-FR')}` : '—';
+      const avgF = c.avg_rank_f ? `#${c.avg_rank_f.toLocaleString('fr-FR')}` : '—';
+      const tourn = c.nb_tournois_12m || 0;
+      const ville = c.ville ? `<span class="text-xs text-slate-400">${c.ville}</span>` : '';
+      // Highlight the sorted column
+      const hlClass = 'bg-teal-50 font-semibold';
+      const hlBH   = sort === 'best_h'     ? hlClass : '';
+      const hlBF   = sort === 'best_f'     ? hlClass : '';
+      const hlAvgH = sort === 'avg_rank_h' ? hlClass : '';
+      const hlAvgF = sort === 'avg_rank_f' ? hlClass : '';
+      const hlT    = sort === 'nb_tournois'? hlClass : '';
+      return `<tr class="border-b border-slate-50 hover:bg-slate-50 cursor-pointer" onclick="loadClubProfile(${JSON.stringify(c.nom)})">
+        <td class="py-2 px-4 text-center text-sm">${medal}</td>
+        <td class="py-2 px-4">
+          <div class="font-medium text-slate-800 text-sm">${c.nom}</div>
+          ${ville}
+        </td>
+        <td class="py-2 px-4 text-xs text-slate-500">${c.ville || ''}</td>
+        <td class="py-2 px-3 text-right text-xs text-slate-600">
+          <span class="text-blue-500">♂${c.nb_h}</span> <span class="text-slate-300">·</span> <span class="text-pink-500">♀${c.nb_f}</span>
+        </td>
+        <td class="py-2 px-3 text-right ${hlBH}">${bH}</td>
+        <td class="py-2 px-3 text-right ${hlBF}">${bF}</td>
+        <td class="py-2 px-3 text-right text-xs text-blue-700 ${hlAvgH}">${avgH}</td>
+        <td class="py-2 px-3 text-right text-xs text-pink-700 ${hlAvgF}">${avgF}</td>
+        <td class="py-2 px-3 text-right ${hlT}">
+          <span class="${tourn > 0 ? 'text-teal-600 font-medium' : 'text-slate-300'}">${tourn > 0 ? tourn : '—'}</span>
+        </td>
+      </tr>`;
+    }).join('');
+    if (window.lucide) lucide.createIcons();
   }
 
-  const hausse = document.getElementById('movers-hausse');
-  const baisse = document.getElementById('movers-baisse');
-  if (hausse) hausse.innerHTML = (data.hausse||[]).map(p=>moverRow(p,true)).join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
-  if (baisse) baisse.innerHTML = (data.baisse||[]).map(p=>moverRow(p,false)).join('') || '<p class="text-xs text-slate-400">Aucune donnée</p>';
-  if (window.lucide) lucide.createIcons();
-}
+  // Also trigger clubs load when navigating to leaderboard if mode is clubs
+  document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', () => {
+    const mode = document.querySelector('#lb-mode-tabs .tab.active')?.dataset.mode;
+    if (mode === 'clubs' && !_clubRankData) loadClubRankings(_clubRankSort);
+  });
+})();
 
-document.querySelector('[data-view="movers"]')?.addEventListener('click', () => {
-  loadMovers();
-});
+// ── Navigation vers le classement filtré par club ────────────────────────────
+window.openLeaderboardForClub = function(clubNom, sexe) {
+  // 1. Activer l'onglet classement
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-leaderboard')?.classList.add('active');
+  document.querySelector('.nav-item[data-view="leaderboard"]')?.classList.add('active');
+  // S'assurer qu'on est en mode "joueurs"
+  document.querySelectorAll('#lb-mode-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'players'));
+  document.getElementById('lb-players-view').style.display = '';
+  document.getElementById('lb-clubs-view').style.display = 'none';
+  // 2. Définir le sexe
+  const targetSex = (sexe || 'H').toUpperCase();
+  document.querySelectorAll('#lb-sex-tabs .tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.sex === targetSex);
+  });
+  // 3. Remplir le champ club + réinitialiser les variantes
+  const lbClubInput = document.getElementById('lb-club');
+  if (lbClubInput) lbClubInput.value = clubNom;
+  if (typeof lbState !== 'undefined') {
+    lbState.clubVariants = [clubNom];
+    lbState.club = clubNom;
+    lbState.sexe = targetSex;
+    lbState.offset = 0;
+  }
+  // 4. Recharger le classement
+  if (typeof applyLbFilters === 'function') applyLbFilters();
+};
+
+// ── Navigation vers le classement PAR CLUBS avec highlight ──────────────────
+window.openClubRankingsTab = function(clubNom, sort) {
+  // 1. Aller sur la vue classement
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-leaderboard')?.classList.add('active');
+  document.querySelector('.nav-item[data-view="leaderboard"]')?.classList.add('active');
+  // 2. Activer le mode "Par clubs"
+  document.querySelectorAll('#lb-mode-tabs .tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === 'clubs');
+  });
+  document.getElementById('lb-players-view').style.display = 'none';
+  document.getElementById('lb-clubs-view').style.display   = '';
+  // 3. Activer le bon onglet de tri
+  const sortKey = sort || 'best_h';
+  document.querySelectorAll('#club-sort-tabs .tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.csort === sortKey);
+  });
+  // 4. Charger les données et scroller jusqu'au club
+  _clubRankSort = sortKey;
+  _clubRankData = null;
+  loadClubRankings(sortKey).then(() => {
+    // Trouver la ligne du club et la mettre en évidence
+    const rows = document.querySelectorAll('#club-rank-tbody tr');
+    for (const row of rows) {
+      if (row.textContent.includes(clubNom)) {
+        row.classList.add('ring-2', 'ring-teal-400', 'bg-teal-50');
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        setTimeout(() => row.classList.remove('ring-2', 'ring-teal-400', 'bg-teal-50'), 3000);
+        break;
+      }
+    }
+  });
+};
+
+// ── Movers — chargement API ──────────────────────────────────────────────────
+
 
 // ── 9. Scroll vers la ligne "toi" à l'ouverture du leaderboard ───────────────
 
@@ -3448,14 +4231,74 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     document.getElementById('club-title').textContent = data.nom;
     document.getElementById('club-ville').textContent = data.ville || '—';
     document.getElementById('club-nb').textContent    = (data.nb_joueurs || 0).toLocaleString('fr-FR');
-    document.getElementById('club-best-h').textContent = data.best_h ? '#' + data.best_h.toLocaleString('fr-FR') : '—';
-    document.getElementById('club-best-f').textContent = data.best_f ? '#' + data.best_f.toLocaleString('fr-FR') : '—';
-    document.getElementById('club-top100').textContent = data.top100 ?? '—';
-    document.getElementById('club-avg').textContent   = data.avg_rank ? '#' + data.avg_rank.toLocaleString('fr-FR') : '—';
+    document.getElementById('club-best-h').textContent  = data.best_h ? '#' + data.best_h.toLocaleString('fr-FR') : '—';
+    document.getElementById('club-best-f').textContent  = data.best_f ? '#' + data.best_f.toLocaleString('fr-FR') : '—';
+    document.getElementById('club-avg-h').textContent   = data.avg_rank_h ? '#' + data.avg_rank_h.toLocaleString('fr-FR') : '—';
+    document.getElementById('club-avg-f').textContent   = data.avg_rank_f ? '#' + data.avg_rank_f.toLocaleString('fr-FR') : '—';
+    document.getElementById('club-top100-h').textContent   = data.top100_h ?? '—';
+    document.getElementById('club-top100-f').textContent   = data.top100_f ?? '—';
+    document.getElementById('club-top1000-h').textContent  = data.top1000_h ?? '—';
+    document.getElementById('club-top1000-f').textContent  = data.top1000_f ?? '—';
+    document.getElementById('club-top10000-h').textContent = data.top10000_h ?? '—';
+    document.getElementById('club-top10000-f').textContent = data.top10000_f ?? '—';
+    document.getElementById('club-nb-tournois').textContent = data.nb_tournois_12m ?? '—';
     const rangH = document.getElementById('club-rang-h');
     const rangF = document.getElementById('club-rang-f');
-    if (rangH) rangH.textContent = data.rang_h ? `🏆 ${data.rang_h}e club de France` : '';
-    if (rangF) rangF.textContent = data.rang_f ? `🏆 ${data.rang_f}e club de France` : '';
+    if (rangH) {
+      if (data.rang_h) {
+        rangH.innerHTML = `<span class="cursor-pointer text-blue-600 hover:text-blue-800 hover:underline font-medium" onclick="openClubRankingsTab(${JSON.stringify(data.nom)},'best_h')">🏆 ${data.rang_h}e club ♂ de France</span>`;
+      } else { rangH.textContent = ''; }
+    }
+    if (rangF) {
+      if (data.rang_f) {
+        rangF.innerHTML = `<span class="cursor-pointer text-pink-600 hover:text-pink-800 hover:underline font-medium" onclick="openClubRankingsTab(${JSON.stringify(data.nom)},'best_f')">🏆 ${data.rang_f}e club ♀ de France</span>`;
+      } else { rangF.textContent = ''; }
+    }
+
+    // ── Rang par tranche H/F indépendants ────────────────────────────────
+    const TRANCHE_COLORS = {
+      'Top 100':       '#ef4444', '101-1 000':    '#f97316',
+      '1 001-5 000':   '#a855f7', '5 001-20 000': '#6366f1',
+      '20 000+':       '#94a3b8',
+    };
+    const TRANCHE_ORDER = ['Top 100', '101-1 000', '1 001-5 000', '5 001-20 000', '20 000+'];
+    const tranchesEl = document.getElementById('club-tranches');
+    if (tranchesEl) {
+      const th = Object.fromEntries((data.tranches_h || []).map(t => [t.tranche, t]));
+      const tf = Object.fromEntries((data.tranches_f || []).map(t => [t.tranche, t]));
+      const hasData = (data.tranches_h?.length || 0) + (data.tranches_f?.length || 0) > 0;
+      if (!hasData) {
+        tranchesEl.innerHTML = '<div class="text-sm text-slate-400 text-center py-4">Aucune donnée</div>';
+      } else {
+        const rows = TRANCHE_ORDER.map(label => {
+          const color = TRANCHE_COLORS[label] || '#94a3b8';
+          const h = th[label]; const f = tf[label];
+          const cellH = h
+            ? `<span class="font-bold" style="color:${color}">#${h.rang}</span> <span class="text-slate-400 text-[10px]">(${h.nb}j)</span>`
+            : `<span class="text-slate-300">—</span>`;
+          const cellF = f
+            ? `<span class="font-bold" style="color:${color}">#${f.rang}</span> <span class="text-slate-400 text-[10px]">(${f.nb}j)</span>`
+            : `<span class="text-slate-300">—</span>`;
+          return `<tr class="border-b border-slate-50 hover:bg-slate-50">
+            <td class="py-1.5 pr-3">
+              <span class="text-[10px] font-semibold text-white px-1.5 py-0.5 rounded-full" style="background:${color}">${label}</span>
+            </td>
+            <td class="py-1.5 text-sm text-center">${cellH}</td>
+            <td class="py-1.5 text-sm text-center">${cellF}</td>
+          </tr>`;
+        }).join('');
+        tranchesEl.innerHTML = `<table class="w-full text-xs">
+          <thead>
+            <tr class="text-slate-400 border-b border-slate-200">
+              <th class="text-left py-1 font-medium">Tranche</th>
+              <th class="text-center py-1 font-medium text-blue-500">♂ Rang</th>
+              <th class="text-center py-1 font-medium text-pink-500">♀ Rang</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      }
+    }
 
     const bodyH = document.getElementById('club-top-h');
     const bodyF = document.getElementById('club-top-f');
@@ -3474,6 +4317,127 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     // Update page subtitle
     document.getElementById('page-subtitle').textContent = `${(data.nb_joueurs||0).toLocaleString('fr-FR')} licenciés · ${data.ville || ''}`;
   };
+})();
+
+// ── Détection positions partagées ────────────────────────────────────────────
+(function() {
+  let _spData = null;
+
+  window.loadSharedPositions = async function() {
+    const posMax = document.getElementById('sp-pos-max')?.value || '8';
+    const cat    = document.getElementById('sp-cat')?.value    || '';
+    _spData = null; // force reload on filter change
+    document.getElementById('sp-loading').classList.remove('hidden');
+    document.getElementById('sp-empty-state').classList.add('hidden');
+    document.getElementById('sp-results').classList.add('hidden');
+    document.getElementById('sp-load-btn').disabled = true;
+    const url = `/api/stats/shared_positions?pos_max=${posMax}${cat ? '&cat=' + encodeURIComponent(cat) : ''}`;
+    _spData = await apiFetch(url);
+    document.getElementById('sp-loading').classList.add('hidden');
+    document.getElementById('sp-load-btn').disabled = false;
+    if (_spData) renderSharedPositions(_spData);
+  };
+
+  function renderSharedPositions(data) {
+    document.getElementById('sp-results').classList.remove('hidden');
+    document.getElementById('sp-empty-state').classList.add('hidden');
+
+    // ── KPIs ─────────────────────────────────────────────────────────────
+    const topPos = Object.entries(data.by_position || {})
+      .sort((a, b) => b[1] - a[1])[0];
+    const topClub = data.top_clubs?.[0];
+    document.getElementById('sp-kpis').innerHTML = `
+      <div class="card card-stat">
+        <div class="label">Incidents détectés</div>
+        <div class="value text-amber-600">${(data.total||0).toLocaleString('fr-FR')}</div>
+      </div>
+      <div class="card card-stat">
+        <div class="label">Position la + partagée</div>
+        <div class="value text-amber-600">${topPos ? `#${topPos[0]} <span class='text-xs text-slate-400 font-normal'>(${topPos[1]}×)</span>` : '—'}</div>
+      </div>
+      <div class="card card-stat col-span-2">
+        <div class="label">Club le + représenté</div>
+        <div class="value text-sm truncate">${topClub ? `${topClub.club} <span class='text-xs text-slate-400 font-normal'>${topClub.nb} paires concernées</span>` : '—'}</div>
+      </div>
+    `;
+
+    // ── Top clubs sidebar ─────────────────────────────────────────────────
+    const maxNb = data.top_clubs?.[0]?.nb || 1;
+    document.getElementById('sp-top-clubs').innerHTML = (data.top_clubs || []).slice(0, 12).map(c => {
+      const pct = Math.round(c.nb / maxNb * 100);
+      const name = c.club.length > 22 ? c.club.slice(0, 20) + '…' : c.club;
+      return `<div class="text-xs">
+        <div class="flex justify-between mb-0.5">
+          <span class="text-slate-700 truncate font-medium" title="${c.club}">${name}</span>
+          <span class="text-slate-400 ml-1 shrink-0">${c.nb}</span>
+        </div>
+        <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-amber-400 rounded-full" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    renderSpTable(data.incidents || []);
+  }
+
+  function renderSpTable(incidents) {
+    const filterVal = (document.getElementById('sp-filter')?.value || '').toLowerCase().trim();
+    const filtered = filterVal
+      ? incidents.filter(inc =>
+          inc.tournoi_nom.toLowerCase().includes(filterVal) ||
+          inc.paires.some(p => (p.club||'').toLowerCase().includes(filterVal) || (p.joueur||'').toLowerCase().includes(filterVal))
+        )
+      : incidents;
+
+    document.getElementById('sp-count').textContent = `${filtered.length} incident${filtered.length !== 1 ? 's' : ''}`;
+
+    const tbody = document.getElementById('sp-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400 text-sm">Aucun résultat</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(inc => {
+      // Détecter si toutes les paires viennent du même club (plus suspect)
+      const clubs    = [...new Set(inc.paires.map(p => p.club).filter(Boolean))];
+      const sameClub = clubs.length === 1;
+      const rowCls   = sameClub ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-slate-50';
+      const flagBadge = sameClub
+        ? `<span class="ml-1 text-[9px] bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5 font-semibold">même club ⚠</span>`
+        : '';
+      const pairesHtml = inc.paires.map(p => {
+        const clubBadge = p.club
+          ? `<span class="text-slate-400">(${p.club.length>18 ? p.club.slice(0,16)+'…' : p.club})</span>`
+          : '';
+        return `<div>
+          <button onclick="window.loadPlayerProfile?.('${p.joueur_id}')"
+            class="text-teal-600 hover:underline font-medium">${p.joueur}</button>
+          / ${p.partenaire} ${clubBadge}
+        </div>`;
+      }).join('');
+      const posColor = +inc.position <= 2 ? '#ef4444' : +inc.position <= 4 ? '#f97316' : +inc.position <= 8 ? '#a855f7' : '#6366f1';
+      return `<tr class="border-t border-slate-100 ${rowCls}">
+        <td class="py-1.5 px-2 text-slate-400 whitespace-nowrap">${(inc.date||'').slice(0,10)}</td>
+        <td class="py-1.5 px-2 font-medium text-slate-700 max-w-xs">
+          <button onclick="window.loadTournamentView?.('${inc.id_tournoi}','${inc.tournoi_nom.replace(/'/g,"\\'")}')"
+            class="text-left hover:text-teal-600 hover:underline">${inc.tournoi_nom}</button>
+          ${flagBadge}
+        </td>
+        <td class="py-1.5 px-2 text-center">
+          <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded text-white" style="background:${posColor.replace('#','').length===6 ? posColor : '#6366f1'}">${inc.categorie}</span>
+        </td>
+        <td class="py-1.5 px-2 text-center">
+          <span class="font-bold text-sm" style="color:${posColor}">#${inc.position}</span>
+        </td>
+        <td class="py-1.5 px-2 text-slate-600 space-y-0.5">${pairesHtml}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Live filter
+  document.getElementById('sp-filter')?.addEventListener('input', () => {
+    if (_spData) renderSpTable(_spData.incidents || []);
+  });
 })();
 
 // ── Leaderboard club autocomplete ────────────────────────────────────────────
@@ -3833,6 +4797,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
           </div>` : ''}
         </div>
 
+
         <!-- Actions -->
         <div class="flex gap-2 mt-auto pt-2">
           <button class="flex-1 btn-primary text-sm py-2" onclick="loadPlayerProfile('${s.id}');document.querySelector('[data-view=player]').click()">
@@ -3868,15 +4833,9 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       document.getElementById('sugg-loading').classList.add('hidden');
       document.getElementById('sugg-results').classList.remove('hidden');
 
-      const titleEl    = document.getElementById('sugg-title');
-      const subtitleEl = document.getElementById('sugg-subtitle');
-      const grid       = document.getElementById('sugg-grid');
-
-      if (titleEl)    titleEl.textContent    = `${suggestions.length} partenaire${suggestions.length !== 1 ? 's' : ''} suggéré${suggestions.length !== 1 ? 's' : ''} pour ${suggCurrentLabel}`;
-      if (subtitleEl) subtitleEl.textContent = 'Trié par score de compatibilité décroissant';
-
+      const grid = document.getElementById('sugg-grid');
       if (!suggestions || !suggestions.length) {
-        grid.innerHTML = `<div class="col-span-3 text-center text-slate-400 py-12 text-sm">
+        grid.innerHTML = `<div class="col-span-full text-center text-slate-400 py-10">
           Aucun partenaire trouvé — essaie d'élargir les critères ou vérifie que le serveur est démarré.
         </div>`;
       } else {
@@ -3906,67 +4865,49 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   let ready      = false;
   let retryId    = null;
   let attempt    = 0;
-  let elapsed    = 0;  // secondes depuis premier ping
-  let elapsedId  = null;
+  let elapsed    = 0;
 
-  const STEPS = [
-    { at:0,  cur:'Connexion au serveur…',       sub:'Render gratuit · démarrage ~30–60s',  bar:5  },
-    { at:8,  cur:'Serveur en cours de boot…',   sub:'Chargement de la base de données…',   bar:25 },
-    { at:20, cur:'Chargement des données…',     sub:'~149k joueurs · 36k tournois',        bar:50 },
-    { at:35, cur:'Presque prêt…',               sub:'Encore quelques secondes',            bar:75 },
-    { at:55, cur:'Toujours en attente…',        sub:'Le serveur est un peu lent aujourd\'hui', bar:88 },
-  ];
-
-  function setBadge(state) {
-    if (!badge) return;
-    badge.className = 'api-badge ' + { live:'api-live', offline:'api-offline', pending:'api-pending' }[state];
-    const dot = badge.querySelector('.api-dot');
-    if (dot) dot.className = 'api-dot';
-    if (label) label.textContent = state === 'live' ? 'En ligne' : state === 'offline' ? 'Hors ligne' : 'Connexion…';
-  }
-
-  function updateToastStep() {
-    const step = [...STEPS].reverse().find(s => elapsed >= s.at) || STEPS[0];
-    if (stepEl) stepEl.textContent = step.cur;
-    if (subEl)  subEl.textContent  = step.sub;
-    if (barEl)  barEl.style.width  = step.bar + '%';
+  function setStatus(ok) {
+    if (!badge || !label) return;
+    badge.className = `api-dot ${ok ? 'ok' : 'error'}`;
+    label.textContent = ok ? 'En ligne' : 'Hors ligne';
   }
 
   function startElapsed() {
-    elapsed = 0;
-    elapsedId = setInterval(() => { elapsed++; updateToastStep(); }, 1000);
+    setInterval(() => {
+      if (ready) return;
+      elapsed++;
+      if (subEl) subEl.textContent = `${elapsed}s écoulées…`;
+    }, 1000);
   }
 
   async function ping() {
     attempt++;
     try {
-      const data = await apiFetch('/api/health', 8000);  // fail-fast pour retry rapide
-      if (data && data.status === 'ok') {
+      if (stepEl) stepEl.textContent = `Tentative ${attempt}…`;
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 8000);
+      const res  = await fetch('/api/health', { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.ok) {
         ready = true;
-        clearInterval(retryId);
-        clearInterval(elapsedId);
-        setBadge('live');
+        setStatus(true);
+        toast?.classList.remove('show');
         if (barEl) barEl.style.width = '100%';
-        if (stepEl) stepEl.textContent = 'Connecté !';
-        if (subEl)  subEl.textContent  = '';
-        setTimeout(() => toast?.classList.remove('show'), 800);
-        // Rechargement des charts si cold-start
-        loadDashboardStats?.();
-        loadDashboardTops?.();
-        loadMovers?.();
-        if (window.lbState?.offset === 0) loadLeaderboard?.(true);
-        return true;
+        // Relancer le chargement si le cold-start a fait timer loadDashboardStats
+        if (!document.getElementById('kpi-joueurs')?.textContent?.trim()) {
+          loadDashboardStats();
+        }
+        window.loadLeaderboard?.(true);
       }
-    } catch(e) { /* network error */ }
-    setBadge('pending');
-    return false;
+    } catch(e) {
+      setStatus(false);
+    }
   }
 
-  // Toast immédiat — l'utilisateur sait toujours ce qui se passe
   toast?.classList.add('show');
   startElapsed();
 
-  // Pings séquentiels (évite concurrence) : 8s timeout, 2s gap
   (async function doPings() {
     while (!ready) {
       await ping();
@@ -3977,7 +4918,6 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
 // ── Spotlight ⌘K ─────────────────────────────────────────────────────────────
 (function() {
-  // Détection OS pour affichage raccourci
   const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
   const shortcutLabel = isMac ? '⌘K' : 'Ctrl+K';
   const badgeEl = document.getElementById('search-shortcut-badge');
@@ -4002,8 +4942,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   window.openSpotlight = function openSpotlight() {
     overlay.classList.remove('hidden');
     inp.focus();
-    if (window.lucide) lucide.createIcons();
-  }
+  };
 
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -4011,75 +4950,55 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       overlay.classList.contains('hidden') ? openSpotlight() : closeSpotlight();
     }
     if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeSpotlight();
+    if (!overlay.classList.contains('hidden')) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); spActive = Math.min(spActive + 1, spItems.length - 1); spItems.forEach((el, i) => el.classList.toggle('active', i === spActive)); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); spActive = Math.max(spActive - 1, 0); spItems.forEach((el, i) => el.classList.toggle('active', i === spActive)); }
+      if (e.key === 'Enter' && spActive >= 0) spItems[spActive]?.click();
+    }
   });
 
-  document.getElementById('global-search')?.addEventListener('focus', e => {
-    e.target.blur();
-    openSpotlight();
-  });
+  overlay?.addEventListener('click', e => { if (e.target === overlay) closeSpotlight(); });
 
-  function navigate(dir) {
-    if (!spItems.length) return;
-    spItems[spActive]?.classList.remove('sp-active');
-    spActive = Math.max(0, Math.min(spItems.length - 1, spActive + dir));
-    spItems[spActive]?.classList.add('sp-active');
-    spItems[spActive]?.scrollIntoView({ block:'nearest' });
-  }
-
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); navigate(1); }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); navigate(-1); }
-    if (e.key === 'Enter') { e.preventDefault(); (spItems[spActive] || spItems[0])?.click(); }
-  });
-
-  inp.addEventListener('input', () => {
+  inp?.addEventListener('input', () => {
     clearTimeout(spTimer);
     const q = inp.value.trim();
-    if (q.length < 2) {
-      results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>';
-      spItems = []; spActive = -1;
-      return;
-    }
-    results.innerHTML = '<div class="sp-empty" style="padding:16px 0">Recherche…</div>';
-    spTimer = setTimeout(() => doSearch(q), 200);
+    if (!q) { results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>'; spItems = []; return; }
+    spTimer = setTimeout(async () => {
+      const [players, clubs, tournaments] = await Promise.all([
+        apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => []),
+        apiFetch(`/api/clubs?q=${encodeURIComponent(q)}&top=3`).catch(() => []),
+        apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=3`).catch(() => []),
+      ]);
+      renderSpotlight(q, players, clubs, tournaments);
+    }, 180);
   });
 
-  async function doSearch(q) {
-    const [players, clubs, tournaments] = await Promise.all([
-      apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`),
-      apiFetch(`/api/clubs?top=8&q=${encodeURIComponent(q)}`),
-      apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=4`),
-    ]);
-
+  function renderSpotlight(q, players, clubs, tournaments) {
     let html = '';
-
     if (players && players.length) {
       html += '<div class="sp-section-label">Joueurs</div>';
       html += players.map(p => `
-        <div class="sp-item" data-action="player" data-id="${p.id}" data-name="${p.nom_complet}">
-          <div class="sp-icon" style="background:#f0fdfa;color:#0d9488"><i data-lucide="user" class="w-4 h-4"></i></div>
+        <div class="sp-item" data-action="player" data-id="${p.id}" data-name="${(p.nom_complet||'').replace(/"/g,'&quot;')}">
+          <div class="sp-icon" style="background:#f0fdf4;color:#10b981"><i data-lucide="user" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium text-slate-800 truncate">${p.nom_complet}</div>
-            <div class="text-xs text-slate-400">#${p.classement ?? '?'}${p.club ? ' · ' + p.club : ''}</div>
+            <div class="text-xs text-slate-400">#${p.classement ?? '?'} · ${p.club || p.ville || ''}</div>
           </div>
           <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
         </div>`).join('');
     }
-
-    const clubMatches = (clubs || []).filter(c => c.nom.toLowerCase().includes(q.toLowerCase())).slice(0, 4);
-    if (clubMatches.length) {
+    if (clubs && clubs.length) {
       html += '<div class="sp-section-label">Clubs</div>';
-      html += clubMatches.map(c => `
-        <div class="sp-item" data-action="club" data-nom="${c.nom.replace(/"/g,'&quot;')}">
-          <div class="sp-icon" style="background:#fdf4ff;color:#9333ea"><i data-lucide="building-2" class="w-4 h-4"></i></div>
+      html += clubs.map(c => `
+        <div class="sp-item" data-action="club" data-nom="${(c.nom||'').replace(/"/g,'&quot;')}">
+          <div class="sp-icon" style="background:#eff6ff;color:#3b82f6"><i data-lucide="building-2" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium text-slate-800 truncate">${c.nom}</div>
-            <div class="text-xs text-slate-400">${c.ville} · ${(c.nb || 0).toLocaleString('fr-FR')} licenciés</div>
+            <div class="text-xs text-slate-400">${c.ville || ''} · ${(c.nb||0).toLocaleString('fr-FR')} licenciés</div>
           </div>
           <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
         </div>`).join('');
     }
-
     if (tournaments && tournaments.length) {
       html += '<div class="sp-section-label">Tournois</div>';
       html += tournaments.map(t => `
@@ -4087,13 +5006,13 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
           <div class="sp-icon" style="background:#fff7ed;color:#f59e0b"><i data-lucide="trophy" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium text-slate-800 truncate">${t.nom || t.id}</div>
-            <div class="text-xs text-slate-400">${t.categorie || ''}${t.date ? ' · ' + t.date : ''}${t.lieu ? ' · ' + t.lieu : ''}</div>
+            <div class="text-xs text-slate-400">${t.categorie || ''}${t.date ? ' · ' + t.date : ''}</div>
           </div>
           <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
         </div>`).join('');
     }
 
-    if (!html) html = `<div class="sp-empty">Aucun résultat pour « ${q} »</div>`;
+    if (!html) html = `<div class="sp-empty">Aucun résultat pour « ${q} »</div>`;
 
     results.innerHTML = html;
     spItems = [...results.querySelectorAll('.sp-item')];
@@ -4118,7 +5037,339 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     });
   }
 })();
-</script>
 
-</body>
-</html>
+// ══════════════════════════════════════════════════════════════════════════════
+// ── AUTH & PROFIL ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+(function() {
+
+  const SESSION_KEY = 'padel_session_id';
+  let _sessionId    = localStorage.getItem(SESSION_KEY) || null;
+  let _currentUser  = null;
+  let _pmSelected   = null;
+
+  async function authFetch(url, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    if (_sessionId) headers['X-Session-Id'] = _sessionId;
+    try {
+      const res = await fetch(url, { ...opts, headers });
+      return res.ok ? res.json() : null;
+    } catch(e) { return null; }
+  }
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('token');
+    if (token) {
+      const result = await authFetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+      if (result && result.session_id) {
+        _sessionId = result.session_id;
+        localStorage.setItem(SESSION_KEY, _sessionId);
+        _currentUser = { user_id: result.user_id, email: result.email, player_fft_id: result.player_fft_id };
+        window.history.replaceState({}, '', window.location.pathname);
+        updateHeaderBtn(); updateNavProfil();
+        if (result.is_new || !result.player_fft_id) {
+          openProfileModal(); pmShowScreen('setup');
+        } else {
+          showNotif('Connecté · Bienvenue !', 'success');
+        }
+        return;
+      } else {
+        showNotif('Lien expiré ou déjà utilisé', 'error');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+    if (_sessionId) {
+      const me = await authFetch('/api/me');
+      if (me && !me.error) {
+        _currentUser = me; updateHeaderBtn(); updateNavProfil();
+      } else {
+        _sessionId = null; localStorage.removeItem(SESSION_KEY);
+      }
+    }
+  }
+
+  function updateHeaderBtn() {
+    const label = document.getElementById('btn-profil-label');
+    if (!label) return;
+    if (_currentUser) {
+      const name = _currentUser.display_name || _currentUser.email?.split('@')[0] || 'Mon profil';
+      label.textContent = name.length > 14 ? name.slice(0, 12) + '…' : name;
+    } else { label.textContent = 'Mon profil'; }
+  }
+
+  function updateNavProfil() {
+    const navItem = document.getElementById('nav-mon-profil');
+    const lbl     = document.getElementById('nav-mon-profil-label');
+    if (!navItem) return;
+    if (_currentUser) {
+      navItem.classList.remove('hidden');
+      if (lbl) lbl.textContent = _currentUser.display_name || 'Mon profil';
+    } else { navItem.classList.add('hidden'); }
+  }
+
+  window.openProfileModal = function() {
+    const backdrop = document.getElementById('profile-modal-backdrop');
+    if (!backdrop) return;
+    backdrop.style.display = 'flex';
+    pmShowScreen(_currentUser ? 'setup' : 'welcome');
+    if (window.lucide) lucide.createIcons();
+  };
+
+  window.closeProfileModal = function() {
+    const backdrop = document.getElementById('profile-modal-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
+  };
+
+  window.pmShowScreen = function(name) {
+    ['welcome','login','devlink','setup','success'].forEach(s => {
+      const el = document.getElementById(`pm-screen-${s}`);
+      if (el) el.classList.toggle('hidden', s !== name);
+    });
+    if (window.lucide) lucide.createIcons();
+    if (name === 'login') setTimeout(() => document.getElementById('pm-email')?.focus(), 80);
+    if (name === 'setup') { setTimeout(() => document.getElementById('pm-player-search')?.focus(), 80); initSetupAC(); }
+  };
+
+  window.pmSendMagicLink = async function() {
+    const email = document.getElementById('pm-email')?.value.trim();
+    if (!email || !email.includes('@')) { pmFeedback('Adresse email invalide', 'error'); return; }
+    const btn = document.getElementById('pm-send-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Envoi…'; }
+    const result = await authFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email }) });
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Recevoir mon lien de connexion'; if (window.lucide) lucide.createIcons(); }
+    if (!result) { pmFeedback('Erreur serveur — réessaie', 'error'); return; }
+    if (result.dev_mode && result.link) {
+      const linkEl = document.getElementById('pm-dev-link');
+      if (linkEl) { linkEl.href = result.link; linkEl.textContent = result.link; }
+      pmShowScreen('devlink');
+    } else if (result.email_sent) {
+      pmFeedback(`✅ Lien envoyé à ${email} · Vérifie ta boîte mail (15 min)`, 'success');
+    } else {
+      pmFeedback('Impossible d\'envoyer l\'email', 'error');
+    }
+  };
+
+  function pmFeedback(msg, type) {
+    const el = document.getElementById('pm-login-feedback');
+    if (!el) return;
+    el.className = `mt-4 p-3 rounded-xl text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  window.pmHandleDevLink = async function(href) {
+    const url = new URL(href); const token = url.searchParams.get('token');
+    if (!token) return;
+    const result = await authFetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+    if (result && result.session_id) {
+      _sessionId = result.session_id; localStorage.setItem(SESSION_KEY, _sessionId);
+      _currentUser = { user_id: result.user_id, email: result.email, player_fft_id: result.player_fft_id };
+      updateHeaderBtn(); updateNavProfil();
+      if (result.is_new || !result.player_fft_id) { pmShowScreen('setup'); }
+      else { closeProfileModal(); showNotif('Connecté !', 'success'); navToMonProfil(); }
+    } else { showNotif('Lien invalide ou expiré', 'error'); }
+  };
+
+  let _acTimer = null;
+  function initSetupAC() {
+    const inp = document.getElementById('pm-player-search');
+    const ac  = document.getElementById('pm-player-ac');
+    if (!inp || !ac || inp._acInit) return;
+    inp._acInit = true;
+    inp.addEventListener('input', () => {
+      clearTimeout(_acTimer);
+      const q = inp.value.trim();
+      if (q.length < 2) { ac.hidden = true; return; }
+      _acTimer = setTimeout(async () => {
+        const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`);
+        if (!data || !data.length) { ac.hidden = true; return; }
+        ac.innerHTML = data.map(p => `
+          <div class="px-3 py-2.5 hover:bg-indigo-50 cursor-pointer text-sm pm-ac-item flex justify-between items-center"
+               data-id="${p.id}" data-name="${(p.nom_complet||'').replace(/"/g,'&quot;')}"
+               data-rank="${p.classement||''}" data-club="${(p.club||'').replace(/"/g,'&quot;')}">
+            <span class="font-medium text-slate-800">${p.nom_complet}</span>
+            <span class="text-xs text-slate-400 ml-2">#${p.classement||'NC'} · ${p.club||''}</span>
+          </div>`).join('');
+        ac.hidden = false;
+        ac.querySelectorAll('.pm-ac-item').forEach(el => {
+          el.addEventListener('click', () => {
+            inp.value = el.dataset.name; ac.hidden = true;
+            pmSelectPlayer(el.dataset.id, el.dataset.name, el.dataset.rank, el.dataset.club);
+          });
+        });
+      }, 220);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#pm-player-search') && !e.target.closest('#pm-player-ac')) ac.hidden = true;
+    });
+  }
+
+  function pmSelectPlayer(id, name, rank, club) {
+    _pmSelected = { id, name, rank, club };
+    const sel = document.getElementById('pm-player-selected');
+    if (sel) sel.classList.remove('hidden');
+    const av = document.getElementById('pm-sel-avatar');
+    if (av) av.textContent = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+    const nameEl = document.getElementById('pm-sel-name'); if (nameEl) nameEl.textContent = name;
+    const metaEl = document.getElementById('pm-sel-meta'); if (metaEl) metaEl.textContent = `#${rank||'NC'} · ${club||''}`;
+    const btn = document.getElementById('pm-confirm-btn'); if (btn) btn.disabled = false;
+  }
+
+  window.pmClearSelectedPlayer = function() {
+    _pmSelected = null;
+    document.getElementById('pm-player-selected')?.classList.add('hidden');
+    const btn = document.getElementById('pm-confirm-btn'); if (btn) btn.disabled = true;
+    const inp = document.getElementById('pm-player-search'); if (inp) inp.value = '';
+  };
+
+  window.pmConfirmPlayer = async function() {
+    if (!_pmSelected) return;
+    const result = await authFetch('/api/me/player', { method: 'POST', body: JSON.stringify({ player_fft_id: _pmSelected.id, display_name: _pmSelected.name }) });
+    if (result && result.ok) {
+      if (_currentUser) { _currentUser.player_fft_id = _pmSelected.id; _currentUser.display_name = _pmSelected.name; }
+      updateHeaderBtn(); updateNavProfil();
+      const msg = document.getElementById('pm-success-msg');
+      if (msg) msg.textContent = `Profil lié à ${_pmSelected.name} 🎾`;
+      pmShowScreen('success');
+    } else { showNotif('Erreur lors de la liaison — réessaie', 'error'); }
+  };
+
+  window.pmSkipPlayerLink = function() {
+    closeProfileModal();
+    showNotif('Tu pourras lier ton profil plus tard depuis "Mon profil"', 'info');
+  };
+
+  window.openSetupPlayer = function() { openProfileModal(); setTimeout(() => pmShowScreen('setup'), 50); };
+
+  window.navToMonProfil = async function() {
+    document.querySelector('[data-view="mon-profil"]')?.click();
+    await loadMonProfil();
+  };
+
+  async function loadMonProfil() {
+    if (!_currentUser) return;
+    const me = await authFetch('/api/me');
+    if (!me || me.error) return;
+    _currentUser = me;
+    const name = me.display_name || me.email?.split('@')[0] || 'Mon profil';
+    const titleEl = document.getElementById('mp-title');
+    if (titleEl) titleEl.textContent = `Bonjour, ${name} 👋`;
+    const subEl = document.getElementById('mp-subtitle');
+    if (subEl) subEl.textContent = me.email || '';
+    window._mpPlayerFftId = me.player_fft_id;
+    if (me.player && me.player_fft_id) {
+      const p = me.player;
+      document.getElementById('mp-player-linked')?.classList.remove('hidden');
+      document.getElementById('mp-no-player')?.classList.add('hidden');
+      const av = document.getElementById('mp-avatar');
+      if (av) av.textContent = (p.nom_complet||'??').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+      const nameEl2 = document.getElementById('mp-player-name'); if (nameEl2) nameEl2.textContent = p.nom_complet||'—';
+      const metaEl2 = document.getElementById('mp-player-meta'); if (metaEl2) metaEl2.textContent = `${p.club||''} · ${p.ville||''}`;
+      const rankEl  = document.getElementById('mp-rank'); if (rankEl) rankEl.textContent = p.classement ? `#${Number(p.classement).toLocaleString('fr-FR')}` : '—';
+      const nbT = document.getElementById('mp-nb-tournois'); if (nbT) nbT.textContent = p.nb_tournois??'—';
+      const vic = document.getElementById('mp-victoires');    if (vic) vic.textContent = p.nb_victoires??'—';
+      const pos = document.getElementById('mp-pos-moy');      if (pos) pos.textContent = p.pos_moyenne ? `${p.pos_moyenne}e` : '—';
+    } else {
+      document.getElementById('mp-player-linked')?.classList.add('hidden');
+      document.getElementById('mp-no-player')?.classList.remove('hidden');
+    }
+    await loadFavorites();
+  }
+
+  async function loadFavorites() {
+    const container = document.getElementById('mp-favorites-list');
+    const countEl   = document.getElementById('mp-fav-count');
+    if (!container) return;
+    const favs = await authFetch('/api/me/favorites');
+    if (!favs || favs.error) { container.innerHTML = '<div class="text-sm text-slate-400 text-center py-6">Impossible de charger les favoris</div>'; return; }
+    if (countEl) countEl.textContent = `${favs.length} joueur${favs.length!==1?'s':''}`;
+    if (!favs.length) {
+      container.innerHTML = `<div class="text-center py-8 text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        <p class="text-sm">Aucun joueur suivi pour l'instant</p>
+        <p class="text-xs mt-1">Clique sur ❤ sur un profil joueur pour le suivre</p></div>`;
+      return;
+    }
+    container.innerHTML = favs.map(f => {
+      const rank = f.classement ? `#${Number(f.classement).toLocaleString('fr-FR')}` : 'NC';
+      const ini  = (f.nom_complet||'??').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+      const delta = f.variation_classement;
+      const deltaHtml = delta!=null&&delta!==0 ? `<span class="${delta>0?'text-emerald-600':'text-rose-500'} text-xs ml-1">${delta>0?'▲':'▼'}${Math.abs(delta)}</span>` : '';
+      return `<div class="flex items-center gap-3 py-2.5 border-b border-slate-50 last:border-0 hover:bg-slate-50 -mx-2 px-2 rounded-lg transition group">
+        <div class="w-9 h-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs flex-shrink-0 cursor-pointer"
+             onclick="loadPlayerProfile('${f.id}');document.querySelector('[data-view=player]').click()">${ini}</div>
+        <div class="flex-1 min-w-0 cursor-pointer" onclick="loadPlayerProfile('${f.id}');document.querySelector('[data-view=player]').click()">
+          <div class="font-medium text-slate-800 text-sm truncate">${f.nom_complet}</div>
+          <div class="text-xs text-slate-400">${rank}${deltaHtml} · ${f.club||f.ville||''}</div>
+        </div>
+        <button onclick="removeFavFromList('${f.id}',this)"
+          class="opacity-0 group-hover:opacity-100 transition p-1 text-slate-300 hover:text-rose-400 rounded" title="Retirer des favoris">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  window.removeFavFromList = async function(playerId, btnEl) {
+    await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'DELETE' });
+    const row = btnEl.closest('.flex.items-center');
+    if (row) { row.style.opacity='0'; setTimeout(()=>{ row.remove(); refreshFavCount(); }, 200); }
+  };
+
+  function refreshFavCount() {
+    const rows = document.querySelectorAll('#mp-favorites-list .flex.items-center');
+    const countEl = document.getElementById('mp-fav-count');
+    if (countEl) countEl.textContent = `${rows.length} joueur${rows.length!==1?'s':''}`;
+  }
+
+  window.toggleFavorite = async function(playerId) {
+    if (!_currentUser) { showNotif('Connecte-toi pour sauvegarder des favoris', 'info'); openProfileModal(); return; }
+    const btn = document.getElementById('fav-toggle-btn');
+    const icon = document.getElementById('fav-icon');
+    const label = document.getElementById('fav-label');
+    const isFav = btn?.dataset.favorited === 'true';
+    if (isFav) {
+      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'DELETE' });
+      if (btn) btn.dataset.favorited = 'false';
+      icon?.setAttribute('fill','none');
+      if (label) label.textContent = 'Suivre';
+      btn?.classList.remove('bg-rose-50','text-rose-600','border-rose-300');
+      showNotif('Retiré des favoris','info');
+    } else {
+      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'POST' });
+      if (btn) btn.dataset.favorited = 'true';
+      icon?.setAttribute('fill','currentColor');
+      if (label) label.textContent = 'Suivi ❤';
+      btn?.classList.add('bg-rose-50','text-rose-600','border-rose-300');
+      btn?.classList.remove('text-rose-500','border-rose-200');
+      showNotif('Ajouté aux favoris !','success');
+    }
+  };
+
+  const _origRender = window.renderProfile;
+  window.renderProfile = function(data) {
+    if (_origRender) _origRender(data);
+    if (_currentUser && data?.id) {
+      authFetch(`/api/me/favorites/${encodeURIComponent(data.id)}/check`).then(res => {
+        if (!res) return;
+        const btn = document.getElementById('fav-toggle-btn');
+        const icon = document.getElementById('fav-icon');
+        const label = document.getElementById('fav-label');
+        if (!btn) return;
+        btn.dataset.favorited = res.favorited ? 'true' : 'false';
+        if (res.favorited) {
+          icon?.setAttribute('fill','currentColor');
+          if (label) label.textContent = 'Suivi ❤';
+          btn.classList.add('bg-rose-50','text-rose-600','border-rose-300');
+        } else { icon?.setAttribute('fill','none'); if (label) label.textContent = 'Suivre'; }
+      });
+    }
+  };
+
+  window.authLogout = async function() {
+    await authFetch('/api/auth/logout', { method: 'POST' });
+    _sessionId = null; _currentUser = null; localStorage.removeItem(SESSION_KEY);
+    updateHeaderBtn(); updateNavProfil();
+    document.querySelector('[data-view="dashboard"]')?.click();
+    showNotif('Déconne
