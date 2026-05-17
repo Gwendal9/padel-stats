@@ -265,11 +265,12 @@ def get_player_profile(player_id: str) -> dict | None:
     ))
 
     # ── Historique mensuel des classements ───────────────────────────────
+    # Colonnes réelles de la table : id_joueur (pas id_fft), pas de meilleur_classement
     hist_rows = fetchall(
         """
-        SELECT mois, classement, variation, meilleur_classement
+        SELECT mois, classement, variation
         FROM classements_historique
-        WHERE id_fft = ?
+        WHERE id_joueur = ?
         ORDER BY mois ASC
         """,
         (player_id,),
@@ -279,7 +280,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "mois":       r["mois"],
             "classement": r["classement"],
             "variation":  r["variation"],
-            "meilleur":   r["meilleur_classement"],
+            "meilleur":   None,
         }
         for r in hist_rows
         if r["classement"] is not None
@@ -295,5 +296,7 @@ def get_player_profile(player_id: str) -> dict | None:
         "parcours":          parcours,
         "date_activities":   date_activities,
         "nb_partenaires":    len(partners_raw),
+        "rang_historique":   rang_historique,
+    }
         "rang_historique":   rang_historique,
     }

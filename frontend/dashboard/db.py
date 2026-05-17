@@ -86,26 +86,28 @@ def ensure_indexes():
                 for migration in [
                     "ALTER TABLE joueurs ADD COLUMN variation_classement INTEGER",
                     "ALTER TABLE joueurs ADD COLUMN classement_date TEXT",
+                    # classements_historique : colonne variation ajoutée après création initiale
+                    "ALTER TABLE classements_historique ADD COLUMN variation INTEGER",
                 ]:
                     try:
                         conn.execute(migration)
                     except Exception:
                         pass  # Colonne déjà présente
                 # Table historique mensuel (snapshots)
+                # Schéma réel DB : id_joueur (pas id_fft), colonnes echelon + variation
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS classements_historique (
                         id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                        id_fft      TEXT NOT NULL,
+                        id_joueur   TEXT NOT NULL,
                         mois        TEXT NOT NULL,
                         classement  INTEGER,
+                        echelon     TEXT,
                         variation   INTEGER,
-                        meilleur_classement INTEGER,
-                        scraped_at  TEXT,
-                        UNIQUE(id_fft, mois)
+                        UNIQUE(id_joueur, mois)
                     )
                 """)
                 conn.execute(
-                    "CREATE INDEX IF NOT EXISTS idx_hist_joueur ON classements_historique(id_fft)"
+                    "CREATE INDEX IF NOT EXISTS idx_hist_joueur ON classements_historique(id_joueur)"
                 )
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_hist_mois ON classements_historique(mois)"
@@ -169,4 +171,4 @@ def fetchval(query: str, params: tuple = ()):
                 return row[0] if row else None
         else:
             row = conn.execute(query, params).fetchone()
-            return row[0] 
+            return row[0] if row else None
