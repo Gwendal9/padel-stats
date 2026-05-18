@@ -167,12 +167,19 @@ def _cached_response(body: bytes):
 @app.get("/api/stats")
 def route_stats():
     from db import fetchall, fetchone
+    import sys as _sys, time as _t
 
     cached = _cache_get("stats")
     if cached is not None:
         return _cached_response(cached)
 
+    def _step(label, t0):
+        # Log par étape avec flush — pour identifier la requête lente
+        print(f"   [stats] {label}: {_t.time()-t0:.1f}s", flush=True)
+        _sys.stdout.flush()
+
     current_year = datetime.date.today().year
+    _t0 = _t.time()
 
     # Compteurs globaux (pour KPIs)
     counts = fetchone("""
@@ -184,6 +191,7 @@ def route_stats():
           (SELECT COUNT(DISTINCT id_tournoi) FROM participations)     AS nb_tournois,
           (SELECT COUNT(*) FROM participations)                       AS nb_participations
     """) or {}
+    _step("counts", _t0); _t0 = _t.time()
 
     ranking = fetchone("""
         SELECT
@@ -210,6 +218,7 @@ def route_stats():
           SUM(CASE WHEN classement > 80000 AND sexe='F' THEN 1 ELSE 0 END)               AS c80kplus_f
         FROM joueurs WHERE classement IS NOT NULL
     """) or {}
+    _step("ranking", _t0); _t0 = _t.time()
 
     # Pyramide âges — agrégée en SQL (évite 149k lignes en Python)
     _yr = current_year
@@ -252,6 +261,7 @@ def route_stats():
         s = r.get("sexe")
         if s in pyramid:
             pyramid[s] = [int(r.get(f"b{i}") or 0) for i in range(9)]
+    _step("pyramide", _t0); _t0 = _t.time()
 
     # Mois du dernier snapshot classement (pour affichage dynamique)
     snapshot_mois_raw = fetchone(
@@ -301,8 +311,10 @@ def route_stats():
                 (MONTH_ABBR.get(r["mois"][:2], r["mois"][:2]) + ' ' + r["mois"][3:], r["nb"])
                 for r in reversed(month_rows)
             ]
-    except Exception:
+    except Exception as e:
+        print(f"   [stats] monthly FAILED: {e}", flush=True)
         last_12 = []
+    _step("monthly", _t0); _t0 = _t.time()
 
     villes = fetchall("""
         SELECT UPPER(TRIM(ville)) AS ville, COUNT(*) AS nb
@@ -310,6 +322,7 @@ def route_stats():
         GROUP BY UPPER(TRIM(ville))
         ORDER BY nb DESC LIMIT 10
     """)
+    _step("villes", _t0); _t0 = _t.time()
 
     try:
         if USE_POSTGRES:
@@ -343,8 +356,10 @@ def route_stats():
             """)
             r0 = tdist_row[0] if tdist_row else {}
             tdist = [int(r0.get(f"b{i}") or 0) for i in range(1, 7)]
-    except Exception:
+    except Exception as e:
+        print(f"   [stats] tdist FAILED: {e}", flush=True)
         tdist = [0, 0, 0, 0, 0, 0]
+    _step("tdist", _t0); _t0 = _t.time()
 
     resp = jsonify({
         "nb_joueurs":         int(counts.get("nb_joueurs") or 0),

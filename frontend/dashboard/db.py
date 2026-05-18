@@ -35,6 +35,13 @@ def _adapt(query: str, params: tuple) -> tuple[str, tuple]:
 def get_conn(readonly: bool = True):
     if USE_POSTGRES:
         conn = psycopg2.connect(DATABASE_URL)
+        # CRITIQUE pour le free tier Render : limite chaque requête à 45s max,
+        # sinon une query qui rame bloque le worker indéfiniment et tout l'app gèle.
+        try:
+            with conn.cursor() as _c:
+                _c.execute("SET statement_timeout = '45s'")
+        except Exception:
+            pass
         try:
             yield conn
         finally:
