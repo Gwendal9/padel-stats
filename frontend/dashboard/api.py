@@ -13,6 +13,10 @@ Routes :
   GET /api/clubs?top=100             → top clubs
   GET /api/health                    → santé
 """
+# Monkey-patch gevent en tout premier — permet des workers asynchrones
+# sans bloquer gunicorn sur les requêtes lentes
+from gevent import monkey; monkey.patch_all()
+
 import os
 import re
 import sys
