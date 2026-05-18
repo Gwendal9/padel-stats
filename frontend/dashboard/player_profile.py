@@ -283,16 +283,18 @@ def get_player_profile(player_id: str) -> dict | None:
     ))
 
     # ── Historique mensuel des classements ───────────────────────────────
-    # Colonnes réelles de la table : id_joueur (pas id_fft), pas de meilleur_classement
-    hist_rows = fetchall(
-        """
-        SELECT mois, classement, variation
-        FROM classements_historique
-        WHERE id_joueur = ?
-        ORDER BY mois ASC
-        """,
-        (player_id,),
-    )
+    try:
+        hist_rows = fetchall(
+            """
+            SELECT mois, classement, variation
+            FROM classements_historique
+            WHERE id_joueur = ?
+            ORDER BY mois ASC
+            """,
+            (player_id,),
+        )
+    except Exception:
+        hist_rows = []  # table absente ou schéma différent — non bloquant
     rang_historique = [
         {
             "mois":       r["mois"],

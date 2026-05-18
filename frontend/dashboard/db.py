@@ -125,6 +125,18 @@ def ensure_indexes():
             )""",
             "CREATE INDEX IF NOT EXISTS idx_ts_date ON tournois_summary(date_sort)",
             "CREATE INDEX IF NOT EXISTS idx_ts_cat  ON tournois_summary(categorie)",
+            # Snapshots mensuels des classements (rempli par le scraper mensuel)
+            """CREATE TABLE IF NOT EXISTS classements_historique (
+                id          SERIAL PRIMARY KEY,
+                id_joueur   TEXT NOT NULL,
+                mois        TEXT NOT NULL,
+                classement  INTEGER,
+                echelon     TEXT,
+                variation   INTEGER,
+                UNIQUE(id_joueur, mois)
+            )""",
+            "CREATE INDEX IF NOT EXISTS idx_hist_joueur ON classements_historique(id_joueur)",
+            "CREATE INDEX IF NOT EXISTS idx_hist_mois   ON classements_historique(mois)",
             # Table de cache des réponses précalculées (rempli par precompute.py)
             """CREATE TABLE IF NOT EXISTS cache_responses (
                 cache_key   TEXT PRIMARY KEY,
