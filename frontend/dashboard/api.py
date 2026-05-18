@@ -77,8 +77,16 @@ def route_suggest(player_id: str):
     return jsonify(suggest_partners(player_id, n=n))
 
 
+def _graph_ready():
+    """Retourne une réponse 503 si le graphe n'est pas encore chargé, None sinon."""
+    if not engine._loaded:
+        return jsonify({"error": "graph_loading", "message": "Graphe en cours de chargement, réessaie dans quelques secondes"}), 503
+    return None
+
 @app.get("/api/path/<src_id>/<tgt_id>")
 def route_path(src_id: str, tgt_id: str):
+    err = _graph_ready()
+    if err: return err
     result = engine.shortest_path(src_id, tgt_id)
     if result is None:
         return jsonify({"error": "Aucun chemin trouve"}), 404
@@ -87,6 +95,8 @@ def route_path(src_id: str, tgt_id: str):
 
 @app.get("/api/ego/<player_id>")
 def route_ego(player_id: str):
+    err = _graph_ready()
+    if err: return err
     depth = min(int(request.args.get("depth", 2)), 3)
     graph_data = engine.ego_graph(player_id, depth=depth)
     if not graph_data["nodes"]:
