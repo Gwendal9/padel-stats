@@ -75,6 +75,21 @@ def fetchone(query: str, params: tuple = ()) -> dict | None:
 
 def ensure_indexes():
     """Crée les index manquants et applique les migrations de schéma (idempotent)."""
+    if USE_POSTGRES:
+        try:
+            with get_conn(readonly=False) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_joueurs_idfft   ON joueurs(id_fft)")
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_joueurs_club_pg  ON joueurs(club_nom)")
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_joueurs_sexe_pg  ON joueurs(sexe)")
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_part_joueur      ON participations(id_joueur)")
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_part_partenaire  ON participations(partenaire_id)")
+                    cur.execute("CREATE INDEX IF NOT EXISTS idx_part_tournoi     ON participations(id_tournoi)")
+                conn.commit()
+        except Exception as e:
+            print(f"[ensure_indexes] PostgreSQL warning: {e}")
+        return
+
     if not USE_POSTGRES:
         try:
             with get_conn(readonly=False) as conn:
