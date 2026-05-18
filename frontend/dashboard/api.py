@@ -48,38 +48,10 @@ import threading as _threading
 _threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preloader").start()
 
 
-def _preheat_caches():
-    """Précharge les caches des endpoints lourds avant le 1er user.
-    Sur free tier Render (1 worker, 4 threads), ça évite que /api/stats et
-    /api/stats/categories bloquent les threads pendant 30-40s au 1er chargement."""
-    import time as _t, sys as _sys, traceback as _tb
-    _t.sleep(2)  # laisse le serveur démarrer proprement
-
-    def _say(msg):
-        # flush=True ESSENTIEL : sans ça, les print() d'un daemon thread
-        # restent dans le buffer et n'apparaissent jamais dans les logs Render
-        print(msg, flush=True)
-        _sys.stdout.flush()
-
-    def _run(name, fn):
-        t0 = _t.time()
-        _say(f"⏳ Préchauffage {name}…")
-        try:
-            with app.test_request_context():
-                fn()
-            _say(f"✅ {name} préchauffé en {int(_t.time()-t0)}s")
-        except Exception as e:
-            _say(f"⚠️  {name} a échoué: {type(e).__name__}: {e}")
-            _tb.print_exc()
-            _sys.stdout.flush()
-
-    _say("🔥 Démarrage préchauffage caches…")
-    _run("/api/stats",            route_stats)
-    _run("/api/stats/categories", route_stats_categories)
-    _run("/api/tournaments",      route_tournaments)
-    _say("🔥 Préchauffage terminé")
-
-_threading.Thread(target=_preheat_caches, daemon=True, name="cache-preheater").start()
+# ── Plus de préchauffage in-memory : trop lourd pour le free tier ────────────
+# Les caches sont maintenant alimentés par le script externe `precompute.py`
+# (à lancer manuellement OU via /api/admin/precompute) qui stocke les résultats
+# dans la table cache_responses (lue par _try_precomputed dans chaque route).
 
 
 @app.route("/")
@@ -138,30 +110,40 @@ def route_ego(player_id: str):
     return jsonify(graph_data)
 
 
-# ── Cache mémoire générique pour endpoints lourds ──────────────────────────────
-# Sur le free tier Render (1 worker, CPU partagé), ces endpoints prennent 10-40s
-# et bloquent toutes les autres requêtes API en parallèle pendant ce temps.
-# TTL 10 min : les stats globales ne changent qu'une fois par jour au snapshot.
+# ── Cache des réponses pré-calculées ──────────────────────────────────────────
+# Stratégie : un script externe `precompute.py` calcule les réponses lourdes
+# (60-90s chacune) UNE FOIS et les stocke dans la table cache_responses.
+# Les endpoints lisent juste cette table → réponse instantanée (~5ms).
+# Backup : un petit cache mémoire 10 min pour éviter les hits DB inutiles.
 from flask import Response as _FlaskResponse
 import time as _time_mod
-_RESPONSE_CACHE: dict[str, dict] = {}  # key → {"body": bytes, "ts": float}
-_CACHE_TTL = 600  # secondes
-
-
-def _cache_get(key: str):
-    """Retourne le body bytes en cache si encore frais, sinon None."""
-    entry = _RESPONSE_CACHE.get(key)
-    if entry and (_time_mod.time() - entry["ts"]) < _CACHE_TTL:
-        return entry["body"]
-    return None
-
-
-def _cache_set(key: str, body: bytes):
-    _RESPONSE_CACHE[key] = {"body": body, "ts": _time_mod.time()}
+_MEM_CACHE: dict[str, dict] = {}  # key → {"body": bytes, "ts": float}
+_MEM_TTL   = 600  # secondes
 
 
 def _cached_response(body: bytes):
     return _FlaskResponse(body, mimetype="application/json")
+
+
+def _try_precomputed(key: str):
+    """Renvoie une Response si le body est en cache (mémoire ou table), sinon None."""
+    # 1. Cache mémoire (rapide, sans hit DB)
+    entry = _MEM_CACHE.get(key)
+    if entry and (_time_mod.time() - entry["ts"]) < _MEM_TTL:
+        return _cached_response(entry["body"])
+    # 2. Cache table (rempli par precompute.py)
+    from db import get_cached_body
+    body_str = get_cached_body(key)
+    if body_str:
+        body_bytes = body_str.encode("utf-8")
+        _MEM_CACHE[key] = {"body": body_bytes, "ts": _time_mod.time()}
+        return _cached_response(body_bytes)
+    return None
+
+
+def _store_in_mem(key: str, body: bytes):
+    """Met en cache mémoire seulement (pas DB) — utilisé en fallback."""
+    _MEM_CACHE[key] = {"body": body, "ts": _time_mod.time()}
 
 
 @app.get("/api/stats")
@@ -169,9 +151,10 @@ def route_stats():
     from db import fetchall, fetchone
     import sys as _sys, time as _t
 
-    cached = _cache_get("stats")
+    # 1) Cache (mémoire ou table cache_responses remplie par precompute.py)
+    cached = _try_precomputed("stats")
     if cached is not None:
-        return _cached_response(cached)
+        return cached
 
     def _step(label, t0):
         # Log par étape avec flush — pour identifier la requête lente
@@ -400,7 +383,7 @@ def route_stats():
         "top_villes": [{"ville": r["ville"], "nb": r["nb"]} for r in villes],
         "tournament_dist": tdist,
     })
-    try: _cache_set("stats", resp.get_data())
+    try: _store_in_mem("stats", resp.get_data())
     except Exception: pass
     return resp
 
@@ -564,6 +547,13 @@ def route_clubs():
     q   = request.args.get("q", "").strip()
     like_op = "ILIKE" if USE_POSTGRES else "LIKE"
 
+    # Cache pour la liste par défaut (pas de filtre `q`)
+    _cache_key = f"clubs_{top}" if not q else None
+    if _cache_key:
+        cached = _try_precomputed(_cache_key)
+        if cached is not None:
+            return cached
+
     if q:
         rows = fetchall(f"""
             SELECT club_nom,
@@ -609,11 +599,15 @@ def route_clubs():
                 merged[key]["ville"] = r["ville"]
 
     result = sorted(merged.values(), key=lambda x: -x["nb"])[:top]
-    return jsonify([
+    resp = jsonify([
         {"nom": e["nom"], "ville": e["ville"], "nb": e["nb"],
          "variants": e["variants"]}
         for e in result
     ])
+    if _cache_key:
+        try: _store_in_mem(_cache_key, resp.get_data())
+        except Exception: pass
+    return resp
 
 
 @app.get("/api/tournaments")
@@ -625,9 +619,9 @@ def route_tournaments():
     # Cache uniquement pour la liste par défaut (pas de filtre `q`) — ce que charge le dashboard
     _cache_key = f"tournaments_{limit}" if not q else None
     if _cache_key:
-        cached = _cache_get(_cache_key)
+        cached = _try_precomputed(_cache_key)
         if cached is not None:
-            return _cached_response(cached)
+            return cached
     # Tri chronologique: dates stockées en DD/MM/YYYY → besoin de TO_DATE en PG
     _date_sort = "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else \
                  "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
@@ -665,7 +659,7 @@ def route_tournaments():
         "date": r["date_tournoi"] or "", "nb_joueurs": r["nb_joueurs"] or 0,
     } for r in rows])
     if _cache_key:
-        try: _cache_set(_cache_key, resp.get_data())
+        try: _store_in_mem(_cache_key, resp.get_data())
         except Exception: pass
     return resp
 
@@ -977,9 +971,9 @@ def route_stats_categories():
     """
     from db import fetchall
 
-    cached = _cache_get("stats_categories")
+    cached = _try_precomputed("stats_categories")
     if cached is not None:
-        return _cached_response(cached)
+        return cached
 
     # Opérateur LIKE adapté au moteur (ILIKE = insensible à la casse en PG)
     _lk = "ILIKE" if USE_POSTGRES else "LIKE"
@@ -1048,7 +1042,7 @@ def route_stats_categories():
         })
 
     resp = jsonify(result)
-    try: _cache_set("stats_categories", resp.get_data())
+    try: _store_in_mem("stats_categories", resp.get_data())
     except Exception: pass
     return resp
 
@@ -1357,6 +1351,49 @@ def route_stats_shared_positions():
 @app.get("/api/health")
 def route_health():
     return jsonify({"status": "ok"})
+
+
+# ── Endpoint admin : lance le pré-calcul des caches lourds ──────────────────
+# Usage : GET /api/admin/precompute?key=XXXX
+# La clé doit matcher la variable d'env ADMIN_KEY (à configurer dans Render).
+# Le job tourne dans un thread daemon (le user reçoit "started" tout de suite,
+# le calcul finit en ~5-10 min en arrière-plan).
+_precompute_status = {"running": False, "last_run": None, "last_result": None}
+
+
+@app.get("/api/admin/precompute")
+def route_admin_precompute():
+    admin_key = os.environ.get("ADMIN_KEY", "")
+    if not admin_key:
+        return jsonify({"error": "ADMIN_KEY non configurée côté serveur"}), 500
+    if request.args.get("key") != admin_key:
+        return jsonify({"error": "clé invalide"}), 403
+    if _precompute_status["running"]:
+        return jsonify({"status": "already_running", "started_at": _precompute_status["last_run"]})
+
+    import threading as _th, datetime as _dt
+    def _run():
+        _precompute_status["running"] = True
+        _precompute_status["last_run"] = _dt.datetime.now().isoformat()
+        try:
+            import precompute
+            precompute.main()
+            _precompute_status["last_result"] = "ok"
+        except Exception as e:
+            _precompute_status["last_result"] = f"error: {type(e).__name__}: {e}"
+            import traceback; traceback.print_exc()
+        finally:
+            _precompute_status["running"] = False
+
+    _th.Thread(target=_run, daemon=True, name="precompute-job").start()
+    return jsonify({"status": "started",
+                    "message": "Le pré-calcul tourne en arrière-plan (~5-10 min). "
+                               "Surveille les logs Render pour voir les ✅ par job."})
+
+
+@app.get("/api/admin/precompute/status")
+def route_admin_precompute_status():
+    return jsonify(_precompute_status)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -10,6 +10,15 @@ from contextlib import contextmanager
 DATABASE_URL = os.environ.get("DATABASE_URL")
 USE_POSTGRES = bool(DATABASE_URL)
 
+# Timeout SQL par défaut — peut être override par precompute.py via set_statement_timeout()
+_PG_STATEMENT_TIMEOUT = "90s"
+
+def set_statement_timeout(value: str):
+    """Change le statement_timeout pour les NOUVELLES connexions PG.
+    Ex: set_statement_timeout('600s') pour les jobs batch type precompute."""
+    global _PG_STATEMENT_TIMEOUT
+    _PG_STATEMENT_TIMEOUT = value
+
 # Toujours défini (utilisé par graph_engine et autres modules en mode SQLite)
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "backend", "tenup.db")
 
@@ -41,7 +50,7 @@ def get_conn(readonly: bool = True):
         # (/api/stats/categories, /api/tournaments) — après c'est cached 10 min.
         try:
             with conn.cursor() as _c:
-                _c.execute("SET statement_timeout = '90s'")
+                _c.execute(f"SET statement_timeout = '{_PG_STATEMENT_TIMEOUT}'")
         except Exception:
             pass
         try:
@@ -102,6 +111,12 @@ def ensure_indexes():
             "CREATE INDEX IF NOT EXISTS idx_parts_date ON participations(date_tournoi) WHERE date_tournoi IS NOT NULL",
             # Tournois
             "CREATE INDEX IF NOT EXISTS idx_tournois_nom ON tournois(nom)",
+            # Table de cache des réponses précalculées (rempli par precompute.py)
+            """CREATE TABLE IF NOT EXISTS cache_responses (
+                cache_key   TEXT PRIMARY KEY,
+                body        TEXT NOT NULL,
+                computed_at TIMESTAMP DEFAULT NOW()
+            )""",
         ]
         try:
             conn = psycopg2.connect(DATABASE_URL)
@@ -206,6 +221,40 @@ def ensure_indexes():
                 conn.commit()
         except Exception:
             pass  # DB en lecture seule ou autre problème non bloquant
+
+
+# ── Cache des réponses pré-calculées (rempli par precompute.py) ─────────────
+def get_cached_body(key: str) -> str | None:
+    """Lit le JSON pré-calculé pour ce key. Retourne None si pas en cache."""
+    try:
+        row = fetchone("SELECT body FROM cache_responses WHERE cache_key = ?", (key,))
+        return row["body"] if row else None
+    except Exception:
+        return None  # table pas encore créée ou autre
+
+
+def set_cached_body(key: str, body: str) -> None:
+    """Stocke (UPSERT) le JSON pour ce key. Utilisé par precompute.py."""
+    if USE_POSTGRES:
+        sql = ("INSERT INTO cache_responses (cache_key, body, computed_at) "
+               "VALUES (%s, %s, NOW()) "
+               "ON CONFLICT (cache_key) DO UPDATE SET "
+               "body = EXCLUDED.body, computed_at = NOW()")
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql, (key, body))
+            conn.commit()
+        finally:
+            conn.close()
+    else:
+        with get_conn(readonly=False) as conn:
+            conn.execute(
+                "INSERT INTO cache_responses (cache_key, body) VALUES (?, ?) "
+                "ON CONFLICT(cache_key) DO UPDATE SET body=excluded.body, computed_at=CURRENT_TIMESTAMP",
+                (key, body),
+            )
+            conn.commit()
 
 
 def fetchval(query: str, params: tuple = ()):

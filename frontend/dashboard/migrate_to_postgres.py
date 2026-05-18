@@ -115,4 +115,5 @@ def main():
     print("   Lance ensuite : DATABASE_URL=... python api.py")
 
 
-if __name__ == "__m
+if __name__ == "__main__":
+    main()
