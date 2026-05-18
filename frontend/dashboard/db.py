@@ -75,8 +75,39 @@ def fetchone(query: str, params: tuple = ()) -> dict | None:
 
 def ensure_indexes():
     """Crée les index manquants et applique les migrations de schéma (idempotent)."""
-    # Index PostgreSQL : créés une seule fois manuellement via psql (trop longs au démarrage)
+    # ── PostgreSQL : index essentiels pour le free tier Render ───────────────
+    # IF NOT EXISTS rend l'opération idempotente — au pire un no-op de quelques ms.
+    # Sans ces index, /api/stats, /api/clubs, /api/leaderboard prennent 30-60s.
     if USE_POSTGRES:
+        PG_INDEXES = [
+            # Joueurs — filtres fréquents
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_classement ON joueurs(classement) WHERE classement IS NOT NULL",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_sexe ON joueurs(sexe)",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_sexe_classement ON joueurs(sexe, classement) WHERE classement IS NOT NULL",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_club ON joueurs(club_nom) WHERE club_nom IS NOT NULL AND club_nom != ''",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_ville ON joueurs(ville) WHERE ville IS NOT NULL AND ville != ''",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_naissance ON joueurs(naissance) WHERE naissance IS NOT NULL",
+            # Participations — jointures lourdes
+            "CREATE INDEX IF NOT EXISTS idx_parts_joueur ON participations(id_joueur)",
+            "CREATE INDEX IF NOT EXISTS idx_parts_tournoi ON participations(id_tournoi)",
+            "CREATE INDEX IF NOT EXISTS idx_parts_date ON participations(date_tournoi) WHERE date_tournoi IS NOT NULL",
+            # Tournois
+            "CREATE INDEX IF NOT EXISTS idx_tournois_nom ON tournois(nom)",
+        ]
+        try:
+            conn = psycopg2.connect(DATABASE_URL)
+            # autocommit pour éviter de bloquer une transaction longue si un index existe déjà
+            conn.autocommit = True
+            with conn.cursor() as cur:
+                for sql in PG_INDEXES:
+                    try:
+                        cur.execute(sql)
+                    except Exception as e:
+                        print(f"⚠️  index PG ignoré: {e}")
+            conn.close()
+            print("✅ Index PG vérifiés/créés")
+        except Exception as e:
+            print(f"⚠️  ensure_indexes (PG) a échoué (non bloquant): {e}")
         return
 
     if not USE_POSTGRES:

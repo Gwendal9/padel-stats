@@ -104,9 +104,24 @@ def route_ego(player_id: str):
     return jsonify(graph_data)
 
 
+# Cache mémoire pour /api/stats : recalcul lourd (~5-30s sur free tier Render),
+# les stats globales évoluent au max une fois par jour → TTL 10 min largement OK.
+from flask import Response as _FlaskResponse
+import json as _json
+_STATS_CACHE = {"body": None, "ts": 0.0}
+_STATS_TTL   = 600  # secondes
+
+
 @app.get("/api/stats")
 def route_stats():
     from db import fetchall, fetchone
+    import time as _time
+
+    # Cache hit ? On renvoie une nouvelle Response à chaque fois (body est immuable bytes)
+    _now = _time.time()
+    if _STATS_CACHE["body"] is not None and (_now - _STATS_CACHE["ts"]) < _STATS_TTL:
+        return _FlaskResponse(_STATS_CACHE["body"], mimetype="application/json")
+
     current_year = datetime.date.today().year
 
     # Compteurs globaux (pour KPIs)
@@ -281,7 +296,7 @@ def route_stats():
     except Exception:
         tdist = [0, 0, 0, 0, 0, 0]
 
-    return jsonify({
+    resp = jsonify({
         "nb_joueurs":         int(counts.get("nb_joueurs") or 0),
         "nb_joueurs_classes": int(counts.get("nb_joueurs_classes") or 0),
         "nb_joueurs_h":       int(counts.get("nb_joueurs_h") or 0),
@@ -320,6 +335,13 @@ def route_stats():
         "top_villes": [{"ville": r["ville"], "nb": r["nb"]} for r in villes],
         "tournament_dist": tdist,
     })
+    # Mise en cache du body sérialisé (bytes) — Response sera reconstruite à chaque hit
+    try:
+        _STATS_CACHE["body"] = resp.get_data()
+        _STATS_CACHE["ts"]   = _now
+    except Exception:
+        pass
+    return resp
 
 
 @app.get("/api/leaderboard")

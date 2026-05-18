@@ -3027,12 +3027,36 @@ function debounce(fn, ms) {
   return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
 }
 
-async function apiFetch(path, timeout = 10000) {
+async function apiFetch(path, timeout = 30000, _retry = 1) {
+  // AbortController + setTimeout : meilleur support qu'AbortSignal.timeout
+  // (qui n'existe pas avant Chrome 103/FF 100/Safari 16 → ReferenceError sur browsers anciens)
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(new DOMException('Timeout', 'TimeoutError')), timeout);
   try {
-    const r = await fetch(API_BASE + path, { signal: AbortSignal.timeout(timeout) });
+    const r = await fetch(API_BASE + path, { signal: ctrl.signal });
+    clearTimeout(tid);
+    // 503 = graphe en cours de chargement / cold start Render → retry une fois
+    if (r.status === 503 && _retry > 0) {
+      await new Promise(res => setTimeout(res, 3000));
+      return apiFetch(path, timeout, _retry - 1);
+    }
     if (!r.ok) { console.warn('[apiFetch]', path, r.status); return null; }
-    return await r.json();
-  } catch(e) { console.warn('[apiFetch]', path, e?.name || e); return null; }
+    // Le body peut être vide ou HTML sur erreur — protection JSON
+    const txt = await r.text();
+    if (!txt) return null;
+    try { return JSON.parse(txt); }
+    catch { console.warn('[apiFetch]', path, 'invalid JSON'); return null; }
+  } catch(e) {
+    clearTimeout(tid);
+    const name = e?.name || String(e);
+    // Cold start free tier Render : 1er appel peut prendre 30-60s → retry auto
+    if (_retry > 0 && (name === 'TimeoutError' || name === 'AbortError' || name === 'TypeError')) {
+      await new Promise(res => setTimeout(res, 2000));
+      return apiFetch(path, timeout, _retry - 1);
+    }
+    console.warn('[apiFetch]', path, name);
+    return null;
+  }
 }
 
 // ── 3. Joueur par défaut — localStorage ──────────────────────────────────────
