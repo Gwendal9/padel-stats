@@ -111,6 +111,20 @@ def ensure_indexes():
             "CREATE INDEX IF NOT EXISTS idx_parts_date ON participations(date_tournoi) WHERE date_tournoi IS NOT NULL",
             # Tournois
             "CREATE INDEX IF NOT EXISTS idx_tournois_nom ON tournois(nom)",
+            # Table matérialisée : résumé par tournoi (peuplée par precompute.py)
+            # Évite le gros JOIN tournois×participations GROUP BY dans route_tournaments
+            # et route_stats_categories (~800k lignes → 3k lignes).
+            """CREATE TABLE IF NOT EXISTS tournois_summary (
+                id_tournoi  TEXT PRIMARY KEY,
+                nom         TEXT,
+                categorie   TEXT,
+                date_min    TEXT,      -- DD/MM/YYYY (format natif des données)
+                date_sort   TEXT,      -- YYYYMMDD   (pour ORDER BY lexicographique)
+                nb_joueurs  INTEGER,
+                computed_at TIMESTAMPTZ DEFAULT NOW()
+            )""",
+            "CREATE INDEX IF NOT EXISTS idx_ts_date ON tournois_summary(date_sort)",
+            "CREATE INDEX IF NOT EXISTS idx_ts_cat  ON tournois_summary(categorie)",
             # Table de cache des réponses précalculées (rempli par precompute.py)
             """CREATE TABLE IF NOT EXISTS cache_responses (
                 cache_key   TEXT PRIMARY KEY,
@@ -173,6 +187,25 @@ def ensure_indexes():
                 )
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_hist_mois ON classements_historique(mois)"
+                )
+
+                # ── Table matérialisée des résumés de tournois ───────────────
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS tournois_summary (
+                        id_tournoi  TEXT PRIMARY KEY,
+                        nom         TEXT,
+                        categorie   TEXT,
+                        date_min    TEXT,
+                        date_sort   TEXT,
+                        nb_joueurs  INTEGER,
+                        computed_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_ts_date ON tournois_summary(date_sort)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_ts_cat ON tournois_summary(categorie)"
                 )
 
                 # ── Tables utilisateurs / profil / favoris ───────────────────

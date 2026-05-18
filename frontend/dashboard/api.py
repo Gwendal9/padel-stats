@@ -612,48 +612,90 @@ def route_clubs():
 
 @app.get("/api/tournaments")
 def route_tournaments():
-    from db import fetchall
+    from db import fetchall, fetchone
     q     = request.args.get("q", "").strip()
     limit = min(int(request.args.get("limit", 20)), 50)
 
-    # Cache uniquement pour la liste par défaut (pas de filtre `q`) — ce que charge le dashboard
+    # 1. Cache JSON pré-calculé (rempli par precompute.py) — ~5ms
     _cache_key = f"tournaments_{limit}" if not q else None
     if _cache_key:
         cached = _try_precomputed(_cache_key)
         if cached is not None:
             return cached
-    # Tri chronologique: dates stockées en DD/MM/YYYY → besoin de TO_DATE en PG
-    _date_sort = "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else \
-                 "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
-    # Exclure les championnats et épreuves (pas des tournois padel classiques)
-    _like = "ILIKE" if USE_POSTGRES else "LIKE"
-    _excl = (f"t.nom NOT {_like} 'CHAMPIONNAT%' AND t.nom NOT {_like} 'EPREUVE%'"
-             f" AND t.nom NOT {_like} '%CHAMPIONNAT%' AND t.nom NOT {_like} '%EPREUVE%'"
-             f" AND (t.categorie IS NULL OR (t.categorie NOT {_like} 'CHAMP%'"
-             f"   AND t.categorie NOT {_like} 'EPRE%'))")
-    if q:
-        rows = fetchall(f"""
-            SELECT t.id_tournoi, t.nom, t.categorie,
-                   MIN(p.date_tournoi) AS date_tournoi,
-                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
-            FROM tournois t
-            JOIN participations p ON p.id_tournoi = t.id_tournoi
-            WHERE t.nom {_like} ?
-              AND {_excl}
-            GROUP BY t.id_tournoi, t.nom, t.categorie
-            ORDER BY {_date_sort} LIMIT ?
-        """, ("%" + q + "%", limit))
+
+    _lk = "ILIKE" if USE_POSTGRES else "LIKE"
+    # Filtres d'exclusion des championnats/épreuves — adaptés aux colonnes de tournois_summary
+    _excl = (
+        f"nom NOT {_lk} '%CHAMPIONNAT%' AND nom NOT {_lk} '%EPREUVE%'"
+        f" AND (categorie IS NULL OR (categorie NOT {_lk} 'CHAMP%'"
+        f"   AND categorie NOT {_lk} 'EPRE%'))"
+    )
+
+    # 2. Lecture depuis tournois_summary si peuplée (matérialisée par precompute.py)
+    #    → ~3 000 lignes indexées, pas de JOIN sur participations → <10ms
+    _summary_ok = False
+    try:
+        _summary_ok = bool(fetchone("SELECT 1 FROM tournois_summary LIMIT 1"))
+    except Exception:
+        pass
+
+    if _summary_ok:
+        if q:
+            rows = fetchall(f"""
+                SELECT id_tournoi, nom, categorie,
+                       date_min AS date_tournoi,
+                       nb_joueurs
+                FROM tournois_summary
+                WHERE nom {_lk} ?
+                  AND {_excl}
+                ORDER BY date_sort DESC
+                LIMIT ?
+            """, ("%" + q + "%", limit))
+        else:
+            rows = fetchall(f"""
+                SELECT id_tournoi, nom, categorie,
+                       date_min AS date_tournoi,
+                       nb_joueurs
+                FROM tournois_summary
+                WHERE {_excl}
+                ORDER BY date_sort DESC
+                LIMIT ?
+            """, (limit,))
     else:
-        rows = fetchall(f"""
-            SELECT t.id_tournoi, t.nom, t.categorie,
-                   MIN(p.date_tournoi) AS date_tournoi,
-                   COUNT(DISTINCT p.id_joueur) AS nb_joueurs
-            FROM tournois t
-            JOIN participations p ON p.id_tournoi = t.id_tournoi
-            WHERE {_excl}
-            GROUP BY t.id_tournoi, t.nom, t.categorie
-            ORDER BY {_date_sort} LIMIT ?
-        """, (limit,))
+        # Fallback : requête lourde originale (avant première exécution de precompute)
+        _date_sort = (
+            "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else
+            "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)"
+            "||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
+        )
+        _excl_t = (
+            f"t.nom NOT {_lk} '%CHAMPIONNAT%' AND t.nom NOT {_lk} '%EPREUVE%'"
+            f" AND (t.categorie IS NULL OR (t.categorie NOT {_lk} 'CHAMP%'"
+            f"   AND t.categorie NOT {_lk} 'EPRE%'))"
+        )
+        if q:
+            rows = fetchall(f"""
+                SELECT t.id_tournoi, t.nom, t.categorie,
+                       MIN(p.date_tournoi) AS date_tournoi,
+                       COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+                FROM tournois t
+                JOIN participations p ON p.id_tournoi = t.id_tournoi
+                WHERE t.nom {_lk} ? AND {_excl_t}
+                GROUP BY t.id_tournoi, t.nom, t.categorie
+                ORDER BY {_date_sort} LIMIT ?
+            """, ("%" + q + "%", limit))
+        else:
+            rows = fetchall(f"""
+                SELECT t.id_tournoi, t.nom, t.categorie,
+                       MIN(p.date_tournoi) AS date_tournoi,
+                       COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+                FROM tournois t
+                JOIN participations p ON p.id_tournoi = t.id_tournoi
+                WHERE {_excl_t}
+                GROUP BY t.id_tournoi, t.nom, t.categorie
+                ORDER BY {_date_sort} LIMIT ?
+            """, (limit,))
+
     resp = jsonify([{
         "id": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
         "date": r["date_tournoi"] or "", "nb_joueurs": r["nb_joueurs"] or 0,
@@ -969,7 +1011,7 @@ def route_stats_categories():
     Les noms de tournoi contiennent souvent "TC <NOM_CLUB>" → on joint avec joueurs.club_nom
     pour récupérer la ville la plus fréquente associée à ce club.
     """
-    from db import fetchall
+    from db import fetchall, fetchone
 
     cached = _try_precomputed("stats_categories")
     if cached is not None:
@@ -977,49 +1019,96 @@ def route_stats_categories():
 
     # Opérateur LIKE adapté au moteur (ILIKE = insensible à la casse en PG)
     _lk = "ILIKE" if USE_POSTGRES else "LIKE"
-    # Exclusion des championnats et épreuves (sur le nom ET la catégorie)
-    _excl = (
-        f"t.nom NOT {_lk} '%CHAMPIONNAT%' AND t.nom NOT {_lk} '%EPREUVE%' "
-        f"AND t.categorie NOT {_lk} '%CHAMP%' AND t.categorie NOT {_lk} '%EPRE%'"
+    # Filtres d'exclusion — utilisés sur les deux requêtes ci-dessous
+    _excl_ts = (
+        f"nom NOT {_lk} '%CHAMPIONNAT%' AND nom NOT {_lk} '%EPREUVE%' "
+        f"AND categorie NOT {_lk} '%CHAMP%' AND categorie NOT {_lk} '%EPRE%'"
     )
 
-    # Stats de taille par catégorie
-    cat_stats = fetchall(f"""
-        SELECT
-          t.categorie,
-          COUNT(DISTINCT t.id_tournoi)                                    AS nb_tournois,
-          ROUND(AVG(sub.nb_joueurs))                                      AS avg_joueurs,
-          MIN(sub.nb_joueurs)                                             AS min_joueurs,
-          MAX(sub.nb_joueurs)                                             AS max_joueurs
-        FROM tournois t
-        JOIN (
-          SELECT id_tournoi, COUNT(DISTINCT id_joueur) AS nb_joueurs
-          FROM participations
-          GROUP BY id_tournoi
-        ) sub ON sub.id_tournoi = t.id_tournoi
-        WHERE t.categorie IS NOT NULL
-          AND {_excl}
-        GROUP BY t.categorie
-        ORDER BY nb_tournois DESC
-    """)
+    # ── Vérifier si tournois_summary est peuplée ─────────────────────────────
+    _summary_ok = False
+    try:
+        _summary_ok = bool(fetchone("SELECT 1 FROM tournois_summary LIMIT 1"))
+    except Exception:
+        pass
 
-    # Top villes par catégorie : on cherche la ville la plus fréquente des joueurs
-    # qui ont participé à des tournois de cette catégorie
-    # (approximation : ville du club du joueur ≈ ville du tournoi)
-    city_rows = fetchall(f"""
-        SELECT
-          t.categorie,
-          j.ville,
-          COUNT(DISTINCT t.id_tournoi) AS nb
-        FROM tournois t
-        JOIN participations p ON p.id_tournoi = t.id_tournoi
-        JOIN joueurs j ON j.id_fft = p.id_joueur
-        WHERE t.categorie IS NOT NULL
-          AND j.ville IS NOT NULL AND j.ville != ''
-          AND {_excl}
-        GROUP BY t.categorie, j.ville
-        ORDER BY t.categorie, nb DESC
-    """)
+    # Variante de _excl_ts préfixée par "ts." — utilisée dans les JOINs multi-tables
+    _excl_ts_join = (
+        f"ts.nom NOT {_lk} '%CHAMPIONNAT%' AND ts.nom NOT {_lk} '%EPREUVE%' "
+        f"AND ts.categorie NOT {_lk} '%CHAMP%' AND ts.categorie NOT {_lk} '%EPRE%'"
+    )
+
+    if _summary_ok:
+        # ── Chemin rapide : lecture depuis tournois_summary (~3k lignes) ──────
+        # Évite le gros JOIN + subquery GROUP BY sur 800k participations.
+        cat_stats = fetchall(f"""
+            SELECT
+              categorie,
+              COUNT(*)               AS nb_tournois,
+              ROUND(AVG(nb_joueurs)) AS avg_joueurs,
+              MIN(nb_joueurs)        AS min_joueurs,
+              MAX(nb_joueurs)        AS max_joueurs
+            FROM tournois_summary
+            WHERE categorie IS NOT NULL
+              AND {_excl_ts}
+            GROUP BY categorie
+            ORDER BY nb_tournois DESC
+        """)
+
+        # Top villes : join participations×joueurs ancré sur tournois_summary
+        # (toujours une jointure lourde, mais couverte par le JSON cache ci-dessus)
+        city_rows = fetchall(f"""
+            SELECT
+              ts.categorie,
+              j.ville,
+              COUNT(DISTINCT ts.id_tournoi) AS nb
+            FROM tournois_summary ts
+            JOIN participations p ON p.id_tournoi = ts.id_tournoi
+            JOIN joueurs j        ON j.id_fft      = p.id_joueur
+            WHERE ts.categorie IS NOT NULL
+              AND j.ville IS NOT NULL AND j.ville != ''
+              AND {_excl_ts_join}
+            GROUP BY ts.categorie, j.ville
+            ORDER BY ts.categorie, nb DESC
+        """)
+    else:
+        # ── Fallback : requêtes lourdes originales (avant première exécution de precompute) ──
+        _excl = (
+            f"t.nom NOT {_lk} '%CHAMPIONNAT%' AND t.nom NOT {_lk} '%EPREUVE%' "
+            f"AND t.categorie NOT {_lk} '%CHAMP%' AND t.categorie NOT {_lk} '%EPRE%'"
+        )
+        cat_stats = fetchall(f"""
+            SELECT
+              t.categorie,
+              COUNT(DISTINCT t.id_tournoi)   AS nb_tournois,
+              ROUND(AVG(sub.nb_joueurs))      AS avg_joueurs,
+              MIN(sub.nb_joueurs)             AS min_joueurs,
+              MAX(sub.nb_joueurs)             AS max_joueurs
+            FROM tournois t
+            JOIN (
+              SELECT id_tournoi, COUNT(DISTINCT id_joueur) AS nb_joueurs
+              FROM participations
+              GROUP BY id_tournoi
+            ) sub ON sub.id_tournoi = t.id_tournoi
+            WHERE t.categorie IS NOT NULL
+              AND {_excl}
+            GROUP BY t.categorie
+            ORDER BY nb_tournois DESC
+        """)
+        city_rows = fetchall(f"""
+            SELECT
+              t.categorie,
+              j.ville,
+              COUNT(DISTINCT t.id_tournoi) AS nb
+            FROM tournois t
+            JOIN participations p ON p.id_tournoi = t.id_tournoi
+            JOIN joueurs j        ON j.id_fft      = p.id_joueur
+            WHERE t.categorie IS NOT NULL
+              AND j.ville IS NOT NULL AND j.ville != ''
+              AND {_excl}
+            GROUP BY t.categorie, j.ville
+            ORDER BY t.categorie, nb DESC
+        """)
 
     # Group city rows per category, keep top 10
     from collections import defaultdict as _dd

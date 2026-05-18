@@ -31,8 +31,21 @@ def main():
     # Job batch : pas de timeout SQL (les requêtes peuvent prendre plusieurs minutes)
     set_statement_timeout("0")  # 0 = illimité en PostgreSQL
 
-    # S'assurer que la table cache_responses existe
+    # S'assurer que les tables (cache_responses, tournois_summary…) existent
     ensure_indexes()
+
+    # ── Étape 0 : matérialiser tournois_summary ─────────────────────────────
+    # Ce job fait le gros scan (800k participations) UNE FOIS.
+    # Ensuite route_tournaments et route_stats_categories lisent ~3k lignes → <10ms.
+    print("⏳ [tournois_summary] construction en cours…", flush=True)
+    t0 = time.time()
+    try:
+        _build_tournois_summary()
+        print(f"✅ [tournois_summary] OK en {time.time()-t0:.1f}s", flush=True)
+    except Exception as e:
+        print(f"❌ [tournois_summary] ÉCHEC après {time.time()-t0:.1f}s : {type(e).__name__}: {e}",
+              flush=True)
+        import traceback; traceback.print_exc()
 
     # Liste des (cache_key, fonction_route) à pré-calculer
     JOBS = [
@@ -67,6 +80,87 @@ def main():
             traceback.print_exc()
 
     print(f"\n🏁 Terminé en {time.time()-t_total:.1f}s total\n", flush=True)
+
+
+def _build_tournois_summary():
+    """
+    Peuple la table `tournois_summary` depuis tournois × participations.
+
+    Durée estimée sur Render free tier : 3-8 min (scan ~800k participations, ~3k tournois).
+    Après ce job, route_tournaments et route_stats_categories n'ont plus besoin de
+    toucher la table participations pour leur cas standard → réponse <10ms.
+
+    Appelée en début de main() avec statement_timeout=0 (pas de kill possible).
+    """
+    from db import fetchall, USE_POSTGRES, DB_PATH
+
+    # ── 1. Calculer les agrégats (requête lourde — pas de timeout ici) ────────
+    print("     → agrégats tournois×participations…", flush=True)
+    rows = fetchall("""
+        SELECT
+          t.id_tournoi,
+          t.nom,
+          t.categorie,
+          MIN(p.date_tournoi)         AS date_min,
+          COUNT(DISTINCT p.id_joueur) AS nb_joueurs
+        FROM tournois t
+        JOIN participations p ON p.id_tournoi = t.id_tournoi
+        GROUP BY t.id_tournoi, t.nom, t.categorie
+    """)
+    print(f"     → {len(rows)} tournois agrégés", flush=True)
+
+    def _to_sort_key(d: str) -> str:
+        """DD/MM/YYYY → YYYYMMDD (tri lexicographique = tri chronologique)."""
+        if d and len(d) == 10:
+            return d[6:10] + d[3:5] + d[0:2]
+        return ""
+
+    tuples = [
+        (
+            r["id_tournoi"],
+            r["nom"],
+            r["categorie"],
+            r["date_min"],
+            _to_sort_key(r["date_min"] or ""),
+            r["nb_joueurs"],
+        )
+        for r in rows
+    ]
+
+    # ── 2. Écrire dans tournois_summary (UPSERT bulk) ─────────────────────────
+    if USE_POSTGRES:
+        import psycopg2, psycopg2.extras
+        DATABASE_URL = os.environ["DATABASE_URL"]
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.autocommit = False
+        with conn.cursor() as cur:
+            # TRUNCATE + bulk INSERT → plus rapide qu'un UPSERT ligne par ligne
+            cur.execute("TRUNCATE TABLE tournois_summary")
+            psycopg2.extras.execute_values(
+                cur,
+                """INSERT INTO tournois_summary
+                     (id_tournoi, nom, categorie, date_min, date_sort, nb_joueurs, computed_at)
+                   VALUES %s""",
+                # Les données ont 6 colonnes — computed_at est injecté par NOW() dans le template
+                [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in tuples],
+                template="(%s, %s, %s, %s, %s, %s, NOW())",
+            )
+        conn.commit()
+        conn.close()
+    else:
+        import sqlite3 as _sqlite3
+        conn = _sqlite3.connect(os.path.abspath(DB_PATH))
+        conn.execute("DELETE FROM tournois_summary")
+        conn.executemany(
+            """INSERT OR REPLACE INTO tournois_summary
+                 (id_tournoi, nom, categorie, date_min, date_sort, nb_joueurs)
+               VALUES (?,?,?,?,?,?)""",
+            [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in tuples],
+        )
+        conn.commit()
+        conn.close()
+
+    print(f"     → tournois_summary peuplée ({len(tuples)} lignes)", flush=True)
 
 
 def _call_with_args(fn, **args):
