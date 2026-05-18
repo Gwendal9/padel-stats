@@ -41,10 +41,10 @@ CORS(app)
 from db import ensure_indexes as _ensure_indexes
 _ensure_indexes()
 
-# Préchargement du graphe en arrière-plan dès le démarrage
-# Avec gunicorn --preload, le thread tourne dans le master avant le fork
-import threading as _threading
-_threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preloader").start()
+# Chargement synchrone du graphe — avec --preload gunicorn charge le master
+# AVANT de forker les workers, donc ceux-ci héritent du graphe déjà en mémoire.
+# Un thread daemon ne suffit pas : le fork peut arriver avant la fin du chargement.
+engine._ensure_loaded()
 
 
 @app.route("/")
