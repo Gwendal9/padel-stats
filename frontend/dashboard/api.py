@@ -101,9 +101,12 @@ def route_stats():
     # Compteurs globaux (pour KPIs)
     counts = fetchone("""
         SELECT
-          (SELECT COUNT(*) FROM joueurs)                    AS nb_joueurs,
-          (SELECT COUNT(DISTINCT id_tournoi) FROM participations) AS nb_tournois,
-          (SELECT COUNT(*) FROM participations)             AS nb_participations
+          (SELECT COUNT(*) FROM joueurs)                              AS nb_joueurs,
+          (SELECT COUNT(*) FROM joueurs WHERE classement IS NOT NULL) AS nb_joueurs_classes,
+          (SELECT COUNT(*) FROM joueurs WHERE classement IS NOT NULL AND sexe='H') AS nb_joueurs_h,
+          (SELECT COUNT(*) FROM joueurs WHERE classement IS NOT NULL AND sexe='F') AS nb_joueurs_f,
+          (SELECT COUNT(DISTINCT id_tournoi) FROM participations)     AS nb_tournois,
+          (SELECT COUNT(*) FROM participations)                       AS nb_participations
     """) or {}
 
     ranking = fetchone("""
@@ -138,11 +141,13 @@ def route_stats():
         SELECT sexe,
           SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) < 18                        THEN 1 ELSE 0 END) AS b0,
           SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 18 AND 25           THEN 1 ELSE 0 END) AS b1,
-          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 26 AND 35           THEN 1 ELSE 0 END) AS b2,
-          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 36 AND 45           THEN 1 ELSE 0 END) AS b3,
-          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 46 AND 55           THEN 1 ELSE 0 END) AS b4,
-          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 56 AND 65           THEN 1 ELSE 0 END) AS b5,
-          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) > 65                        THEN 1 ELSE 0 END) AS b6
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 26 AND 30           THEN 1 ELSE 0 END) AS b2,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 31 AND 35           THEN 1 ELSE 0 END) AS b3,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 36 AND 40           THEN 1 ELSE 0 END) AS b4,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 41 AND 45           THEN 1 ELSE 0 END) AS b5,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 46 AND 55           THEN 1 ELSE 0 END) AS b6,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) BETWEEN 56 AND 65           THEN 1 ELSE 0 END) AS b7,
+          SUM(CASE WHEN ({_yr} - CAST(naissance AS INT)) > 65                        THEN 1 ELSE 0 END) AS b8
         FROM joueurs
         WHERE naissance IS NOT NULL
           AND LENGTH(naissance) = 4
@@ -152,11 +157,13 @@ def route_stats():
         SELECT sexe,
           SUM(CASE WHEN ({_yr} - naissance::int) < 18                        THEN 1 ELSE 0 END) AS b0,
           SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 18 AND 25           THEN 1 ELSE 0 END) AS b1,
-          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 26 AND 35           THEN 1 ELSE 0 END) AS b2,
-          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 36 AND 45           THEN 1 ELSE 0 END) AS b3,
-          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 46 AND 55           THEN 1 ELSE 0 END) AS b4,
-          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 56 AND 65           THEN 1 ELSE 0 END) AS b5,
-          SUM(CASE WHEN ({_yr} - naissance::int) > 65                        THEN 1 ELSE 0 END) AS b6
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 26 AND 30           THEN 1 ELSE 0 END) AS b2,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 31 AND 35           THEN 1 ELSE 0 END) AS b3,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 36 AND 40           THEN 1 ELSE 0 END) AS b4,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 41 AND 45           THEN 1 ELSE 0 END) AS b5,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 46 AND 55           THEN 1 ELSE 0 END) AS b6,
+          SUM(CASE WHEN ({_yr} - naissance::int) BETWEEN 56 AND 65           THEN 1 ELSE 0 END) AS b7,
+          SUM(CASE WHEN ({_yr} - naissance::int) > 65                        THEN 1 ELSE 0 END) AS b8
         FROM joueurs
         WHERE naissance IS NOT NULL
           AND naissance ~ '^[0-9]{{4}}$'
@@ -164,11 +171,25 @@ def route_stats():
         GROUP BY sexe
     """
     pyr_rows = fetchall(_agg_sql)
-    pyramid = {"H": [0] * 7, "F": [0] * 7}
+    pyramid = {"H": [0] * 9, "F": [0] * 9}
     for r in pyr_rows:
         s = r.get("sexe")
         if s in pyramid:
-            pyramid[s] = [int(r.get(f"b{i}") or 0) for i in range(7)]
+            pyramid[s] = [int(r.get(f"b{i}") or 0) for i in range(9)]
+
+    # Mois du dernier snapshot classement (pour affichage dynamique)
+    snapshot_mois_raw = fetchone(
+        "SELECT MAX(classement_date) as m FROM joueurs WHERE classement_date IS NOT NULL"
+    )
+    snapshot_mois = (snapshot_mois_raw or {}).get("m") or ""  # ex: "2025-05"
+    # Formatter "2025-05" → "Mai 2025"
+    MONTH_FR = {'01':'Janvier','02':'Février','03':'Mars','04':'Avril','05':'Mai',
+                '06':'Juin','07':'Juillet','08':'Août','09':'Septembre',
+                '10':'Octobre','11':'Novembre','12':'Décembre'}
+    snapshot_label = ""
+    if snapshot_mois and len(snapshot_mois) == 7:
+        y, m = snapshot_mois[:4], snapshot_mois[5:7]
+        snapshot_label = f"{MONTH_FR.get(m, m)} {y}"
 
     try:
         MONTH_ABBR = {
@@ -250,9 +271,14 @@ def route_stats():
         tdist = [0, 0, 0, 0, 0, 0]
 
     return jsonify({
-        "nb_joueurs":        int(counts.get("nb_joueurs") or 0),
-        "nb_tournois":       int(counts.get("nb_tournois") or 0),
-        "nb_participations": int(counts.get("nb_participations") or 0),
+        "nb_joueurs":         int(counts.get("nb_joueurs") or 0),
+        "nb_joueurs_classes": int(counts.get("nb_joueurs_classes") or 0),
+        "nb_joueurs_h":       int(counts.get("nb_joueurs_h") or 0),
+        "nb_joueurs_f":       int(counts.get("nb_joueurs_f") or 0),
+        "nb_tournois":        int(counts.get("nb_tournois") or 0),
+        "nb_participations":  int(counts.get("nb_participations") or 0),
+        "snapshot_mois":      snapshot_mois,    # "2025-05"
+        "snapshot_label":     snapshot_label,   # "Mai 2025"
         "ranking_dist": [
             ranking.get("top100", 0), ranking.get("c100_1k", 0),
             ranking.get("c1k_5k", 0), ranking.get("c5k_20k", 0),
@@ -756,18 +782,16 @@ def route_club():
             SELECT
               sexe,
               CASE
-                WHEN classement <= 100               THEN 'Top 100'
-                WHEN classement BETWEEN 101 AND 1000  THEN '101-1 000'
-                WHEN classement BETWEEN 1001 AND 5000 THEN '1 001-5 000'
-                WHEN classement BETWEEN 5001 AND 20000 THEN '5 001-20 000'
-                ELSE '20 000+'
+                WHEN classement BETWEEN 5001  AND 10000 THEN '5k-10k'
+                WHEN classement BETWEEN 10001 AND 20000 THEN '10k-20k'
+                WHEN classement BETWEEN 20001 AND 50000 THEN '20k-50k'
+                WHEN classement > 50000                 THEN '50k+'
               END AS tranche,
               CASE
-                WHEN classement <= 100               THEN 1
-                WHEN classement BETWEEN 101 AND 1000  THEN 2
-                WHEN classement BETWEEN 1001 AND 5000 THEN 3
-                WHEN classement BETWEEN 5001 AND 20000 THEN 4
-                ELSE 5
+                WHEN classement BETWEEN 5001  AND 10000 THEN 1
+                WHEN classement BETWEEN 10001 AND 20000 THEN 2
+                WHEN classement BETWEEN 20001 AND 50000 THEN 3
+                WHEN classement > 50000                 THEN 4
               END AS ordre,
               club_nom,
               COUNT(*) AS nb_club,
@@ -775,21 +799,22 @@ def route_club():
                 PARTITION BY
                   sexe,
                   CASE
-                    WHEN classement <= 100               THEN 1
-                    WHEN classement BETWEEN 101 AND 1000  THEN 2
-                    WHEN classement BETWEEN 1001 AND 5000 THEN 3
-                    WHEN classement BETWEEN 5001 AND 20000 THEN 4
-                    ELSE 5
+                    WHEN classement BETWEEN 5001  AND 10000 THEN 1
+                    WHEN classement BETWEEN 10001 AND 20000 THEN 2
+                    WHEN classement BETWEEN 20001 AND 50000 THEN 3
+                    WHEN classement > 50000                 THEN 4
                   END
                 ORDER BY COUNT(*) DESC
               ) AS rang
             FROM joueurs
             WHERE classement IS NOT NULL
+              AND classement > 5000
               AND club_nom IS NOT NULL AND club_nom != ''
               AND sexe IN ('H', 'F')
             GROUP BY sexe, tranche, ordre, club_nom
         ) ranked
         WHERE club_nom IN ({ph})
+          AND tranche IS NOT NULL
         ORDER BY sexe DESC, ordre
     """, vt)
 
@@ -847,8 +872,16 @@ def route_stats_categories():
     """
     from db import fetchall
 
+    # Opérateur LIKE adapté au moteur (ILIKE = insensible à la casse en PG)
+    _lk = "ILIKE" if USE_POSTGRES else "LIKE"
+    # Exclusion des championnats et épreuves (sur le nom ET la catégorie)
+    _excl = (
+        f"t.nom NOT {_lk} '%CHAMPIONNAT%' AND t.nom NOT {_lk} '%EPREUVE%' "
+        f"AND t.categorie NOT {_lk} '%CHAMP%' AND t.categorie NOT {_lk} '%EPRE%'"
+    )
+
     # Stats de taille par catégorie
-    cat_stats = fetchall("""
+    cat_stats = fetchall(f"""
         SELECT
           t.categorie,
           COUNT(DISTINCT t.id_tournoi)                                    AS nb_tournois,
@@ -862,16 +895,15 @@ def route_stats_categories():
           GROUP BY id_tournoi
         ) sub ON sub.id_tournoi = t.id_tournoi
         WHERE t.categorie IS NOT NULL
-          AND t.nom NOT LIKE 'CHAMPIONNAT%' AND t.nom NOT LIKE '%CHAMPIONNAT%'
-          AND t.nom NOT LIKE 'EPREUVE%'     AND t.nom NOT LIKE '%EPREUVE%'
+          AND {_excl}
         GROUP BY t.categorie
         ORDER BY nb_tournois DESC
     """)
 
     # Top villes par catégorie : on cherche la ville la plus fréquente des joueurs
     # qui ont participé à des tournois de cette catégorie
-    # (approximation : ville du club du joueur = ville du tournoi)
-    city_rows = fetchall("""
+    # (approximation : ville du club du joueur ≈ ville du tournoi)
+    city_rows = fetchall(f"""
         SELECT
           t.categorie,
           j.ville,
@@ -881,8 +913,7 @@ def route_stats_categories():
         JOIN joueurs j ON j.id_fft = p.id_joueur
         WHERE t.categorie IS NOT NULL
           AND j.ville IS NOT NULL AND j.ville != ''
-          AND t.nom NOT LIKE 'CHAMPIONNAT%' AND t.nom NOT LIKE '%CHAMPIONNAT%'
-          AND t.nom NOT LIKE 'EPREUVE%'     AND t.nom NOT LIKE '%EPREUVE%'
+          AND {_excl}
         GROUP BY t.categorie, j.ville
         ORDER BY t.categorie, nb DESC
     """)
@@ -914,32 +945,40 @@ def route_stats_categories():
 def route_stats_rank_clubs():
     """
     Pour chaque tranche de classement, retourne les top 5 clubs par nombre de joueurs.
+    ?sexe=H|F  (optionnel — filtre par sexe)
     """
     from db import fetchall
-    rows = fetchall("""
+    sexe = request.args.get("sexe", "").upper()
+    sexe_filter = "AND sexe = ?" if sexe in ("H", "F") else ""
+    params = (sexe,) if sexe in ("H", "F") else ()
+
+    rows = fetchall(f"""
         SELECT
           CASE
-            WHEN classement <= 100              THEN 'Top 100'
-            WHEN classement BETWEEN 101 AND 1000 THEN '101-1 000'
-            WHEN classement BETWEEN 1001 AND 5000 THEN '1 001-5 000'
-            WHEN classement BETWEEN 5001 AND 20000 THEN '5 001-20 000'
-            ELSE '20 000+'
+            WHEN classement BETWEEN    1 AND  1000 THEN '1-1k'
+            WHEN classement BETWEEN 1001 AND  5000 THEN '1k-5k'
+            WHEN classement BETWEEN 5001 AND 10000 THEN '5k-10k'
+            WHEN classement BETWEEN 10001 AND 20000 THEN '10k-20k'
+            WHEN classement BETWEEN 20001 AND 50000 THEN '20k-50k'
+            ELSE '50k+'
           END AS tranche,
           CASE
-            WHEN classement <= 100              THEN 1
-            WHEN classement BETWEEN 101 AND 1000 THEN 2
-            WHEN classement BETWEEN 1001 AND 5000 THEN 3
-            WHEN classement BETWEEN 5001 AND 20000 THEN 4
-            ELSE 5
+            WHEN classement BETWEEN    1 AND  1000 THEN 1
+            WHEN classement BETWEEN 1001 AND  5000 THEN 2
+            WHEN classement BETWEEN 5001 AND 10000 THEN 3
+            WHEN classement BETWEEN 10001 AND 20000 THEN 4
+            WHEN classement BETWEEN 20001 AND 50000 THEN 5
+            ELSE 6
           END AS ordre,
           club_nom,
           COUNT(*) AS nb
         FROM joueurs
         WHERE classement IS NOT NULL
           AND club_nom IS NOT NULL AND club_nom != ''
+          {sexe_filter}
         GROUP BY tranche, ordre, club_nom
         ORDER BY ordre ASC, nb DESC
-    """)
+    """, params)
 
     from collections import defaultdict as _dd
     by_tranche = _dd(list)
@@ -948,8 +987,7 @@ def route_stats_rank_clubs():
         if len(by_tranche[t]) < 5:
             by_tranche[t].append({"club": r["club_nom"], "nb": r["nb"]})
 
-    # Maintain ordering
-    TRANCHES = ['Top 100', '101-1 000', '1 001-5 000', '5 001-20 000', '20 000+']
+    TRANCHES = ['1-1k', '1k-5k', '5k-10k', '10k-20k', '20k-50k', '50k+']
     return jsonify([
         {"tranche": t, "clubs": by_tranche.get(t, [])}
         for t in TRANCHES

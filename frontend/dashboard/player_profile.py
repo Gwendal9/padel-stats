@@ -301,5 +301,3 @@ def get_player_profile(player_id: str) -> dict | None:
         "nb_partenaires":    len(partners_raw),
         "rang_historique":   rang_historique,
     }
-        "rang_historique":   rang_historique,
-    }

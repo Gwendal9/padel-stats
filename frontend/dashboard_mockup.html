@@ -393,7 +393,7 @@
       <span id="sb-joueurs">…</span> joueurs<br>
       <span id="sb-participations">…</span> participations<br>
       <span id="sb-tournois">…</span> tournois<br>
-      <span class="text-slate-500">● Source FFT · Snapshot Avril 2025</span>
+      <span class="text-slate-500" id="sb-snapshot-label">● Source FFT · Snapshot —</span>
     </div>
   </aside>
 
@@ -439,7 +439,7 @@
         <div class="relative">
           <div class="text-xs uppercase tracking-widest opacity-75 mb-1">Padel Stats France</div>
           <div id="wrapped-title" class="text-2xl font-bold mb-1">Vue d'ensemble du padel français</div>
-          <div id="wrapped-subtitle" class="text-sm opacity-90">Données collectées en avril 2025 — 153 291 joueurs · 37 124 tournois</div>
+          <div id="wrapped-subtitle" class="text-sm opacity-90">Snapshot <span id="wrapped-snapshot-label">…</span> — <span id="wrapped-nb-joueurs">…</span> joueurs classés · <span id="wrapped-nb-tournois">…</span> tournois</div>
         </div>
         <button id="wrapped-cta" class="relative bg-white text-slate-900 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover:scale-105 transition hidden"
           onclick="document.querySelector('[data-view=player]').click()">
@@ -1545,12 +1545,14 @@ async function loadDashboardStats() {
   if (!stats) return;
 
   // ── KPI cards ────────────────────────────────────────────────────────────
-  const totalJoueurs = stats.nb_joueurs || (stats.ranking_dist || []).reduce((a, b) => a + b, 0);
-  const totalH = (stats.pyramid?.hommes || []).reduce((a, b) => a + b, 0);
-  const totalF = (stats.pyramid?.femmes || []).reduce((a, b) => a + b, 0);
+  const totalJoueurs = stats.nb_joueurs_classes || stats.nb_joueurs || (stats.ranking_dist || []).reduce((a, b) => a + b, 0);
+  const totalH = stats.nb_joueurs_h || (stats.ranking_dist_h || []).reduce((a, b) => a + b, 0);
+  const totalF = stats.nb_joueurs_f || (stats.ranking_dist_f || []).reduce((a, b) => a + b, 0);
   // Stocker pour le badge Top% dans les profils joueurs
   if (totalH > 0) window._totalH = totalH;
   if (totalF > 0) window._totalF = totalF;
+  if (totalJoueurs > 0) window._totalJoueurs = totalJoueurs;
+  if (stats.snapshot_label) window._snapshotLabel = stats.snapshot_label;
   const totalTournois = stats.nb_tournois || 0;
   const totalParts    = stats.nb_participations || 0;
   const pct = totalH + totalF > 0 ? Math.round(totalH / (totalH + totalF) * 100) : 0;
@@ -1564,14 +1566,21 @@ async function loadDashboardStats() {
   const kpiTSub = document.getElementById('kpi-tournois-sub');
   const kpiPSub = document.getElementById('kpi-participations-sub');
 
+  const _snapLbl = stats.snapshot_label || window._snapshotLabel || 'Dernier snapshot';
   if (kpiJ) kpiJ.textContent = totalJoueurs > 0 ? totalJoueurs.toLocaleString('fr-FR') : '—';
-  if (kpiJSub) kpiJSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · Avril 2025';
+  const wJ = document.getElementById('wrapped-nb-joueurs');
+  const wT = document.getElementById('wrapped-nb-tournois');
+  const wS = document.getElementById('wrapped-snapshot-label');
+  if (wJ) wJ.textContent = totalJoueurs > 0 ? totalJoueurs.toLocaleString('fr-FR') : '—';
+  if (wT) wT.textContent = (stats.nb_tournois||0) > 0 ? (stats.nb_tournois).toLocaleString('fr-FR') : '—';
+  if (wS) wS.textContent = _snapLbl;
+  if (kpiJSub) kpiJSub.innerHTML = `<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · ${_snapLbl}`;
   if (kpiS) kpiS.innerHTML = `${(totalH/1000).toFixed(0)}k <span class="text-slate-300 text-2xl font-light">/</span> ${(totalF/1000).toFixed(0)}k`;
   if (kpiSSub) kpiSSub.textContent = `${pct}% / ${100-pct}%`;
   if (kpiT) kpiT.textContent = totalTournois > 0 ? totalTournois.toLocaleString('fr-FR') : '—';
-  if (kpiTSub) kpiTSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · Avril 2025';
+  if (kpiTSub) kpiTSub.innerHTML = `<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · ${_snapLbl}`;
   if (kpiP) kpiP.textContent = totalParts > 0 ? totalParts.toLocaleString('fr-FR') : '—';
-  if (kpiPSub) kpiPSub.innerHTML = '<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · Avril 2025';
+  if (kpiPSub) kpiPSub.innerHTML = `<i data-lucide="calendar" class="w-3 h-3"></i> Snapshot · ${_snapLbl}`;
 
   if (window.lucide) lucide.createIcons();
 
@@ -1582,6 +1591,8 @@ async function loadDashboardStats() {
   if (sbJ) sbJ.textContent = (stats.nb_joueurs || totalJoueurs || 0).toLocaleString('fr-FR');
   if (sbP) sbP.textContent = (stats.nb_participations || 0).toLocaleString('fr-FR');
   if (sbT) sbT.textContent = (stats.nb_tournois || 0).toLocaleString('fr-FR');
+  const sbSnap = document.getElementById('sb-snapshot-label');
+  if (sbSnap) sbSnap.textContent = `● Source FFT · Snapshot ${_snapLbl}`;
 
   // ── Charts ───────────────────────────────────────────────────────────────
   // Pyramide âges (9 tranches)
@@ -1906,7 +1917,8 @@ function renderProfile(data) {
   const MEDAL = ['','🥇','🥈','🥉','🎖️','🏅'];
   const BADGE_CAT = { P2000:'badge-cat-elite',P1500:'badge-cat-elite',P1000:'badge-cat-pro',P500:'badge-cat-pro',P250:'badge-cat-mid',P100:'badge-cat-mid',P50:'badge-cat-low',P25:'badge-cat-low' };
   const initials = ((data.prenom||'')[0]||'')+((data.nom||'')[0]||'');
-  const pct = data.classement ? Math.round((1 - data.classement/153291)*100) : 0;
+  const _tot = window._totalJoueurs || 153291;
+  const pct = data.classement ? Math.round((1 - data.classement/_tot)*100) : 0;
   const topPct = 100 - pct;
 
   // ── Helpers dates ────────────────────────────────────────────────
@@ -1923,7 +1935,7 @@ function renderProfile(data) {
   const nb_actifs12m = Math.min(parcours12m.length, 12);
 
   // ── Top % par sexe ───────────────────────────────────────────────
-  const totalSexe = data.sexe === 'H' ? (window._totalH || 113000) : (window._totalF || 40000);
+  const totalSexe = data.sexe === 'H' ? (window._totalH || 145000) : (window._totalF || 20000);
   const labelSexe  = data.sexe === 'H' ? 'hommes' : 'femmes';
   const topPctSexe = data.classement ? Math.max(1, Math.ceil(data.classement / totalSexe * 100)) : null;
 
@@ -4670,7 +4682,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     if (statsEl && profA && profB) {
       const nameA = cmpA.label || 'Joueur A';
       const nameB = cmpB.label || 'Joueur B';
-      const TOTAL_JOUEURS = 153291;
+      const TOTAL_JOUEURS = window._totalJoueurs || 153291;
 
       function pctile(rank) {
         if (!rank) return null;
