@@ -50,21 +50,34 @@ _threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preload
 
 def _preheat_caches():
     """Précharge les caches des endpoints lourds avant le 1er user.
-    Sur free tier Render (1 worker), ça évite que les 4 requêtes // du dashboard
-    bloquent toutes le worker pendant 30-40s au 1er chargement."""
-    import time as _t
+    Sur free tier Render (1 worker, 4 threads), ça évite que /api/stats et
+    /api/stats/categories bloquent les threads pendant 30-40s au 1er chargement."""
+    import time as _t, sys as _sys, traceback as _tb
     _t.sleep(2)  # laisse le serveur démarrer proprement
-    try:
-        with app.test_request_context():
-            print("⏳ Préchauffage cache /api/stats…")
-            route_stats()
-            print("⏳ Préchauffage cache /api/stats/categories…")
-            route_stats_categories()
-            print("⏳ Préchauffage cache /api/tournaments…")
-            route_tournaments()
-            print("✅ Caches préchauffés")
-    except Exception as e:
-        print(f"⚠️  Préchauffage cache échoué (non bloquant): {e}")
+
+    def _say(msg):
+        # flush=True ESSENTIEL : sans ça, les print() d'un daemon thread
+        # restent dans le buffer et n'apparaissent jamais dans les logs Render
+        print(msg, flush=True)
+        _sys.stdout.flush()
+
+    def _run(name, fn):
+        t0 = _t.time()
+        _say(f"⏳ Préchauffage {name}…")
+        try:
+            with app.test_request_context():
+                fn()
+            _say(f"✅ {name} préchauffé en {int(_t.time()-t0)}s")
+        except Exception as e:
+            _say(f"⚠️  {name} a échoué: {type(e).__name__}: {e}")
+            _tb.print_exc()
+            _sys.stdout.flush()
+
+    _say("🔥 Démarrage préchauffage caches…")
+    _run("/api/stats",            route_stats)
+    _run("/api/stats/categories", route_stats_categories)
+    _run("/api/tournaments",      route_tournaments)
+    _say("🔥 Préchauffage terminé")
 
 _threading.Thread(target=_preheat_caches, daemon=True, name="cache-preheater").start()
 
