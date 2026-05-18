@@ -23,6 +23,9 @@ else:
 def _adapt(query: str, params: tuple) -> tuple[str, tuple]:
     """Adapte la requête et les params pour le backend actif."""
     if USE_POSTGRES:
+        # Échapper les % littéraux (ex: LIKE '%foo%') avant de remplacer ? par %s
+        # sinon psycopg2 les interprète comme des paramètres → IndexError
+        query = query.replace("%", "%%")
         query = query.replace("?", "%s")
         query = query.replace(" LIKE ", " ILIKE ")
     return query, params
