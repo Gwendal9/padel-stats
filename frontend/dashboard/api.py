@@ -48,6 +48,27 @@ import threading as _threading
 _threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preloader").start()
 
 
+def _preheat_caches():
+    """Précharge les caches des endpoints lourds avant le 1er user.
+    Sur free tier Render (1 worker), ça évite que les 4 requêtes // du dashboard
+    bloquent toutes le worker pendant 30-40s au 1er chargement."""
+    import time as _t
+    _t.sleep(2)  # laisse le serveur démarrer proprement
+    try:
+        with app.test_request_context():
+            print("⏳ Préchauffage cache /api/stats…")
+            route_stats()
+            print("⏳ Préchauffage cache /api/stats/categories…")
+            route_stats_categories()
+            print("⏳ Préchauffage cache /api/tournaments…")
+            route_tournaments()
+            print("✅ Caches préchauffés")
+    except Exception as e:
+        print(f"⚠️  Préchauffage cache échoué (non bloquant): {e}")
+
+_threading.Thread(target=_preheat_caches, daemon=True, name="cache-preheater").start()
+
+
 @app.route("/")
 def index():
     html_path = os.path.join(os.path.dirname(__file__), "..", "dashboard_mockup.html")
@@ -104,23 +125,39 @@ def route_ego(player_id: str):
     return jsonify(graph_data)
 
 
-# Cache mémoire pour /api/stats : recalcul lourd (~5-30s sur free tier Render),
-# les stats globales évoluent au max une fois par jour → TTL 10 min largement OK.
+# ── Cache mémoire générique pour endpoints lourds ──────────────────────────────
+# Sur le free tier Render (1 worker, CPU partagé), ces endpoints prennent 10-40s
+# et bloquent toutes les autres requêtes API en parallèle pendant ce temps.
+# TTL 10 min : les stats globales ne changent qu'une fois par jour au snapshot.
 from flask import Response as _FlaskResponse
-import json as _json
-_STATS_CACHE = {"body": None, "ts": 0.0}
-_STATS_TTL   = 600  # secondes
+import time as _time_mod
+_RESPONSE_CACHE: dict[str, dict] = {}  # key → {"body": bytes, "ts": float}
+_CACHE_TTL = 600  # secondes
+
+
+def _cache_get(key: str):
+    """Retourne le body bytes en cache si encore frais, sinon None."""
+    entry = _RESPONSE_CACHE.get(key)
+    if entry and (_time_mod.time() - entry["ts"]) < _CACHE_TTL:
+        return entry["body"]
+    return None
+
+
+def _cache_set(key: str, body: bytes):
+    _RESPONSE_CACHE[key] = {"body": body, "ts": _time_mod.time()}
+
+
+def _cached_response(body: bytes):
+    return _FlaskResponse(body, mimetype="application/json")
 
 
 @app.get("/api/stats")
 def route_stats():
     from db import fetchall, fetchone
-    import time as _time
 
-    # Cache hit ? On renvoie une nouvelle Response à chaque fois (body est immuable bytes)
-    _now = _time.time()
-    if _STATS_CACHE["body"] is not None and (_now - _STATS_CACHE["ts"]) < _STATS_TTL:
-        return _FlaskResponse(_STATS_CACHE["body"], mimetype="application/json")
+    cached = _cache_get("stats")
+    if cached is not None:
+        return _cached_response(cached)
 
     current_year = datetime.date.today().year
 
@@ -335,12 +372,8 @@ def route_stats():
         "top_villes": [{"ville": r["ville"], "nb": r["nb"]} for r in villes],
         "tournament_dist": tdist,
     })
-    # Mise en cache du body sérialisé (bytes) — Response sera reconstruite à chaque hit
-    try:
-        _STATS_CACHE["body"] = resp.get_data()
-        _STATS_CACHE["ts"]   = _now
-    except Exception:
-        pass
+    try: _cache_set("stats", resp.get_data())
+    except Exception: pass
     return resp
 
 
@@ -560,6 +593,13 @@ def route_tournaments():
     from db import fetchall
     q     = request.args.get("q", "").strip()
     limit = min(int(request.args.get("limit", 20)), 50)
+
+    # Cache uniquement pour la liste par défaut (pas de filtre `q`) — ce que charge le dashboard
+    _cache_key = f"tournaments_{limit}" if not q else None
+    if _cache_key:
+        cached = _cache_get(_cache_key)
+        if cached is not None:
+            return _cached_response(cached)
     # Tri chronologique: dates stockées en DD/MM/YYYY → besoin de TO_DATE en PG
     _date_sort = "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else \
                  "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
@@ -592,10 +632,14 @@ def route_tournaments():
             GROUP BY t.id_tournoi, t.nom, t.categorie
             ORDER BY {_date_sort} LIMIT ?
         """, (limit,))
-    return jsonify([{
+    resp = jsonify([{
         "id": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
         "date": r["date_tournoi"] or "", "nb_joueurs": r["nb_joueurs"] or 0,
     } for r in rows])
+    if _cache_key:
+        try: _cache_set(_cache_key, resp.get_data())
+        except Exception: pass
+    return resp
 
 
 @app.get("/api/tournament/<tid>")
@@ -905,6 +949,10 @@ def route_stats_categories():
     """
     from db import fetchall
 
+    cached = _cache_get("stats_categories")
+    if cached is not None:
+        return _cached_response(cached)
+
     # Opérateur LIKE adapté au moteur (ILIKE = insensible à la casse en PG)
     _lk = "ILIKE" if USE_POSTGRES else "LIKE"
     # Exclusion des championnats et épreuves (sur le nom ET la catégorie)
@@ -971,7 +1019,10 @@ def route_stats_categories():
             "top_villes":   city_by_cat.get(cat, []),
         })
 
-    return jsonify(result)
+    resp = jsonify(result)
+    try: _cache_set("stats_categories", resp.get_data())
+    except Exception: pass
+    return resp
 
 
 @app.get("/api/stats/rank_clubs")
