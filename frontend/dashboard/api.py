@@ -66,7 +66,10 @@ def route_search():
     if len(q) < 2:
         return jsonify([])
     limit = min(int(request.args.get("limit", 20)), 50)
-    return jsonify(search_players(q, limit=limit))
+    sexe = request.args.get("sexe", "").strip().upper() or None
+    if sexe not in ("H", "F"):
+        sexe = None
+    return jsonify(search_players(q, limit=limit, sexe=sexe))
 
 
 @app.get("/api/player/<player_id>")

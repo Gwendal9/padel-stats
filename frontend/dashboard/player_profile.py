@@ -24,28 +24,35 @@ def _is_champ(categorie: str) -> bool:
 
 # ── Recherche joueur ──────────────────────────────────────────────────────────
 
-def search_players(q: str, limit: int = 20) -> list[dict]:
+def search_players(q: str, limit: int = 20, sexe: str | None = None) -> list[dict]:
     """
     Recherche par nom / prénom (insensible à la casse).
     Retourne jusqu'à `limit` résultats triés par classement.
+    sexe='H' ou 'F' pour filtrer par sexe (optionnel).
     """
     q = q.strip()
     if not q:
         return []
 
     pattern = f"%{q}%"
+    sexe_clause = "AND sexe = ?" if sexe in ("H", "F") else ""
+    params = (pattern, pattern, pattern, pattern)
+    if sexe in ("H", "F"):
+        params = params + (sexe,)
+    params = params + (limit,)
     rows = fetchall(
-        """
+        f"""
         SELECT id_fft, nom, prenom, classement, meilleur_classement,
                variation_classement, classement_date,
                club_nom, ville, sexe, naissance
         FROM joueurs
         WHERE (nom LIKE ? OR prenom LIKE ? OR (nom || ' ' || prenom) LIKE ? OR (prenom || ' ' || nom) LIKE ?)
           AND classement IS NOT NULL
+          {sexe_clause}
         ORDER BY classement ASC
         LIMIT ?
         """,
-        (pattern, pattern, pattern, pattern, limit),
+        params,
     )
     return [_fmt_joueur(r) for r in rows]
 
@@ -184,16 +191,24 @@ def get_player_profile(player_id: str) -> dict | None:
         except (ValueError, TypeError):
             pass
 
+    # Batch-fetch partner info in a single query instead of N+1 individual queries
+    all_partner_ids = [pid for (pid, _nom) in partners_raw]
+    partner_info_map: dict = {}
+    if all_partner_ids:
+        placeholders = ",".join(["?" for _ in all_partner_ids])
+        partner_rows = fetchall(
+            f"SELECT id_fft, classement, club_nom FROM joueurs WHERE id_fft IN ({placeholders})",
+            tuple(all_partner_ids),
+        )
+        partner_info_map = {r["id_fft"]: r for r in partner_rows}
+
     top_partners = []
     for (pid, nom), data in sorted(partners_raw.items(), key=lambda x: -x[1]["nb"]):
         pos_list = data["positions"]
         pos_moy = round(sum(pos_list) / len(pos_list), 1) if pos_list else None
         taux_vic = round(data["victoires"] / data["nb"] * 100) if data["nb"] > 0 else 0
 
-        # Récupérer infos du partenaire si en base
-        partner_info = fetchone(
-            "SELECT classement, club_nom FROM joueurs WHERE id_fft = ?", (pid,)
-        ) or {}
+        partner_info = partner_info_map.get(pid, {})
 
         top_partners.append({
             "id":           pid,

@@ -3080,12 +3080,16 @@ function renderAcItems(popup, players, onSelect) {
     const initials = ((p.prenom||'')[0]||'') + ((p.nom||'')[0]||'');
     const cl  = p.classement ? '#' + p.classement.toLocaleString('fr-FR') : '';
     const sub = [p.club, p.ville].filter(Boolean).join(' · ');
+    const sexeIcon = p.sexe === 'H' ? '<span style="font-size:10px;color:#6b8ccc;font-weight:600;flex-shrink:0">♂</span>'
+                   : p.sexe === 'F' ? '<span style="font-size:10px;color:#d4a8b0;font-weight:600;flex-shrink:0">♀</span>'
+                   : '';
     return `<div class="ac-item" data-id="${p.id}">
       <div class="avatar av-sm" style="background:var(--primary);font-size:11px;flex-shrink:0">${initials}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nom_complet}</div>
         <div style="font-size:11px;color:#94a3b8">${sub}</div>
       </div>
+      ${sexeIcon}
       <div class="ac-rank">${cl}</div>
     </div>`;
   }).join('');
@@ -3095,14 +3099,15 @@ function renderAcItems(popup, players, onSelect) {
   });
 }
 
-function setupAutocomplete(inputId, popupId, onSelect) {
+function setupAutocomplete(inputId, popupId, onSelect, extraParams) {
   const input = document.getElementById(inputId);
   const popup = document.getElementById(popupId);
   if (!input || !popup) return;
 
   const doSearch = debounce(async q => {
     if (q.length < 2) { popup.hidden = true; return; }
-    const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`);
+    const extra = typeof extraParams === 'function' ? extraParams() : (extraParams || '');
+    const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8${extra}`);
     renderAcItems(popup, data || [], onSelect);
   }, 250);
 
@@ -3113,12 +3118,12 @@ function setupAutocomplete(inputId, popupId, onSelect) {
 
 // Recherche globale → Spotlight (⌘K) — pas d'autocomplete direct
 
-// Recherche leaderboard → filtre
+// Recherche leaderboard → filtre (filtre par sexe actif pour cohérence H/F)
 setupAutocomplete('lb-search', 'ac-lb', player => {
   const inp = document.getElementById('lb-search');
   if (inp) inp.value = player.nom_complet;
   filterLeaderboard();
-});
+}, () => `&sexe=${lbState.sexe || 'H'}`);
 
 // ── Leaderboard — chargement API ────────────────────────────────────────────
 
