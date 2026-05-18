@@ -89,7 +89,7 @@ def get_player_profile(player_id: str) -> dict | None:
         """
         SELECT id_fft, nom, prenom, classement, meilleur_classement,
                variation_classement, classement_date,
-               club_nom, ville, sexe, naissance
+               club_nom, ville, sexe, naissance, scraped_at
         FROM joueurs WHERE id_fft = ?
         """,
         (player_id,),
@@ -98,6 +98,9 @@ def get_player_profile(player_id: str) -> dict | None:
         return None
 
     joueur = _fmt_joueur(base)
+    # scraped_at NULL = joueur connu via CSV uniquement, sans historique de participations
+    joueur["scraped_at"]   = base.get("scraped_at")
+    joueur["csv_only"]     = base.get("scraped_at") is None
 
     # ── Toutes ses participations ─────────────────────────────────────────
     # Dates stored as DD/MM/YYYY → must convert for correct chronological sort.

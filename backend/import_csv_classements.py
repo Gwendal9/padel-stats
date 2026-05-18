@@ -18,6 +18,7 @@ Usage :
     python import_csv_classements.py joueurs_padel.csv
     python import_csv_classements.py joueurs_padel_H.csv joueurs_padel_F.csv
     python import_csv_classements.py --dry-run joueurs_padel.csv
+    python import_csv_classements.py --mois 2025-04 joueurs_padel_avril.csv  ← backfill
 """
 import os
 import sys
@@ -25,20 +26,30 @@ import csv
 import sqlite3
 from datetime import datetime
 
-DB_FILE  = os.path.join(os.path.dirname(__file__), 'tenup.db')
-DRY_RUN  = '--dry-run' in sys.argv
-csv_args = [a for a in sys.argv[1:] if not a.startswith('--')]
+DB_FILE = os.path.join(os.path.dirname(__file__), 'tenup.db')
+
+# ── Arguments ──────────────────────────────────────────────────────
+DRY_RUN = '--dry-run' in sys.argv
+
+# --mois YYYY-MM : force le mois du snapshot (utile pour backfill avril)
+MOIS_COURANT = datetime.now().strftime('%Y-%m')
+args = sys.argv[1:]
+if '--mois' in args:
+    idx = args.index('--mois')
+    if idx + 1 < len(args):
+        MOIS_COURANT = args[idx + 1]
+        args = args[:idx] + args[idx + 2:]   # retire --mois et sa valeur
+
+csv_args = [a for a in args if not a.startswith('--')]
 
 if not csv_args:
-    # Cherche automatiquement les CSV dans le dossier courant
     csv_args = [f for f in os.listdir(os.path.dirname(__file__) or '.')
                 if f.lower().startswith('joueurs_padel') and f.endswith('.csv')]
     if not csv_args:
-        print("Usage : python import_csv_classements.py joueurs_padel.csv [joueurs_padel_F.csv ...]")
+        print("Usage : python import_csv_classements.py [--mois YYYY-MM] joueurs_padel.csv ...")
         sys.exit(1)
     print(f"📂 CSV trouvés automatiquement : {csv_args}")
 
-MOIS_COURANT = datetime.now().strftime('%Y-%m')
 
 def load_csv(path: str) -> list[dict]:
     full = os.path.join(os.path.dirname(__file__), path) if not os.path.isabs(path) else path
@@ -52,15 +63,16 @@ def load_csv(path: str) -> list[dict]:
             if not id_fft:
                 continue
             rows.append({
-                'id_fft':       id_fft,
-                'nom':          r.get('nom', '').strip(),
-                'prenom':       r.get('prenom', '').strip(),
-                'club_nom':     r.get('club', '').strip(),
-                'classement':   _int(r.get('classement')),
-                'variation':    _int(r.get('evolution')),   # négatif = progression (FFT convention)
-                'meilleur':     _int(r.get('meilleurClassement')),
-                'ligue':        r.get('ligue', '').strip(),
-                'comite':       r.get('comite', '').strip(),
+                'id_fft':     id_fft,
+                'nom':        r.get('nom', '').strip(),
+                'prenom':     r.get('prenom', '').strip(),
+                'club_nom':   r.get('club', '').strip(),
+                'classement': _int(r.get('classement')),
+                'variation':  _int(r.get('evolution')),  # négatif = progression (convention FFT)
+                'meilleur':   _int(r.get('meilleurClassement')),
+                'sexe':       r.get('sexe', '').strip().upper(),
+                'ligue':      r.get('ligue', '').strip(),
+                'comite':     r.get('comite', '').strip(),
             })
     print(f"  📄 {os.path.basename(path)} → {len(rows):,} joueurs")
     return rows
@@ -72,9 +84,50 @@ def _int(v):
         return None
     try:
         f = float(v)
-        return int(f) if f == f else None   # NaN check
+        return int(f) if f == f else None
     except (ValueError, TypeError):
         return None
+
+
+def ensure_hist_schema(conn):
+    """Crée ou migre classements_historique pour qu'il utilise id_joueur."""
+    # Vérifier si la table existe
+    tbl = conn.execute(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='classements_historique'"
+    ).fetchone()[0]
+
+    if not tbl:
+        conn.execute("""
+            CREATE TABLE classements_historique (
+                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_joueur           TEXT NOT NULL,
+                mois                TEXT NOT NULL,
+                classement          INTEGER,
+                variation           INTEGER,
+                meilleur_classement INTEGER,
+                echelon             TEXT,
+                UNIQUE(id_joueur, mois)
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_hist_joueur ON classements_historique(id_joueur)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_hist_mois   ON classements_historique(mois)")
+        conn.commit()
+        print("  ✅ Table classements_historique créée")
+        return
+
+    # Migration : ajouter meilleur_classement si absent
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(classements_historique)").fetchall()]
+    if 'meilleur_classement' not in cols:
+        try:
+            conn.execute("ALTER TABLE classements_historique ADD COLUMN meilleur_classement INTEGER")
+            conn.commit()
+            print("  ✅ Migration : colonne meilleur_classement ajoutée")
+        except Exception:
+            pass
+
+    # Détection du nom de la colonne joueur (id_joueur ou id_fft selon l'historique)
+    id_col = 'id_joueur' if 'id_joueur' in cols else 'id_fft'
+    return id_col
 
 
 def main():
@@ -98,6 +151,8 @@ def main():
         by_id[r['id_fft']] = r
     all_rows = list(by_id.values())
     print(f'Total joueurs uniques : {len(all_rows):,}')
+    print(f'Mois cible            : {MOIS_COURANT}')
+    print()
 
     # ── Connexion DB ─────────────────────────────────────────────────
     conn = sqlite3.connect(DB_FILE, timeout=30)
@@ -106,12 +161,12 @@ def main():
     conn.execute("PRAGMA busy_timeout=30000")
 
     # ── Stats avant ──────────────────────────────────────────────────
-    db_ids     = set(r[0] for r in conn.execute("SELECT id_fft FROM joueurs").fetchall())
-    queue_ids  = set(r[0] for r in conn.execute("SELECT id_fft FROM scrape_queue").fetchall())
+    db_ids    = set(r[0] for r in conn.execute("SELECT id_fft FROM joueurs").fetchall())
+    queue_ids = set(r[0] for r in conn.execute("SELECT id_fft FROM scrape_queue").fetchall())
 
-    csv_ids    = {r['id_fft'] for r in all_rows}
-    to_update  = [r for r in all_rows if r['id_fft'] in db_ids]
-    to_add     = [r for r in all_rows if r['id_fft'] not in db_ids and r['id_fft'] not in queue_ids]
+    csv_ids  = {r['id_fft'] for r in all_rows}
+    to_update = [r for r in all_rows if r['id_fft'] in db_ids]
+    to_add    = [r for r in all_rows if r['id_fft'] not in db_ids and r['id_fft'] not in queue_ids]
 
     print(f'Joueurs en DB           : {len(db_ids):,}')
     print(f'Joueurs dans CSV        : {len(csv_ids):,}')
@@ -122,9 +177,9 @@ def main():
 
     # Aperçu des variations
     vars_non_null = [r for r in to_update if r['variation'] is not None]
-    vars_prog     = sum(1 for r in vars_non_null if r['variation'] < 0)
-    vars_desc     = sum(1 for r in vars_non_null if r['variation'] > 0)
-    vars_stable   = sum(1 for r in vars_non_null if r['variation'] == 0)
+    vars_prog  = sum(1 for r in vars_non_null if r['variation'] < 0)
+    vars_desc  = sum(1 for r in vars_non_null if r['variation'] > 0)
+    vars_stable = sum(1 for r in vars_non_null if r['variation'] == 0)
     print(f'Variations dans CSV     : {len(vars_non_null):,}')
     print(f'  ▲ Progressions (<0)   : {vars_prog:,}')
     print(f'  ▼ Descentes   (>0)    : {vars_desc:,}')
@@ -144,10 +199,10 @@ def main():
     for r in to_update:
         conn.execute("""
             UPDATE joueurs SET
-                classement             = COALESCE(?, classement),
-                variation_classement   = ?,
-                meilleur_classement    = COALESCE(?, meilleur_classement),
-                classement_date        = ?
+                classement           = COALESCE(?, classement),
+                variation_classement = ?,
+                meilleur_classement  = COALESCE(?, meilleur_classement),
+                classement_date      = ?
             WHERE id_fft = ?
         """, (r['classement'], r['variation'], r['meilleur'], MOIS_COURANT, r['id_fft']))
         updated += 1
@@ -157,10 +212,23 @@ def main():
     conn.commit()
     print(f'  ✅ {updated:,} joueurs mis à jour')
 
-    # ── Étape 2 : ajout des nouveaux joueurs à la queue ──────────────
-    print(f'\nÉtape 2 : ajout de {len(to_add):,} nouveaux joueurs à la queue...')
+    # ── Étape 2 : insertion directe des nouveaux joueurs dans joueurs ──
+    # Le CSV contient déjà nom/prenom/classement/club → pas besoin d'attendre le scrape.
+    # scraped_at reste NULL → indicateur "CSV uniquement, historique non disponible".
+    print(f'\nÉtape 2 : insertion de {len(to_add):,} nouveaux joueurs dans joueurs...')
     added = 0
     for r in to_add:
+        conn.execute("""
+            INSERT OR IGNORE INTO joueurs
+                (id_fft, nom, prenom, club_nom, classement, meilleur_classement,
+                 variation_classement, classement_date, sexe, scraped_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
+        """, (
+            r['id_fft'], r['nom'], r['prenom'], r['club_nom'],
+            r['classement'], r['meilleur'], r['variation'],
+            MOIS_COURANT, r.get('sexe', '')
+        ))
+        # Aussi en queue pour scrape futur (participations)
         conn.execute(
             "INSERT OR IGNORE INTO scrape_queue (id_fft, statut, added_at) VALUES (?, 'pending', ?)",
             (r['id_fft'], now)
@@ -170,52 +238,32 @@ def main():
             conn.commit()
             print(f'   {added:,}/{len(to_add):,}...')
     conn.commit()
-    print(f'  ✅ {added:,} nouveaux joueurs en queue')
+    print(f'  ✅ {added:,} nouveaux joueurs insérés (scraped_at=NULL = CSV uniquement)')
 
     # ── Étape 3 : snapshot classements_historique ────────────────────
     print(f'\nÉtape 3 : snapshot {MOIS_COURANT} dans classements_historique...')
-    # Vérifie si la table existe
-    tbl = conn.execute(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='classements_historique'"
-    ).fetchone()[0]
-    if not tbl:
-        conn.execute("""
-            CREATE TABLE classements_historique (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                id_fft      TEXT NOT NULL,
-                mois        TEXT NOT NULL,
-                classement  INTEGER,
-                variation   INTEGER,
-                meilleur_classement INTEGER,
-                scraped_at  TEXT,
-                UNIQUE(id_fft, mois)
-            )
-        """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_hist_joueur ON classements_historique(id_fft)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_hist_mois   ON classements_historique(mois)")
-        conn.commit()
+    id_col = ensure_hist_schema(conn) or 'id_joueur'
 
-    # Existing snapshot count for this month
     existing = conn.execute(
         "SELECT COUNT(*) FROM classements_historique WHERE mois=?", (MOIS_COURANT,)
     ).fetchone()[0]
-
     if existing > 1000:
         print(f'  ⚠️  Snapshot {MOIS_COURANT} déjà présent ({existing:,} lignes) — remplacement...')
         conn.execute("DELETE FROM classements_historique WHERE mois=?", (MOIS_COURANT,))
         conn.commit()
 
-    conn.execute("""
-        INSERT INTO classements_historique (id_fft, mois, classement, variation, meilleur_classement, scraped_at)
-        SELECT id_fft, classement_date, classement, variation_classement, meilleur_classement, scraped_at
+    # Insert depuis les données CSV (via joueurs qui vient d'être mis à jour)
+    conn.execute(f"""
+        INSERT INTO classements_historique ({id_col}, mois, classement, variation, meilleur_classement)
+        SELECT id_fft, ?, classement, variation_classement, meilleur_classement
         FROM joueurs
         WHERE classement_date = ?
           AND classement IS NOT NULL
-        ON CONFLICT(id_fft, mois) DO UPDATE SET
-            classement  = excluded.classement,
-            variation   = excluded.variation,
+        ON CONFLICT({id_col}, mois) DO UPDATE SET
+            classement          = excluded.classement,
+            variation           = excluded.variation,
             meilleur_classement = excluded.meilleur_classement
-    """, (MOIS_COURANT,))
+    """, (MOIS_COURANT, MOIS_COURANT))
     conn.commit()
 
     snap = conn.execute(
@@ -237,12 +285,10 @@ def main():
     print('✅ Import terminé !')
     print()
     print('Prochaines étapes :')
-    print('  → Relancer le serveur Flask pour voir les classements mis à jour :')
-    print('     python dashboard/api.py')
-    print()
-    print('  → Pour mettre à jour les participations (tournois) :')
-    print('     python monthly_refresh.py          ← remet tous les joueurs en pending')
-    print('     python scraper_http.py --workers 15 ← ~6-12h scrape complet')
+    print('  → Relancer le serveur Flask pour voir les classements mis à jour')
+    print('  → Pour mettre à jour les participations :')
+    print('     python monthly_refresh.py --smart')
+    print('     python scraper_http.py --workers 15')
 
     conn.close()
 

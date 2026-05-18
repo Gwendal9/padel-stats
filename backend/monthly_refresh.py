@@ -119,10 +119,13 @@ def main():
         print(f'   Tier 3 (inactifs)         : {t3:,} joueurs  ← scrapés en dernier')
         print()
 
-        # Remettre tous en "done" (pas pending) d'abord
+        # Remettre en "done" uniquement les joueurs déjà scrapés (scraped_at IS NOT NULL).
+        # Les pending jamais scrapés (scraped_at IS NULL) restent en pending —
+        # les convertir en done les ferait disparaître de joueurs sans jamais être traités.
         conn.execute("""
             UPDATE scrape_queue SET statut='done'
             WHERE statut IN ('pending','processing','error')
+              AND scraped_at IS NOT NULL
         """)
 
         # Puis remettre pending par priorité via ajout d'une colonne priority
