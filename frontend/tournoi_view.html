@@ -2134,4 +2134,24 @@
                 </div>
             </div></div></div>
 </div>
+
+<!-- ── Disclaimer + Tracking ────────────────────────────────────────────── -->
+<div id="disclaimer-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#fff7ed;border-top:2px solid #fed7aa;padding:12px 24px;align-items:center;gap:16px;font-size:12px;color:#92400e;">
+  <span style="flex:1;">⚠️ Site en cours de développement — certaines fonctionnalités peuvent être incomplètes ou contenir des erreurs.</span>
+  <button onclick="dismissDisclaimer()" style="background:transparent;border:1px solid #fed7aa;border-radius:6px;color:#92400e;font-size:11px;padding:4px 14px;cursor:pointer;flex-shrink:0;">Compris ✕</button>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('disclaimer-ok')){
+    document.getElementById('disclaimer-banner').style.display='flex';
+  }
+  var ref=new URLSearchParams(window.location.search).get('ref');
+  if(ref) sessionStorage.setItem('gc-ref',ref);
+})();
+function dismissDisclaimer(){
+  document.getElementById('disclaimer-banner').style.display='none';
+  localStorage.setItem('disclaimer-ok','1');
+}
+</script>
+<script data-goatcounter="https://padel-stats.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body></html>
