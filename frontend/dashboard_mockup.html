@@ -1541,7 +1541,7 @@ const chartPyramid = makeChart('chart-pyramid', {
 
 // ── Chargement des stats dashboard ───────────────────────────────────────────
 async function loadDashboardStats() {
-  const stats = await apiFetch('/api/stats');
+  const stats = await apiFetch('/api/stats', 45000);
   if (!stats) return;
 
   // ── KPI cards ────────────────────────────────────────────────────────────
@@ -1867,10 +1867,18 @@ function buildParcoursChart(parcours) {
     _tooltipEl.style.opacity = '0';
   }
 
+  // Largeur fixe (scroll horizontal) mais hauteur responsive (suit la card)
+  const barW   = Math.max(22, Math.min(40, 800 / Math.max(parcours.length, 1)));
+  const canvasW = Math.max(600, parcours.length * barW);
+  const inner  = document.getElementById('parcours-chart-inner');
+  if (inner) inner.style.width = canvasW + 'px';
+
   chartParcours = new Chart(el, {
     type:'bar', plugins:[labelPlugin],
     data:{ labels: parcours.map(e => e.date||''), datasets:[{ data:scores, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
     options:{
+      responsive: true,
+      maintainAspectRatio: false,
       layout:{ padding:{top:90} },
       onClick: (event, elements) => {
         if (elements.length > 0) {
@@ -1942,7 +1950,7 @@ function renderProfile(data) {
   // ── Palmarès 12m — 12 meilleurs résultats ───────────────────────
   const palmares12m = (data.parcours||[])
     .filter(p => { const d=parseDate(p.date); return d && d >= cutoff12m; })
-    .sort((a,b) => parseInt(a.position||99) - parseInt(b.position||99))
+    .sort((a,b) => parseInt(b.points||0) - parseInt(a.points||0))
     .slice(0, 12);
 
   // Finales / demi-finales depuis positions_dist
@@ -2190,17 +2198,24 @@ function renderProfile(data) {
       </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-4 mb-4">
-      <div class="card p-4 col-span-2">
-        <div class="flex items-center justify-between mb-1">
-          <div class="font-semibold text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> Parcours · ${(data.parcours||[]).length} tournois</div>
-          <div class="flex gap-2 flex-wrap" id="parcours-legend"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <div class="card p-4 lg:col-span-2 flex flex-col">
+        <div class="shrink-0 mb-1">
+          <div class="flex items-center justify-between gap-2">
+            <div class="font-semibold text-sm flex items-center gap-2 shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> Parcours · ${(data.parcours||[]).length} tournois</div>
+            <div class="text-[10px] text-slate-400 shrink-0">Hauteur = performance · 🥇 victoire · Clic → tournoi</div>
+          </div>
+          <div class="flex gap-x-2 gap-y-1 flex-wrap mt-1" id="parcours-legend"></div>
         </div>
-        <div class="text-[10px] text-slate-400 mb-2">Hauteur = performance · 🥇 victoire · Clic → tournoi</div>
-        <div style="overflow-x:auto"><div style="min-width:${Math.max(600,(data.parcours||[]).length*22)}px"><canvas id="chart-parcours" height="80" style="cursor:pointer"></canvas></div></div>
+        <!-- overflow-x scroll ; inner div à largeur fixe = pas de resize horizontal Chart.js -->
+        <div style="overflow-x:auto;flex:1;min-height:120px;position:relative">
+          <div id="parcours-chart-inner" style="height:100%;min-height:120px">
+            <canvas id="chart-parcours" style="cursor:pointer"></canvas>
+          </div>
+        </div>
       </div>
 
-      <div class="col-span-1 flex flex-col gap-3">
+      <div class="lg:col-span-1 flex flex-col gap-3">
         <div class="card p-4 flex-1">
           <div class="font-semibold text-sm mb-2 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Top partenaires</div>
           <div class="space-y-1.5">${(data.top_partners||[]).slice(0,4).map(p => {
@@ -2258,7 +2273,7 @@ function renderProfile(data) {
                 <td class="py-2 px-3"><span class="badge ${BADGE_CAT[h.categorie]||'badge-cat-mid'} text-[10px]">${h.categorie||''}</span></td>
                 <td class="py-2 px-3 text-xs text-slate-500 truncate max-w-[120px]">${h.partenaire||'—'}</td>
                 <td class="py-2 px-3 text-[11px] text-slate-400 whitespace-nowrap">${h.date||''}</td>
-                <td class="py-2 px-3 text-xs text-slate-400">${h.points||'—'}</td>
+                <td class="py-2 px-3 text-xs text-slate-400">${(h.points && parseInt(h.points) > 0) ? h.points : '—'}</td>
               </tr>`;
             }).join('')}</tbody>
           </table>
@@ -2801,7 +2816,7 @@ function findCityCoords(ville) {
 }
 
 (async function initMapData() {
-  const clubs = await apiFetch('/api/clubs?top=1000');
+  const clubs = await apiFetch('/api/clubs?top=1000', 45000);
   if (!clubs || !clubs.length) { console.warn('[Map] Aucun club retourné par /api/clubs'); return; }
 
   const maxNb = Math.max(...clubs.map(c => c.nb || 0));
@@ -4107,7 +4122,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   async function loadCatStats() {
     if (_catData) { renderCatStats(); return; }
     document.getElementById('cat-stats-loading')?.classList.remove('hidden');
-    _catData = await apiFetch('/api/stats/categories');
+    _catData = await apiFetch('/api/stats/categories', 45000);
     document.getElementById('cat-stats-loading')?.classList.add('hidden');
     if (_catData) renderCatStats();
   }
