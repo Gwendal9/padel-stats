@@ -1453,6 +1453,42 @@ def route_health():
 _precompute_status = {"running": False, "last_run": None, "last_result": None}
 
 
+@app.get("/api/admin/debug")
+def route_admin_debug():
+    """Diagnostic temporaire — vérifie les tables PG et teste une query profil."""
+    admin_key = os.environ.get("ADMIN_KEY", "")
+    if admin_key and request.args.get("key") != admin_key:
+        return jsonify({"error": "clé invalide"}), 403
+    from db import USE_POSTGRES, get_conn
+    info = {"use_postgres": USE_POSTGRES, "tables": [], "classements_historique_cols": [], "substr_test": None, "profile_test": None}
+    try:
+        with get_conn() as conn:
+            if USE_POSTGRES:
+                import psycopg2.extras
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("SELECT table_name FROM information_schema.tables WHERE table_name IN ('classements_historique','cache_responses','tournois_summary') ORDER BY table_name")
+                    info["tables"] = [r["table_name"] for r in cur.fetchall()]
+                    if "classements_historique" in info["tables"]:
+                        cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='classements_historique' ORDER BY ordinal_position")
+                        info["classements_historique_cols"] = [r["column_name"] for r in cur.fetchall()]
+                    cur.execute("SELECT SUBSTR(date_tournoi,7,4)||SUBSTR(date_tournoi,4,2)||SUBSTR(date_tournoi,1,2) AS ds FROM participations LIMIT 3")
+                    info["substr_test"] = [r["ds"] for r in cur.fetchall()]
+                    cur.execute("SELECT id_fft FROM joueurs WHERE classement IS NOT NULL LIMIT 1")
+                    row = cur.fetchone()
+                    if row:
+                        pid = row["id_fft"]
+                        try:
+                            cur.execute("SELECT COUNT(*) AS n FROM participations p JOIN tournois t ON p.id_tournoi=t.id_tournoi WHERE p.id_joueur=%s", (pid,))
+                            info["profile_test"] = {"player": pid, "nb_parts": cur.fetchone()["n"]}
+                        except Exception as e:
+                            info["profile_test"] = {"error": str(e)}
+            else:
+                info["tables"] = ["(SQLite local)"]
+    except Exception as e:
+        info["error"] = str(e)
+    return jsonify(info)
+
+
 @app.get("/api/admin/precompute")
 def route_admin_precompute():
     admin_key = os.environ.get("ADMIN_KEY", "")

@@ -5099,7 +5099,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   const overlay = document.getElementById('spotlight-overlay');
   const inp     = document.getElementById('spotlight-input');
   const results = document.getElementById('spotlight-results');
-  let spTimer = null, spActive = -1, spItems = [];
+  let spTimer = null, spActive = -1, spItems = [], spSeq = 0;
 
   window.closeSpotlight = function() {
     overlay.classList.add('hidden');
@@ -5132,12 +5132,14 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     clearTimeout(spTimer);
     const q = inp.value.trim();
     if (!q) { results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>'; spItems = []; return; }
+    const mySeq = ++spSeq;  // identifiant unique de cette requête
     spTimer = setTimeout(async () => {
       const [players, clubs, tournaments] = await Promise.all([
         apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => []),
         apiFetch(`/api/clubs?q=${encodeURIComponent(q)}&top=3`).catch(() => []),
         apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=3`).catch(() => []),
       ]);
+      if (mySeq !== spSeq) return;  // réponse périmée — une requête plus récente est en cours
       renderSpotlight(q, players, clubs, tournaments);
     }, 180);
   });

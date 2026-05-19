@@ -110,9 +110,9 @@ def get_player_profile(player_id: str) -> dict | None:
     joueur["csv_only"]     = base.get("scraped_at") is None
 
     # ── Toutes ses participations ─────────────────────────────────────────
-    # Dates stored as DD/MM/YYYY → must convert for correct chronological sort.
-    _date_order = ("TO_DATE(p.date_tournoi, 'DD/MM/YYYY')" if USE_POSTGRES
-                   else "SUBSTR(p.date_tournoi,7,4)||SUBSTR(p.date_tournoi,4,2)||SUBSTR(p.date_tournoi,1,2)")
+    # Tri chronologique : DD/MM/YYYY → YYYYMMDD via SUBSTR, safe sur PG et SQLite.
+    # TO_DATE() est évité car il crashe sur les dates vides/malformées en PG.
+    _date_order = "SUBSTR(p.date_tournoi,7,4)||SUBSTR(p.date_tournoi,4,2)||SUBSTR(p.date_tournoi,1,2)"
     parts = fetchall(
         f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
