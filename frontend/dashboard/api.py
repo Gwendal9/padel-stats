@@ -1670,48 +1670,4 @@ def route_me_unlink_player():
     user = _get_session()
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
-    unlink_player(user["user_id"])
-    return jsonify({"ok": True})
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  /api/me/favorites — Favoris
-# ══════════════════════════════════════════════════════════════════════════════
-
-@app.get("/api/me/favorites")
-def route_me_favorites():
-    user = _get_session()
-    if not user:
-        return jsonify({"error": "Non authentifié"}), 401
-    return jsonify(get_favorites(user["user_id"]))
-
-
-@app.post("/api/me/favorites/<player_id>")
-def route_me_fav_add(player_id: str):
-    user = _get_session()
-    if not user:
-        return jsonify({"error": "Non authentifié"}), 401
-    add_favorite(user["user_id"], player_id)
-    return jsonify({"ok": True, "favorited": True})
-
-
-@app.delete("/api/me/favorites/<player_id>")
-def route_me_fav_remove(player_id: str):
-    user = _get_session()
-    if not user:
-        return jsonify({"error": "Non authentifié"}), 401
-    remove_favorite(user["user_id"], player_id)
-    return jsonify({"ok": True, "favorited": False})
-
-
-@app.get("/api/me/favorites/<player_id>/check")
-def route_me_fav_check(player_id: str):
-    user = _get_session()
-    if not user:
-        return jsonify({"favorited": False})
-    return jsonify({"favorited": is_favorite(user["user_id"], player_id)})
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    un
