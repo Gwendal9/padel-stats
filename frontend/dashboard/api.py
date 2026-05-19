@@ -41,11 +41,9 @@ CORS(app)
 from db import ensure_indexes as _ensure_indexes
 _ensure_indexes()
 
-# Chargement asynchrone du graphe — le site démarre immédiatement,
-# le graphe se charge en arrière-plan (les index PG créés dans ensure_indexes
-# rendent la requête ~10x plus rapide qu'au démarrage précédent).
-import threading as _threading
-_threading.Thread(target=engine._ensure_loaded, daemon=True, name="graph-preloader").start()
+# Graphe chargé à la demande uniquement (lazy) — le preload au démarrage
+# dépasse le statement_timeout de 90s sur le free tier Render → crash systématique.
+# Le chargement se fera lors du premier appel à /api/graph/* ou /api/ego/*.
 
 
 # ── Plus de préchauffage in-memory : trop lourd pour le free tier ────────────

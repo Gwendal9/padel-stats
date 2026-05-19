@@ -98,6 +98,10 @@ def ensure_indexes():
     # Sans ces index, /api/stats, /api/clubs, /api/leaderboard prennent 30-60s.
     if USE_POSTGRES:
         PG_INDEXES = [
+            # Extension trigram pour ILIKE rapide sur nom/prenom (recherche joueur)
+            "CREATE EXTENSION IF NOT EXISTS pg_trgm",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_nom_trgm    ON joueurs USING gin(nom gin_trgm_ops)",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_prenom_trgm ON joueurs USING gin(prenom gin_trgm_ops)",
             # Joueurs — filtres fréquents
             "CREATE INDEX IF NOT EXISTS idx_joueurs_classement ON joueurs(classement) WHERE classement IS NOT NULL",
             "CREATE INDEX IF NOT EXISTS idx_joueurs_sexe ON joueurs(sexe)",

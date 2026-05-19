@@ -2409,10 +2409,19 @@ function _updateBackBtn() {
     } else {
       text = displayLabel || 'Retour';
     }
-    if (gBtn)   gBtn.style.display = 'block';
-    if (gLabel) gLabel.textContent = `← ${text}`;
-    if (lBtn)   lBtn.style.display = 'flex';
-    if (lLabel) lLabel.textContent = `← ${text}`;
+    // N'afficher que le bouton local (dans la section profil) quand il est disponible,
+    // sinon le bouton global dans le header — jamais les deux en même temps.
+    const useLocal = lBtn && document.getElementById('view-player')?.style.display !== 'none'
+                     && !document.getElementById('view-player')?.hidden;
+    if (useLocal) {
+      if (gBtn)   gBtn.style.display = 'none';
+      if (lBtn)   lBtn.style.display = 'flex';
+      if (lLabel) lLabel.textContent = `← ${text}`;
+    } else {
+      if (lBtn)   lBtn.style.display = 'none';
+      if (gBtn)   gBtn.style.display = 'block';
+      if (gLabel) gLabel.textContent = `← ${text}`;
+    }
   } else {
     if (gBtn) gBtn.style.display = 'none';
     if (lBtn) lBtn.style.display = 'none';
@@ -3109,7 +3118,7 @@ function setupAutocomplete(inputId, popupId, onSelect, extraParams) {
     const extra = typeof extraParams === 'function' ? extraParams() : (extraParams || '');
     const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8${extra}`);
     renderAcItems(popup, data || [], onSelect);
-  }, 250);
+  }, 400);
 
   input.addEventListener('input',   e => doSearch(e.target.value.trim()));
   input.addEventListener('keydown', e => { if (e.key === 'Escape') popup.hidden = true; });
