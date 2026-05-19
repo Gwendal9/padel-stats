@@ -1252,6 +1252,9 @@
     <!-- ═════ GRAPH ════════════════════════════════════════════════════ -->
     <section class="view" id="view-graph">
 
+      <!-- Contenu remplacé en prod par le message "en construction" via APP_CONFIG -->
+      <div data-requires="graph">
+
       <!-- Toolbar -->
       <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
         <div class="relative flex-1 min-w-64" id="graph-search-wrap">
@@ -1336,7 +1339,7 @@
         class="hidden fixed z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 pointer-events-none text-sm w-52">
       </div>
 
-
+      </div><!-- /data-requires="graph" -->
     </section>
 
     <!-- ═════ PARTNER SUGGESTER ════════════════════════════════════════ -->
@@ -3114,11 +3117,11 @@ function setupAutocomplete(inputId, popupId, onSelect, extraParams) {
   if (!input || !popup) return;
 
   const doSearch = debounce(async q => {
-    if (q.length < 2) { popup.hidden = true; return; }
+    if (q.length < 3) { popup.hidden = true; return; }
     const extra = typeof extraParams === 'function' ? extraParams() : (extraParams || '');
     const data = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=8${extra}`);
     renderAcItems(popup, data || [], onSelect);
-  }, 400);
+  }, 350);
 
   input.addEventListener('input',   e => doSearch(e.target.value.trim()));
   input.addEventListener('keydown', e => { if (e.key === 'Escape') popup.hidden = true; });
@@ -5073,6 +5076,32 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
         setStatus(true);
         toast?.classList.remove('show');
         if (barEl) barEl.style.width = '100%';
+        // Charger la config prod/dev et adapter l'UI
+        apiFetch('/api/config').then(cfg => {
+          if (!cfg) return;
+          window.APP_CONFIG = cfg;
+          const isProd = cfg.env === 'prod';
+          // Graphe — désactivé en prod
+          if (isProd) {
+            document.querySelectorAll('[data-requires="graph"]').forEach(el => {
+              el.innerHTML = `<div class="text-center py-12 text-slate-400">
+                <div class="text-2xl mb-2">🚧</div>
+                <div class="font-medium text-slate-500">Graphe réseau</div>
+                <div class="text-sm mt-1">Fonctionnalité en cours de développement</div>
+              </div>`;
+            });
+          }
+          // Bandeaux "en construction" sur les sections WIP
+          if (cfg.features?.wip_banners) {
+            document.querySelectorAll('[data-wip]').forEach(el => {
+              const label = el.dataset.wip || 'Cette fonctionnalité';
+              const banner = document.createElement('div');
+              banner.className = 'text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1 mb-2 flex items-center gap-1';
+              banner.innerHTML = `🚧 <span>${label} — en cours de développement</span>`;
+              el.prepend(banner);
+            });
+          }
+        }).catch(() => {});
         // Relancer le chargement si le cold-start a fait timer loadDashboardStats
         if (!document.getElementById('kpi-joueurs')?.textContent?.trim()) {
           loadDashboardStats();
@@ -5141,6 +5170,7 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     clearTimeout(spTimer);
     const q = inp.value.trim();
     if (!q) { results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>'; spItems = []; return; }
+    if (q.length < 3) { results.innerHTML = '<div class="sp-empty">Tape au moins 3 lettres…</div>'; spItems = []; return; }
     const mySeq = ++spSeq;  // identifiant unique de cette requête
     spTimer = setTimeout(async () => {
       const [players, clubs, tournaments] = await Promise.all([

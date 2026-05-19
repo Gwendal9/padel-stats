@@ -1443,6 +1443,23 @@ def route_health():
     return jsonify({"status": "ok"})
 
 
+@app.get("/api/config")
+def route_config():
+    """Feature flags exposés au frontend — déterminés par l'environnement."""
+    is_prod = USE_POSTGRES  # True sur Render, False en local SQLite
+    return jsonify({
+        "env":       "prod" if is_prod else "dev",
+        "features": {
+            # Graphe réseau désactivé en prod (requête trop lourde pour le free tier)
+            "graph":          not is_prod,
+            # Bandeau "en construction" affiché en prod pour les sections non finalisées
+            "wip_banners":    is_prod,
+            # Recherche : longueur min (3 en prod pour les index trigram, 2 en dev)
+            "search_min_len": 3 if is_prod else 2,
+        }
+    })
+
+
 # ── Endpoint admin : lance le pré-calcul des caches lourds ──────────────────
 # Usage : GET /api/admin/precompute?key=XXXX
 # La clé doit matcher la variable d'env ADMIN_KEY (à configurer dans Render).
