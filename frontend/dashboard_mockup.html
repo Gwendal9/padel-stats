@@ -258,6 +258,54 @@
   #api-toast-bar { height: 3px; background: linear-gradient(90deg,#9ba2ff,#6366f1); width: 0%; transition: width .8s ease; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── WIP placeholder ── */
+  .wip-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 64px 24px; text-align: center;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 12px,
+      rgba(251,191,36,.04) 12px,
+      rgba(251,191,36,.04) 24px
+    );
+    border: 2px dashed #fde68a; border-radius: 16px;
+    min-height: 280px;
+  }
+  .wip-placeholder .wip-icon {
+    font-size: 2.5rem; margin-bottom: 16px;
+    animation: wip-rock .8s ease-in-out infinite alternate;
+  }
+  @keyframes wip-rock {
+    from { transform: rotate(-8deg); }
+    to   { transform: rotate(8deg); }
+  }
+  .wip-placeholder .wip-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; margin-bottom: 12px; letter-spacing: .03em; text-transform: uppercase;
+  }
+  .wip-placeholder .wip-badge::before {
+    content: ''; display: block; width: 6px; height: 6px;
+    background: #f59e0b; border-radius: 50%;
+    animation: wip-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes wip-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .4; transform: scale(.7); }
+  }
+  .wip-placeholder .wip-title {
+    font-size: 1.05rem; font-weight: 600; color: #78350f; margin-bottom: 6px;
+  }
+  .wip-placeholder .wip-desc {
+    font-size: .85rem; color: #92400e; opacity: .7; max-width: 320px;
+  }
+
+  /* ── Toast "prêt" state ── */
+  #api-toast.ready { background: #052e16; }
+  #api-toast-bar.ready { background: linear-gradient(90deg,#4ade80,#16a34a); }
+
   /* ── Skeleton chart overlay ── */
   .chart-wrap { position: relative; }
   .chart-skel {
@@ -1235,18 +1283,20 @@
       </div><!-- /tourn-detail -->
     </section>
     <section class="view" id="view-map">
-      <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
-        <button class="btn-ghost flex items-center gap-2 text-sm" onclick="openSpotlight()">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-          <span class="text-slate-500">Rechercher un club ou un joueur…</span>
-          <kbd class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" id="map-shortcut-badge">⌘K</kbd>
-        </button>
-        <span class="text-xs text-slate-400 ml-auto flex items-center gap-1">
-          <i data-lucide="info" class="w-3 h-3"></i>
-          Taille des cercles proportionnelle au nombre de licenciés
-        </span>
+      <div data-requires="map">
+        <div class="card p-4 mb-4 flex gap-3 items-center flex-wrap">
+          <button class="btn-ghost flex items-center gap-2 text-sm" onclick="openSpotlight()">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <span class="text-slate-500">Rechercher un club ou un joueur…</span>
+            <kbd class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" id="map-shortcut-badge">⌘K</kbd>
+          </button>
+          <span class="text-xs text-slate-400 ml-auto flex items-center gap-1">
+            <i data-lucide="info" class="w-3 h-3"></i>
+            Taille des cercles proportionnelle au nombre de licenciés
+          </span>
+        </div>
+        <div id="map" class="card"></div>
       </div>
-      <div id="map" class="card"></div>
     </section>
 
     <!-- ═════ GRAPH ════════════════════════════════════════════════════ -->
@@ -5074,24 +5124,42 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
       if (res.ok) {
         ready = true;
         setStatus(true);
-        toast?.classList.remove('show');
-        if (barEl) barEl.style.width = '100%';
+        if (barEl) { barEl.style.width = '100%'; barEl.classList.add('ready'); }
+        if (toast)  { toast.classList.add('ready'); }
+        if (stepEl) stepEl.textContent = '✓ Serveur prêt — données chargées';
+        if (subEl)  subEl.textContent  = 'Le site est pleinement opérationnel';
+        setTimeout(() => toast?.classList.remove('show'), 2200);
         // Charger la config prod/dev et adapter l'UI
         apiFetch('/api/config').then(cfg => {
           if (!cfg) return;
           window.APP_CONFIG = cfg;
           const isProd = cfg.env === 'prod';
-          // Graphe — désactivé en prod
-          if (isProd) {
-            document.querySelectorAll('[data-requires="graph"]').forEach(el => {
-              el.innerHTML = `<div class="text-center py-12 text-slate-400">
-                <div class="text-2xl mb-2">🚧</div>
-                <div class="font-medium text-slate-500">Graphe réseau</div>
-                <div class="text-sm mt-1">Fonctionnalité en cours de développement</div>
-              </div>`;
+
+          // Helper — remplace un [data-requires="X"] par un joli placeholder WIP
+          function showWip(selector, title, desc) {
+            document.querySelectorAll(`[data-requires="${selector}"]`).forEach(el => {
+              el.innerHTML = `
+                <div class="wip-placeholder">
+                  <div class="wip-icon">🚧</div>
+                  <div class="wip-badge">En cours de développement</div>
+                  <div class="wip-title">${title}</div>
+                  <div class="wip-desc">${desc}</div>
+                </div>`;
             });
           }
-          // Bandeaux "en construction" sur les sections WIP
+
+          // Graphe réseau — désactivé en prod (trop lourd pour le free tier)
+          if (!cfg.features?.graph) {
+            showWip('graph', 'Graphe réseau partenaires',
+              'Visualisation des connections entre joueurs — disponible prochainement.');
+          }
+          // Carte de France — désactivée en prod (données clubs non finalisées)
+          if (!cfg.features?.map) {
+            showWip('map', 'Carte de France',
+              'Localisation des clubs et licenciés — disponible prochainement.');
+          }
+
+          // Bandeaux "en construction" sur les sections WIP génériques
           if (cfg.features?.wip_banners) {
             document.querySelectorAll('[data-wip]').forEach(el => {
               const label = el.dataset.wip || 'Cette fonctionnalité';
@@ -5534,69 +5602,4 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   }
 
   window.toggleFavorite = async function(playerId) {
-    if (!_currentUser) { showNotif('Connecte-toi pour sauvegarder des favoris', 'info'); openProfileModal(); return; }
-    const btn = document.getElementById('fav-toggle-btn');
-    const icon = document.getElementById('fav-icon');
-    const label = document.getElementById('fav-label');
-    const isFav = btn?.dataset.favorited === 'true';
-    if (isFav) {
-      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'DELETE' });
-      if (btn) btn.dataset.favorited = 'false';
-      icon?.setAttribute('fill','none');
-      if (label) label.textContent = 'Suivre';
-      btn?.classList.remove('bg-rose-50','text-rose-600','border-rose-300');
-      showNotif('Retiré des favoris','info');
-    } else {
-      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'POST' });
-      if (btn) btn.dataset.favorited = 'true';
-      icon?.setAttribute('fill','currentColor');
-      if (label) label.textContent = 'Suivi ❤';
-      btn?.classList.add('bg-rose-50','text-rose-600','border-rose-300');
-      btn?.classList.remove('text-rose-500','border-rose-200');
-      showNotif('Ajouté aux favoris !','success');
-    }
-  };
-
-  const _origRender = window.renderProfile;
-  window.renderProfile = function(data) {
-    if (_origRender) _origRender(data);
-    if (_currentUser && data?.id) {
-      authFetch(`/api/me/favorites/${encodeURIComponent(data.id)}/check`).then(res => {
-        if (!res) return;
-        const btn = document.getElementById('fav-toggle-btn');
-        const icon = document.getElementById('fav-icon');
-        const label = document.getElementById('fav-label');
-        if (!btn) return;
-        btn.dataset.favorited = res.favorited ? 'true' : 'false';
-        if (res.favorited) {
-          icon?.setAttribute('fill','currentColor');
-          if (label) label.textContent = 'Suivi ❤';
-          btn.classList.add('bg-rose-50','text-rose-600','border-rose-300');
-        } else { icon?.setAttribute('fill','none'); if (label) label.textContent = 'Suivre'; }
-      });
-    }
-  };
-
-  window.authLogout = async function() {
-    await authFetch('/api/auth/logout', { method: 'POST' });
-    _sessionId = null; _currentUser = null; localStorage.removeItem(SESSION_KEY);
-    updateHeaderBtn(); updateNavProfil();
-    document.querySelector('[data-view="dashboard"]')?.click();
-    showNotif('Déconnecté','info');
-  };
-
-  document.getElementById('nav-mon-profil')?.addEventListener('click', () => {
-    if (_currentUser) loadMonProfil();
-  });
-
-  // Initialisation : session + token magic link dans l'URL
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-})();
-</script>
-</body>
-</html>
+    if 

@@ -1452,6 +1452,8 @@ def route_config():
         "features": {
             # Graphe réseau désactivé en prod (requête trop lourde pour le free tier)
             "graph":          not is_prod,
+            # Carte de France désactivée en prod (Leaflet + données clubs non finalisées)
+            "map":            not is_prod,
             # Bandeau "en construction" affiché en prod pour les sections non finalisées
             "wip_banners":    is_prod,
             # Recherche : longueur min (3 en prod pour les index trigram, 2 en dev)
@@ -1711,6 +1713,4 @@ def route_me_fav_check(player_id: str):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_ENV") != "production"
-    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False)
+    port = int(os.environ.get("PORT"
