@@ -5602,4 +5602,69 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
   }
 
   window.toggleFavorite = async function(playerId) {
-    if 
+    if (!_currentUser) { showNotif('Connecte-toi pour sauvegarder des favoris', 'info'); openProfileModal(); return; }
+    const btn = document.getElementById('fav-toggle-btn');
+    const icon = document.getElementById('fav-icon');
+    const label = document.getElementById('fav-label');
+    const isFav = btn?.dataset.favorited === 'true';
+    if (isFav) {
+      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'DELETE' });
+      if (btn) btn.dataset.favorited = 'false';
+      icon?.setAttribute('fill','none');
+      if (label) label.textContent = 'Suivre';
+      btn?.classList.remove('bg-rose-50','text-rose-600','border-rose-300');
+      showNotif('Retiré des favoris','info');
+    } else {
+      await authFetch(`/api/me/favorites/${encodeURIComponent(playerId)}`, { method: 'POST' });
+      if (btn) btn.dataset.favorited = 'true';
+      icon?.setAttribute('fill','currentColor');
+      if (label) label.textContent = 'Suivi ❤';
+      btn?.classList.add('bg-rose-50','text-rose-600','border-rose-300');
+      btn?.classList.remove('text-rose-500','border-rose-200');
+      showNotif('Ajouté aux favoris !','success');
+    }
+  };
+
+  const _origRender = window.renderProfile;
+  window.renderProfile = function(data) {
+    if (_origRender) _origRender(data);
+    if (_currentUser && data?.id) {
+      authFetch(`/api/me/favorites/${encodeURIComponent(data.id)}/check`).then(res => {
+        if (!res) return;
+        const btn = document.getElementById('fav-toggle-btn');
+        const icon = document.getElementById('fav-icon');
+        const label = document.getElementById('fav-label');
+        if (!btn) return;
+        btn.dataset.favorited = res.favorited ? 'true' : 'false';
+        if (res.favorited) {
+          icon?.setAttribute('fill','currentColor');
+          if (label) label.textContent = 'Suivi ❤';
+          btn.classList.add('bg-rose-50','text-rose-600','border-rose-300');
+        } else { icon?.setAttribute('fill','none'); if (label) label.textContent = 'Suivre'; }
+      });
+    }
+  };
+
+  window.authLogout = async function() {
+    await authFetch('/api/auth/logout', { method: 'POST' });
+    _sessionId = null; _currentUser = null; localStorage.removeItem(SESSION_KEY);
+    updateHeaderBtn(); updateNavProfil();
+    document.querySelector('[data-view="dashboard"]')?.click();
+    showNotif('Déconnecté','info');
+  };
+
+  document.getElementById('nav-mon-profil')?.addEventListener('click', () => {
+    if (_currentUser) loadMonProfil();
+  });
+
+  // Initialisation : session + token magic link dans l'URL
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+</body>
+</html>
