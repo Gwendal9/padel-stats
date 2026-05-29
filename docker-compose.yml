@@ -4,22 +4,10 @@ services:
     image: padel-stats:latest
     container_name: padel-stats
     restart: unless-stopped
-    # Plus exposé directement — Nginx prend en charge
-    expose:
-      - "5000"
+    ports:
+      - "127.0.0.1:5000:5000"   # uniquement localhost → exposé via Cloudflare Tunnel
     volumes:
       - /opt/padel-data/tenup.db:/app/backend/tenup.db
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=            # vide → SQLite automatique
-
-  nginx:
-    image: nginx:alpine
-    container_name: padel-nginx
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:5000:80"     # Cloudflare Tunnel pointe toujours sur localhost:5000
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - padel

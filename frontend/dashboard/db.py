@@ -174,6 +174,12 @@ def ensure_indexes():
                 conn.execute("PRAGMA journal_mode=WAL")
                 conn.execute("PRAGMA wal_autocheckpoint=1000")
                 conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_joueurs_nom ON joueurs(nom)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_joueurs_prenom ON joueurs(prenom)"
+                )
+                conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_joueurs_club ON joueurs(club_nom)"
                 )
                 conn.execute(
