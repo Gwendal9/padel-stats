@@ -34,9 +34,12 @@ def search_players(q: str, limit: int = 20, sexe: str | None = None) -> list[dic
     if not q:
         return []
 
-    pattern = f"%{q}%"
+    # Prefix match (q%) : utilise l'index B-tree sur nom/prenom → instantané.
+    # Fallback substring (%q%) sur le nom complet pour les recherches "Prénom NOM".
+    prefix  = f"{q}%"
+    substr  = f"%{q}%"
     sexe_clause = "AND sexe = ?" if sexe in ("H", "F") else ""
-    params = (pattern, pattern, pattern, pattern)
+    params = (prefix, prefix, substr, substr)
     if sexe in ("H", "F"):
         params = params + (sexe,)
     params = params + (limit,)
