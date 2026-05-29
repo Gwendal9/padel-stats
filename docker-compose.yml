@@ -7,7 +7,7 @@ services:
     ports:
       - "127.0.0.1:5000:5000"   # uniquement localhost → exposé via Cloudflare Tunnel
     volumes:
-      - /opt/padel-data/tenup.db:/app/backend/tenup.db:ro
+      - /opt/padel-data/tenup.db:/app/backend/tenup.db
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=            # vide → SQLite automatique
