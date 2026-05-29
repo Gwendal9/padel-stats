@@ -1188,44 +1188,6 @@
       </div>
 
       <!-- Category stats panel -->
-      <div id="cat-stats-panel" class="card p-5 mb-5">
-        <div class="flex items-center justify-between mb-4">
-          <div class="font-semibold text-sm flex items-center gap-2">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-violet-500"></i>
-            Statistiques par catégorie
-          </div>
-          <div class="tabs" id="cat-stats-tabs">
-            <span class="tab active" data-tab="size">Taille tournois</span>
-            <span class="tab" data-tab="cities">Villes</span>
-          </div>
-        </div>
-        <!-- Size tab -->
-        <div id="cat-tab-size">
-          <canvas id="cat-size-chart" height="200"></canvas>
-        </div>
-        <!-- Cities tab -->
-        <div id="cat-tab-cities" class="hidden">
-          <div class="flex gap-3 mb-3 flex-wrap" id="cat-city-filter">
-            <!-- category buttons will be injected here -->
-          </div>
-          <div id="cat-city-table" class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase">
-                <tr>
-                  <th class="text-left py-2 px-3">Ville</th>
-                  <th class="text-right py-2 px-3">Tournois avec présence</th>
-                  <th class="text-right py-2 px-3">% des tournois</th>
-                </tr>
-              </thead>
-              <tbody id="cat-city-body">
-                <tr><td colspan="3" class="py-4 text-center text-slate-400 text-xs">Sélectionnez une catégorie</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div id="cat-stats-loading" class="py-6 text-center text-slate-400 text-sm hidden">Chargement…</div>
-      </div>
-
       <!-- Recent tournaments list (default) -->
       <div id="tourn-list" class="card overflow-hidden mb-5">
         <div class="px-5 py-3 border-b border-slate-100 font-semibold text-sm flex items-center gap-2">
@@ -5282,11 +5244,17 @@ window.compareFromProfile = function(id, label, rank, club) {
     if (!q) { results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>'; spItems = []; return; }
     if (q.length < 3) { results.innerHTML = '<div class="sp-empty">Tape au moins 3 lettres…</div>'; spItems = []; return; }
     const mySeq = ++spSeq;  // identifiant unique de cette requête
-    // Clubs & tournois : filtrés localement (instantané) — seuls les joueurs nécessitent l'API
-    const clubs       = _filterClubs(q, 3);
-    const tournaments = _filterTourns(q, 3);
+    // Contexte : selon l'onglet actif, on restreint les résultats
+    const activeView = document.querySelector('.view.active')?.id;
+    const wantPlayers    = !activeView || activeView === 'view-player'     || activeView === 'view-leaderboard' || activeView === 'view-dashboard' || activeView === 'view-compare' || activeView === 'view-partners' || activeView === 'view-mon-profil';
+    const wantClubs      = !activeView || activeView === 'view-club'       || activeView === 'view-dashboard';
+    const wantTournaments= !activeView || activeView === 'view-tournament' || activeView === 'view-dashboard';
+    const clubs       = wantClubs      ? _filterClubs(q, 3)  : [];
+    const tournaments = wantTournaments? _filterTourns(q, 3) : [];
     spTimer = setTimeout(async () => {
-      const players = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => []);
+      const players = wantPlayers
+        ? await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => [])
+        : [];
       if (mySeq !== spSeq) return;  // réponse périmée — une requête plus récente est en cours
       renderSpotlight(q, players, clubs, tournaments);
     }, 180);

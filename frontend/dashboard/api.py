@@ -1459,11 +1459,10 @@ def route_config():
     return jsonify({
         "env":       "prod" if is_prod else "dev",
         "features": {
-            # Graphe réseau désactivé en prod (requête trop lourde pour le free tier)
-            "graph":          not is_prod,
-            # Carte de France désactivée en prod (Leaflet + données clubs non finalisées)
-            "map":            not is_prod,
-            # Bandeau "en construction" affiché en prod pour les sections non finalisées
+            # Graphe et carte désactivés — fonctionnalités en cours de développement
+            "graph":          False,
+            "map":            False,
+            # Bandeau "en construction" toujours affiché pour graph/map
             "wip_banners":    is_prod,
             # Recherche : longueur min (3 en prod pour les index trigram, 2 en dev)
             "search_min_len": 3 if is_prod else 2,
