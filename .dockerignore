@@ -1,0 +1,37 @@
+# Données / DB
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+backend/cookies.json
+
+# Scraper & scripts de dev
+backend/
+frontend/app.py
+
+# Divers
+*.log
+*.csv
+*.bak
+.DS_Store
+Thumbs.db
+.ipynb_checkpoints/
+RECAP_DEPLOIEMENT_RENDER.md
