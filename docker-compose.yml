@@ -1,0 +1,13 @@
+services:
+  padel:
+    build: .
+    image: padel-stats:latest
+    container_name: padel-stats
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"   # uniquement localhost → exposé via Cloudflare Tunnel
+    volumes:
+      - /opt/padel-data/tenup.db:/app/backend/tenup.db:ro
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=            # vide → SQLite automatique
