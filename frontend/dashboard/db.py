@@ -107,6 +107,7 @@ def ensure_indexes():
             "CREATE INDEX IF NOT EXISTS idx_joueurs_sexe ON joueurs(sexe)",
             "CREATE INDEX IF NOT EXISTS idx_joueurs_sexe_classement ON joueurs(sexe, classement) WHERE classement IS NOT NULL",
             "CREATE INDEX IF NOT EXISTS idx_joueurs_club ON joueurs(club_nom) WHERE club_nom IS NOT NULL AND club_nom != ''",
+            "CREATE INDEX IF NOT EXISTS idx_joueurs_club_trgm ON joueurs USING gin(club_nom gin_trgm_ops)",
             "CREATE INDEX IF NOT EXISTS idx_joueurs_ville ON joueurs(ville) WHERE ville IS NOT NULL AND ville != ''",
             "CREATE INDEX IF NOT EXISTS idx_joueurs_naissance ON joueurs(naissance) WHERE naissance IS NOT NULL",
             # Participations — jointures lourdes
@@ -115,6 +116,7 @@ def ensure_indexes():
             "CREATE INDEX IF NOT EXISTS idx_parts_date ON participations(date_tournoi) WHERE date_tournoi IS NOT NULL",
             # Tournois
             "CREATE INDEX IF NOT EXISTS idx_tournois_nom ON tournois(nom)",
+            "CREATE INDEX IF NOT EXISTS idx_tournois_nom_trgm ON tournois USING gin(nom gin_trgm_ops)",
             # Table matérialisée : résumé par tournoi (peuplée par precompute.py)
             # Évite le gros JOIN tournois×participations GROUP BY dans route_tournaments
             # et route_stats_categories (~800k lignes → 3k lignes).
@@ -168,6 +170,9 @@ def ensure_indexes():
         try:
             with get_conn(readonly=False) as conn:
                 # Index performances
+                # WAL mode : lectures concurrentes pendant une écriture
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA wal_autocheckpoint=1000")
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_joueurs_club ON joueurs(club_nom)"
                 )
