@@ -3,7 +3,11 @@
 Dashboard analytics pour le padel français, construit à partir des données publiques TenUp.
 Projet de portfolio Data Analyst.
 
+<<<<<<< Updated upstream
 🚀 **[Accéder au site → padel-stats.onrender.com](https://padel-stats-oava.onrender.com/)**
+=======
+🚀 **[Accéder au site → padel.gwendev.eu](https://padel.gwendev.eu)**
+>>>>>>> Stashed changes
 
 **153 291 joueurs · 1 019 423 participations · 37 124 tournois**
 
@@ -14,10 +18,10 @@ Projet de portfolio Data Analyst.
 | Couche | Techno |
 |--------|--------|
 | Scraping | Python (requests + Playwright) |
-| Stockage | SQLite (dev) / PostgreSQL (prod) |
+| Stockage | SQLite |
 | API | Flask + Flask-CORS |
 | Frontend | HTML · Tailwind CSS · Chart.js · Leaflet |
-| Déploiement | Render (API) + GitHub Pages (front) |
+| Déploiement | VPS Hetzner (Docker) + Cloudflare Tunnel |
 
 ---
 
@@ -54,29 +58,47 @@ La base SQLite (`tenup.db`) est chargée automatiquement. Le graphe en mémoire 
 
 ---
 
-## Déploiement sur Render (PostgreSQL)
+## Déploiement sur VPS (Docker + Cloudflare Tunnel)
 
-### 1. Créer la base PostgreSQL sur Neon (gratuit)
+### Prérequis
+- VPS avec Docker installé
+- Cloudflare Tunnel configuré (`cloudflared`)
+- DB SQLite disponible sur le VPS
 
-1. Créer un compte sur [neon.tech](https://neon.tech)
-2. Créer un projet → copier la **Connection string** (format `postgresql://...`)
-
-### 2. Migrer les données SQLite → PostgreSQL
+### 1. Copier la DB sur le VPS
 
 ```bash
-DATABASE_URL=postgresql://user:pass@host/db python dashboard/migrate_to_postgres.py
+scp backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
 ```
 
-La migration prend ~5–10 minutes pour 1,2M de lignes.
+### 2. Déployer
 
-### 3. Déployer sur Render
+```bash
+ssh root@<vps-ip>
+git clone https://github.com/Gwendal9/padel-stats.git /opt/padel
+cd /opt/padel && git checkout dev
+docker compose up -d --build
+```
 
-1. Fork ce repo sur GitHub
-2. Créer un compte [render.com](https://render.com)
-3. **New → Web Service** → connecter le repo
-4. Render détecte automatiquement `render.yaml`
-5. Ajouter `DATABASE_URL` dans les variables d'environnement (valeur Neon)
-6. Deploy → l'app est accessible sur `https://padel-stats.onrender.com`
+### 3. Cloudflare Tunnel (`/etc/cloudflared/config.yml`)
+
+```yaml
+ingress:
+  - hostname: padel.gwendev.eu
+    service: http://localhost:5000
+  - service: http_status:404
+```
+
+```bash
+systemctl restart cloudflared
+```
+
+### Mise à jour de la DB
+
+```bash
+scp backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
+# Pas besoin de redémarrer le container
+```
 
 ---
 

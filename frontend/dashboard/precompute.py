@@ -49,11 +49,18 @@ def main():
 
     # Liste des (cache_key, fonction_route) à pré-calculer
     JOBS = [
-        ("stats",            api.route_stats),
-        ("stats_categories", api.route_stats_categories),
-        ("tournaments_20",   lambda: _call_with_args(api.route_tournaments, limit="20")),
-        ("clubs_100",        lambda: _call_with_args(api.route_clubs,       top="100")),
-        ("clubs_1000",       lambda: _call_with_args(api.route_clubs,       top="1000")),
+        ("stats",                        api.route_stats),
+        ("stats_categories",             api.route_stats_categories),
+        ("tournaments_20",               lambda: _call_with_args(api.route_tournaments,    limit="20")),
+        ("clubs_100",                    lambda: _call_with_args(api.route_clubs,          top="100")),
+        ("clubs_1000",                   lambda: _call_with_args(api.route_clubs,          top="1000")),
+        # Classements clubs — 4 tris rapides (pas de JOIN participations)
+        ("club_rankings_best_h_200",     lambda: _call_with_args(api.route_club_rankings,  sort="best_h",     top="200")),
+        ("club_rankings_best_f_200",     lambda: _call_with_args(api.route_club_rankings,  sort="best_f",     top="200")),
+        ("club_rankings_avg_rank_h_200", lambda: _call_with_args(api.route_club_rankings,  sort="avg_rank_h", top="200")),
+        ("club_rankings_avg_rank_f_200", lambda: _call_with_args(api.route_club_rankings,  sort="avg_rank_f", top="200")),
+        # nb_tournois = JOIN lourd sur participations — en dernier
+        ("club_rankings_nb_tournois_200",lambda: _call_with_args(api.route_club_rankings,  sort="nb_tournois",top="200")),
     ]
 
     print(f"\n🚀 Pré-calcul démarré ({len(JOBS)} jobs) — DATABASE = "

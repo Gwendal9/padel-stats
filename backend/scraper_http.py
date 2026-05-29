@@ -26,11 +26,13 @@ import sqlite3
 import json
 import re
 import os
+import sys
 import time
 import random
 import argparse
+import subprocess
 from datetime import datetime, timedelta
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse, urljoin
 from bs4 import BeautifulSoup
 
 # ── Détection curl_cffi vs httpx ─────────────────────────────────
@@ -54,10 +56,12 @@ DEBUG_HTML   = os.path.join(os.path.dirname(__file__), 'debug_page.html')
 SEED_ID      = '7633273415'
 MAX_RETRIES  = 3
 BAN_THRESHOLD = 10   # Profils vides consécutifs avant STOP
+SHARED_SESSION = False  # False = session fraîche par joueur (recommandé)
+WAIT_FILE = os.path.join(os.path.dirname(__file__), 'WAIT_COOKIES')  # legacy
 
 # Délai par worker entre chaque requête
-DELAY_MIN = 1.5
-DELAY_MAX = 3.0
+DELAY_MIN = 3.0
+DELAY_MAX = 8.0
 
 # Limiteur global : nb max de requêtes simultanées
 CONCURRENCY_LIMIT = 15
@@ -79,6 +83,65 @@ HEADERS = {
     'Cache-Control':             'max-age=0',
 }
 
+
+# ── Auto-refresh cookies via Playwright ──────────────────────────
+_refresh_lock     = None   # asyncio.Lock() initialisé dans run_async
+_last_refresh_ts  = 0.0    # timestamp du dernier refresh réussi
+REFRESH_SCRIPT    = os.path.join(os.path.dirname(__file__), 'auto_refresh_cookies.py')
+
+async def auto_refresh_cookies_async() -> bool:
+    """
+    Lance auto_refresh_cookies.py (Playwright --visible) pour rafraîchir les
+    cookies QueueITAccepted automatiquement.
+
+    DESIGN : le verrou _refresh_lock est tenu pendant TOUTE la durée du refresh.
+    Les workers qui arrivent pendant ce temps ATTENDENT la fin (pas de retour anticipé).
+    Une fois le refresh terminé, tous les workers rechargent les cookies frais.
+    Un délai minimum de 30s entre deux refreshes évite les boucles infinies.
+    """
+    global _last_refresh_ts
+
+    async with _refresh_lock:          # ← tenu jusqu'à la fin du refresh
+        # Si un refresh vient juste d'avoir lieu (< 30s), considérer OK
+        if time.time() - _last_refresh_ts < 30:
+            return True
+
+        print(f"\n{'='*60}")
+        print("🤖 Auto-refresh cookies via Playwright (fenêtre visible)...")
+        print(f"   Script : {REFRESH_SCRIPT}")
+        print(f"{'='*60}")
+
+        if not os.path.exists(REFRESH_SCRIPT):
+            print("   ❌ auto_refresh_cookies.py introuvable")
+            return False
+
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, REFRESH_SCRIPT, '--visible',
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=150)
+            output = stdout.decode('utf-8', errors='replace') if stdout else ''
+            if output.strip():
+                print(output.strip())
+
+            if proc.returncode == 0:
+                print("   ✅ Auto-refresh réussi !")
+                _last_refresh_ts = time.time()
+                return True
+            else:
+                print(f"   ❌ Playwright échoué (code {proc.returncode})")
+                print("   → Installe : pip install playwright && playwright install chromium")
+                return False
+
+        except asyncio.TimeoutError:
+            print("   ❌ Timeout auto-refresh (>150s)")
+            return False
+        except Exception as e:
+            print(f"   ❌ Erreur : {e}")
+            return False
+
 # ── Chargement des cookies ────────────────────────────────────────
 def _load_raw_cookies():
     if not os.path.exists(COOKIES_FILE):
@@ -90,15 +153,45 @@ def _load_raw_cookies():
                 for k, v in data.items() if v and not v.startswith('COLLE_')]
     return data
 
+# Cookies à exclure du chargement général.
+# IMPORTANT : SSESS* (session Drupal HTTPS) et SHARED_SESSION* (session Java)
+# sont DÉSORMAIS INCLUS — les pages /classement/{id}/padel requièrent une
+# session authentifiée (non-logged-in → 403 Accès refusé).
+# Le risque de boucle redirect (session expirée → 302→/) est géré par
+# max_redirects=5 dans fetch_html : au pire, empty profile → retry → refresh.
+_EXCLUDED_COOKIE_PREFIXES = ()          # plus d'exclusion par préfixe
+_EXCLUDED_COOKIE_NAMES    = frozenset({
+    'userStore', 'pa_user', 'pa_vid', 'pa_privacy',
+})
+
 def load_cookies_jar():
-    """Retourne un dict {name: value} utilisable avec httpx / curl_cffi."""
+    """Retourne un dict {name: value} avec tous les cookies utiles.
+
+    Inclut les cookies de session Drupal/Java (SSESS*, SHARED_SESSION_JAVA)
+    car les pages /classement/{id}/padel requièrent désormais une session
+    authentifiée (Drupal retourne 403 pour les visiteurs anonymes).
+    Cookies essentiels :
+      - SSESS*                                    (session Drupal HTTPS — AUTH)
+      - SHARED_SESSION_JAVA                       (session Java — AUTH)
+      - QueueITAccepted-SDFrts345E-V3_tenupprod  (bypass Queue-IT)
+      - datadome                                  (bypass DataDome — exclu de curl_cffi)
+      - i18n_redirected                           (évite redirect langue)
+      - TC_PRIVACY / TC_PRIVACY_CENTER            (consentement RGPD)
+    """
     raw = _load_raw_cookies()
     jar = {}
     for c in raw:
-        v = c.get('value', '')
-        if v:
-            jar[c['name']] = v
-    print(f"✅ {len(jar)} cookies chargés")
+        name = c.get('name', '')
+        v    = c.get('value', '')
+        if not v or v == 'deleted':
+            continue
+        if any(name.startswith(pfx) for pfx in _EXCLUDED_COOKIE_PREFIXES):
+            continue
+        if name in _EXCLUDED_COOKIE_NAMES:
+            continue
+        jar[name] = v
+    n_session = sum(1 for k in jar if k.startswith(('SSESS', 'SHARED_SESSION')))
+    print(f"✅ {len(jar)} cookies chargés (dont {n_session} session Drupal/Java)")
     return jar
 
 # ── Base de données ───────────────────────────────────────────────
@@ -334,52 +427,139 @@ def is_queueit_page(html):
     """Détecte si le HTML est une page de challenge Queue-IT."""
     return 'enqueuetoken' in html and 'decodeURIComponent' in html
 
-async def bypass_queueit(session, html, semaphore):
+def _parse_set_cookies(headers) -> dict:
+    """Extrait les cookies depuis les headers Set-Cookie d'une réponse curl_cffi."""
+    cookies = {}
+    # curl_cffi peut regrouper plusieurs Set-Cookie avec \n
+    raw = headers.get('set-cookie', '')
+    if not raw:
+        return cookies
+    for line in raw.replace('\r\n', '\n').split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        # Prend uniquement la partie name=value (avant le premier ';')
+        kv = line.split(';')[0].strip()
+        if '=' in kv:
+            name, _, val = kv.partition('=')
+            cookies[name.strip()] = val.strip()
+    return cookies
+
+
+async def bypass_queueit(session, html, semaphore, cookie_dict=None):
     """
-    Suit la redirection JavaScript de Queue-IT pour obtenir le cookie d'acceptation.
-    Queue-IT émet un token valide ~4 minutes → on doit suivre immédiatement.
-    Retourne le HTML final (page joueur) ou None.
+    Bypass Queue-IT en suivant manuellement la chaîne de redirections.
+
+    Queue-IT page 1 (cookie check) :
+        document.location.href = decodeURIComponent('/?c=tenup&...&tsr=...&tsh=...')
+    → relative à tenup.queue-it.net.
+
+    On suit chaque redirect manuellement (allow_redirects=False) pour pouvoir
+    mettre à jour le header Cookie avec les nouveaux Set-Cookie reçus en chemin.
+    Sans cela, le nouveau QueueITAccepted émis par queue-it.net n'est pas
+    transmis à tenup.fft.fr → 403.
+
+    Retourne (html_ou_None, live_cookies) — les cookies acquis pendant le bypass
+    (nouveau QueueITAccepted, nouveau datadome) doivent être propagés au worker.
     """
-    # Extrait l'URL encodée du code JS : document.location.href = decodeURIComponent('...')
     match = re.search(r"decodeURIComponent\('([^']+)'\)", html)
     if not match:
-        return None
+        print("   ⚠️  Queue-IT: pas de decodeURIComponent dans le HTML")
+        return None, {}
 
-    # Décode l'URL relative Queue-IT : /?c=tenup&e=tenupprod&enqueuetoken=...
-    relative_url = unquote(match.group(1))
-    if not relative_url.startswith('/'):
-        relative_url = '/' + relative_url
+    decoded = unquote(match.group(1))
+    if decoded.startswith('http'):
+        current_url = decoded
+    elif decoded.startswith('/'):
+        current_url = f"https://tenup.queue-it.net{decoded}"
+    else:
+        current_url = f"https://tenup.queue-it.net/{decoded}"
 
-    queueit_url = f"https://tenup.fft.fr{relative_url}"
-    print(f"   🔄 Queue-IT détecté — suivi de la redirection...")
+    print(f"   🔄 Queue-IT bypass → {current_url[:80]}...")
 
-    headers = dict(HEADERS)
-    headers['Referer'] = f'{TENUP_BASE}/accueil'
+    # Copie des cookies courants (sera enrichi des Set-Cookie de chaque réponse)
+    live_cookies = dict(cookie_dict or {})
 
     async with semaphore:
-        try:
-            if USE_CURL_CFFI:
-                resp = await session.get(queueit_url, headers=headers,
-                                         timeout=30, allow_redirects=True)
-            else:
-                resp = await session.get(queueit_url, headers=headers, timeout=30.0)
+        for step in range(10):
+            headers = dict(HEADERS)
+            headers['Referer'] = 'https://tenup.queue-it.net/'
+            headers['Cookie'] = '; '.join(f'{k}={v}' for k, v in live_cookies.items())
 
-            if resp.status_code == 200 and not is_queueit_page(resp.text):
-                print(f"   ✅ Queue-IT contourné ({len(resp.text)} chars)")
-                return resp.text
-            else:
-                print(f"   ⚠️  Queue-IT : réponse inattendue HTTP {resp.status_code} ({len(resp.text)} chars)")
+            try:
+                if USE_CURL_CFFI:
+                    resp = await session.get(current_url, headers=headers,
+                                             timeout=30, allow_redirects=False)
+                else:
+                    resp = await session.get(current_url, headers=headers,
+                                             timeout=30.0, follow_redirects=False)
+            except Exception as e:
+                print(f"   ⚠️  Queue-IT bypass étape {step+1}: {e}")
                 return None
-        except Exception as e:
-            print(f"   ⚠️  Queue-IT bypass erreur : {e}")
-            return None
+
+            # Absorbe les nouveaux cookies (Set-Cookie) → mis à jour pour la prochaine requête
+            new_cookies = _parse_set_cookies(resp.headers)
+            if new_cookies:
+                live_cookies.update(new_cookies)
+
+            status = resp.status_code
+
+            if status in (301, 302, 303, 307, 308):
+                location = resp.headers.get('location', '')
+                if not location:
+                    print(f"   ⚠️  Queue-IT: redirect sans Location à l'étape {step+1}")
+                    return None, {}
+                # Construire URL absolue
+                if location.startswith('http'):
+                    current_url = location
+                elif location.startswith('/'):
+                    p = urlparse(current_url)
+                    current_url = f"{p.scheme}://{p.netloc}{location}"
+                else:
+                    current_url = urljoin(current_url, location)
+                print(f"   → étape {step+1}: {current_url[:80]}")
+                continue
+
+            if status == 200:
+                text = resp.text
+                if not is_queueit_page(text):
+                    print(f"   ✅ Queue-IT contourné ({len(text)} chars) — {current_url[:60]}")
+                    return text, live_cookies
+                # Encore sur queue-it.net (page JS supplémentaire) ?
+                print(f"   ⚠️  Queue-IT: encore sur queue-it.net à l'étape {step+1}")
+                return None, {}
+
+            # Log du corps pour diagnostic DataDome
+            body_preview = ''
+            try:
+                body_preview = resp.text[:250]
+            except Exception:
+                pass
+            print(f"   ⚠️  Queue-IT: HTTP {status} à l'étape {step+1} — {current_url[:60]}")
+            if body_preview:
+                print(f"   🚫 Corps réponse: {body_preview[:200]}")
+            return None, {}
+
+        print("   ⚠️  Queue-IT: trop de redirections (>10)")
+        return None, {}
 
 # ── Requête HTTP ──────────────────────────────────────────────────
-async def fetch_html(session, id_fft, semaphore, dump_html=False):
+async def fetch_html(session, id_fft, semaphore, dump_html=False, cookie_dict=None):
     """
     Récupère le HTML de la page /classement/{id}/padel.
     Gère automatiquement les challenges Queue-IT.
-    Retourne (html_str, status_code) ou (None, code) en cas d'échec.
+    Retourne (html_str, status_code, acquired_cookies) ou (None, code, {}) en cas d'échec.
+
+    cookie_dict : si fourni, les cookies sont injectés directement dans le header
+                  Cookie (contourne le moteur de cookies de curl_cffi qui peut
+                  ne pas envoyer les cookies sans info de domaine).
+                  Note : le cookie 'datadome' est exclu intentionnellement pour
+                  laisser curl_cffi acquérir son propre cookie DataDome via son
+                  fingerprint Chrome (un datadome issu de Playwright causerait un
+                  mismatch de fingerprint → 403).
+
+    acquired_cookies : dict des nouveaux cookies (datadome, QueueITAccepted…)
+                       obtenus pendant la requête — à propager dans initial_cookies.
     """
     url = f"{TENUP_BASE}/classement/{id_fft}/padel"
     headers = dict(HEADERS)
@@ -388,27 +568,57 @@ async def fetch_html(session, id_fft, semaphore, dump_html=False):
         f'{TENUP_BASE}/recherche/joueurs/padel',
     ])
 
+    # Injection directe des cookies dans le header (contourne curl_cffi cookie engine)
+    # datadome exclu : cf. docstring
+    if cookie_dict:
+        headers['Cookie'] = '; '.join(f'{k}={v}' for k, v in cookie_dict.items()
+                                      if k != 'datadome')
+
+    acquired   = {}
+    body_403   = None
+    final_url  = ''
+
     async with semaphore:
         try:
             if USE_CURL_CFFI:
-                resp = await session.get(url, headers=headers, timeout=30, allow_redirects=True)
+                # max_redirects=5 : évite la boucle infinie tenup↔queue-it.net
+                # (avec allow_redirects=True sans limite → curl: (47) Max 30 redirects)
+                resp = await session.get(url, headers=headers, timeout=30,
+                                         allow_redirects=True, max_redirects=5)
             else:
                 resp = await session.get(url, headers=headers, timeout=30.0)
 
             status = resp.status_code
             text   = resp.text if status == 200 else None
+            acquired = _parse_set_cookies(resp.headers)
+            if status != 200:
+                try:
+                    body_403  = resp.text[:500]
+                    final_url = str(getattr(resp, 'url', '') or '')
+                    debug_403_path = os.path.join(os.path.dirname(__file__), 'debug_403.html')
+                    with open(debug_403_path, 'w', encoding='utf-8') as _f:
+                        _f.write(resp.text)
+                except Exception:
+                    pass
 
         except Exception as e:
-            return None, str(e)
+            return None, str(e), {}
 
     if text is None:
-        return None, status
+        if body_403:
+            if final_url:
+                print(f"   🚫 URL finale après redirects: {final_url}")
+            print(f"   🚫 HTTP {status} body preview: {body_403[:300]}")
+            print(f"   📄 dump complet → debug_403.html")
+        return None, status, {}
 
     # ── Bypass Queue-IT si nécessaire ────────────────────────────
     if is_queueit_page(text):
-        text = await bypass_queueit(session, text, semaphore)
+        text, bypass_cookies = await bypass_queueit(session, text, semaphore,
+                                                    cookie_dict=cookie_dict)
+        acquired.update(bypass_cookies)
         if text is None:
-            return None, 'queueit_failed'
+            return None, 'queueit_failed', {}
         status = 200
 
     if dump_html and text:
@@ -416,7 +626,7 @@ async def fetch_html(session, id_fft, semaphore, dump_html=False):
             f.write(text)
         print(f"   📄 HTML dumpé dans {DEBUG_HTML} ({len(text)} chars)")
 
-    return text, status
+    return text, status, acquired
 
 # ── Parser ────────────────────────────────────────────────────────
 def parse_profile(html, id_fft):
@@ -690,12 +900,27 @@ def parse_profile(html, id_fft):
     return profile
 
 # ── Worker ────────────────────────────────────────────────────────
-async def worker(worker_id, session, semaphore, conn, db_lock, counter, args):
+async def worker(worker_id, initial_cookies, semaphore, conn, db_lock, counter, args):
     wid               = f"W{worker_id}"
     pid_str           = f"{os.getpid()}-{worker_id}"
     empty_run         = 0
     consecutive_empty = 0
     dump_html_once    = args.dump_html and worker_id == 0
+
+    # Session partagée par worker (si SHARED_SESSION=True ou httpx)
+    if SHARED_SESSION and USE_CURL_CFFI:
+        _shared = CurlSession(impersonate="chrome124", cookies=dict(initial_cookies),
+                              verify=True, allow_redirects=True)
+        worker_session = await _shared.__aenter__()
+    elif not USE_CURL_CFFI:
+        _shared = httpx.AsyncClient(
+            cookies=httpx.Cookies(dict(initial_cookies)),
+            follow_redirects=True, http2=True, timeout=30.0,
+        )
+        worker_session = await _shared.__aenter__()
+    else:
+        _shared        = None
+        worker_session = None  # session fraîche par joueur
 
     while True:
         if os.path.exists(STOP_FILE):
@@ -726,13 +951,79 @@ async def worker(worker_id, session, semaphore, conn, db_lock, counter, args):
 
         try:
             # ── Fetch HTTP ───────────────────────────────────────
-            html, status = await fetch_html(session, id_fft, semaphore,
-                                            dump_html=dump_html_once)
+            # datadome exclu du cookie_dict : le cookie issu de Playwright est lié
+            # au fingerprint Playwright → mismatch avec curl_cffi → 403 DataDome.
+            # On laisse curl_cffi acquérir son propre datadome via son empreinte Chrome.
+            cookie_dict_curl = {k: v for k, v in initial_cookies.items()
+                                if k != 'datadome'}
+
+            if USE_CURL_CFFI and not SHARED_SESSION:
+                # Session fraîche par joueur + cookies injectés dans le header Cookie
+                # (curl_cffi ne transmet pas fiablement les cookies sans info de domaine)
+                async with CurlSession(impersonate="chrome124",
+                                       verify=True, allow_redirects=True) as fresh_session:
+                    html, status, new_cookies = await fetch_html(
+                        fresh_session, id_fft, semaphore,
+                        dump_html=dump_html_once,
+                        cookie_dict=cookie_dict_curl)
+            else:
+                html, status, new_cookies = await fetch_html(
+                    worker_session, id_fft, semaphore,
+                    dump_html=dump_html_once,
+                    cookie_dict=cookie_dict_curl)
+
+            # Propager les cookies acquis (datadome curl_cffi, nouveau QueueITAccepted)
+            if new_cookies:
+                for k, v in new_cookies.items():
+                    if k and v:
+                        if any(k.startswith(pfx) for pfx in _EXCLUDED_COOKIE_PREFIXES):
+                            continue
+                        if k in _EXCLUDED_COOKIE_NAMES:
+                            continue
+                        initial_cookies[k] = v
+                if 'datadome' in new_cookies:
+                    print(f"   🍪 datadome curl_cffi acquis ({new_cookies['datadome'][:30]}...)")
             dump_html_once = False  # une seule fois
 
             if html is None:
                 consecutive_empty += 1
                 print(f"   [{wid}] ⚠️  HTTP {status} pour {id_fft} — vide #{consecutive_empty}")
+
+                if status == 'queueit_failed':
+                    # Cookie QueueITAccepted expiré → auto-refresh Playwright
+                    async with db_lock:
+                        conn.execute(
+                            "UPDATE scrape_queue SET statut='pending', worker_id=NULL WHERE id_fft=?",
+                            (id_fft,)
+                        )
+                        conn.commit()
+                    print(f"   [{wid}] 🍪 Queue-IT bloqué — auto-refresh en cours...")
+                    ok = await auto_refresh_cookies_async()
+                    if ok:
+                        try:
+                            new_c = load_cookies_jar()
+                            initial_cookies.clear()
+                            initial_cookies.update(new_c)
+                            consecutive_empty = 0
+                            print(f"   [{wid}] ✅ Cookies rechargés — reprise")
+                        except Exception as _e:
+                            print(f"   [{wid}] ⚠️  Reload cookies : {_e}")
+                    else:
+                        # Fallback : attente fichier READY_COOKIES (créé manuellement)
+                        ready = os.path.join(os.path.dirname(COOKIES_FILE), 'READY_COOKIES')
+                        print(f"\n{'='*55}\n🍪 Crée le fichier READY_COOKIES après avoir mis à jour cookies.json\n{'='*55}")
+                        while not os.path.exists(ready):
+                            await asyncio.sleep(10)
+                        os.remove(ready)
+                        try:
+                            new_c = load_cookies_jar()
+                            initial_cookies.clear()
+                            initial_cookies.update(new_c)
+                            consecutive_empty = 0
+                            print(f"   [{wid}] ✅ Cookies rechargés manuellement")
+                        except Exception as _e:
+                            print(f"   [{wid}] ⚠️  Reload cookies : {_e}")
+                    continue
 
                 if str(status) in ('403', '429') or consecutive_empty >= BAN_THRESHOLD:
                     print(f"\n🚨 [{wid}] Trop d'erreurs HTTP ({status}) — possible BAN DataDome !")
@@ -845,6 +1136,14 @@ async def worker(worker_id, session, semaphore, conn, db_lock, counter, args):
         )
         conn.commit()
 
+
+    # Libérer la session partagée si elle existe
+    if _shared is not None:
+        try:
+            await _shared.__aexit__(None, None, None)
+        except Exception:
+            pass
+
 # ── Point d'entrée ────────────────────────────────────────────────
 async def run_async(args):
     n       = args.workers
@@ -867,36 +1166,24 @@ async def run_async(args):
         print(f"⛔ Fichier STOP existant — supprime-le d'abord : del STOP  (Windows) ou rm STOP")
         return
 
+    global _refresh_lock
+    _refresh_lock = asyncio.Lock()  # init dans la bonne event loop
+
     counter   = {'scraped': 0}
     db_lock   = asyncio.Lock()
     semaphore = asyncio.Semaphore(n)  # Limite le nb de requêtes simultanées
 
-    if USE_CURL_CFFI:
-        async with CurlSession(impersonate="chrome124", cookies=cookies,
-                               verify=True, max_redirects=5) as session:
-            tasks = [
-                asyncio.create_task(
-                    worker(i, session, semaphore, conn, db_lock, counter, args)
-                )
-                for i in range(n)
-            ]
-            await asyncio.gather(*tasks)
-    else:
-        cookie_jar = httpx.Cookies(cookies)
-        async with httpx.AsyncClient(
-            cookies=cookie_jar,
-            follow_redirects=True,
-            http2=True,
-            timeout=30.0,
-            limits=httpx.Limits(max_connections=n+5, max_keepalive_connections=n)
-        ) as session:
-            tasks = [
-                asyncio.create_task(
-                    worker(i, session, semaphore, conn, db_lock, counter, args)
-                )
-                for i in range(n)
-            ]
-            await asyncio.gather(*tasks)
+    mode_str = "fraîche/joueur" if (USE_CURL_CFFI and not SHARED_SESSION) else "partagée/worker"
+    print(f"🍪 Mode cookies : {mode_str} (SHARED_SESSION={SHARED_SESSION})")
+
+    # Les workers créent eux-mêmes leurs sessions (fresh par joueur par défaut)
+    tasks = [
+        asyncio.create_task(
+            worker(i, cookies, semaphore, conn, db_lock, counter, args)
+        )
+        for i in range(n)
+    ]
+    await asyncio.gather(*tasks)
 
     total, done, pending, processing, errors, joueurs, parts = stats(conn)
     print(f"\n{'='*55}")
@@ -921,5 +1208,9 @@ if __name__ == '__main__':
                         help='ID FFT de départ (ex: --seed 7633273415)')
     parser.add_argument('--dump-html', action='store_true',
                         help='Dump le HTML du premier joueur dans debug_page.html')
+    parser.add_argument('--shared-session', action='store_true', dest='shared_session',
+                        help='Session partagée par worker (legacy, déconseillé)')
     args = parser.parse_args()
+    if args.shared_session:
+        import scraper_http as _m; _m.SHARED_SESSION = True
     asyncio.run(run_async(args))

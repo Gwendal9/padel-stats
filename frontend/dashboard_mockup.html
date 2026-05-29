@@ -1798,6 +1798,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 loadDashboardStats();
 
+// ── Préchargement clubs + tournois en mémoire (recherche instantanée) ────────
+window._clubsCache = [];
+window._tournsCache = [];
+(async () => {
+  const [clubs, tourns] = await Promise.all([
+    apiFetch('/api/clubs?top=1000').catch(() => []),
+    apiFetch('/api/tournaments?limit=200').catch(() => []),
+  ]);
+  if (Array.isArray(clubs))  window._clubsCache  = clubs;
+  if (Array.isArray(tourns)) window._tournsCache = tourns;
+})();
+
+function _normalize(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function _filterClubs(q, limit = 8) {
+  const lq = _normalize(q);
+  return window._clubsCache.filter(c => _normalize(c.nom).includes(lq)).slice(0, limit);
+}
+function _filterTourns(q, limit = 8) {
+  const lq = _normalize(q);
+  return window._tournsCache.filter(t => _normalize(t.nom).includes(lq)).slice(0, limit);
+}
+
 // loadDashboardTops supprimé (Top 5 H/F retiré du dashboard)
 
 // ── Charts profil joueur (chart-progression + chart-parcours) ─────────────────
@@ -2208,6 +2232,14 @@ function renderProfile(data) {
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
         Trouver partenaire
+      </button>
+      <button onclick="compareFromProfile('${data.id}','${((data.prenom||'')+' '+(data.nom||'')).trim().replace(/'/g,"\\'")}','${data.classement||''}','${(data.club||'').replace(/'/g,"\\'")}') "
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-200 text-indigo-600 text-sm font-medium hover:bg-indigo-50 transition-all" title="Comparer avec un autre joueur">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Comparer
       </button>
       <button id="fav-toggle-btn" onclick="toggleFavorite('${data.id}')"
         class="flex items-center gap-2 px-4 py-2 rounded-lg border border-rose-200 text-rose-500 text-sm font-medium hover:bg-rose-50 transition-all" title="Ajouter aux favoris">
@@ -4151,33 +4183,29 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     if (window.lucide) lucide.createIcons();
   };
 
-  // Autocomplete search
+  // Autocomplete search — utilise le cache local _tournsCache (instantané)
   const inp = document.getElementById('tourn-search-input');
   const ac  = document.getElementById('tourn-search-ac');
   if (inp && ac) {
-    let t = null;
     inp.addEventListener('input', () => {
-      clearTimeout(t);
       const q = inp.value.trim();
       if (q.length < 2) { ac.hidden = true; return; }
-      t = setTimeout(async () => {
-        const data = await apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=8`);
-        if (!data || !data.length) { ac.hidden = true; return; }
-        ac.innerHTML = data.map(t => `
-          <div class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm tourn-ac-item"
-            data-id="${t.id}" data-nom="${t.nom.replace(/"/g,'&quot;')}">
-            <span class="font-medium">${t.nom}</span>
-            <span class="text-slate-400 ml-2 text-xs">${t.date || ''} · ${t.categorie || ''}</span>
-          </div>`).join('');
-        ac.hidden = false;
-        ac.querySelectorAll('.tourn-ac-item').forEach(el => {
-          el.addEventListener('click', () => {
-            inp.value = el.dataset.nom;
-            ac.hidden = true;
-            window.loadTournamentView(el.dataset.id, el.dataset.nom);
-          });
+      const data = _filterTourns(q, 8);
+      if (!data.length) { ac.hidden = true; return; }
+      ac.innerHTML = data.map(t => `
+        <div class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm tourn-ac-item"
+          data-id="${t.id}" data-nom="${(t.nom||'').replace(/"/g,'&quot;')}">
+          <span class="font-medium">${t.nom}</span>
+          <span class="text-slate-400 ml-2 text-xs">${t.date || ''} · ${t.categorie || ''}</span>
+        </div>`).join('');
+      ac.hidden = false;
+      ac.querySelectorAll('.tourn-ac-item').forEach(el => {
+        el.addEventListener('click', () => {
+          inp.value = el.dataset.nom;
+          ac.hidden = true;
+          window.loadTournamentView(el.dataset.id, el.dataset.nom);
         });
-      }, 220);
+      });
     });
     document.addEventListener('click', e => {
       if (!e.target.closest('#tourn-search-input') && !e.target.closest('#tourn-search-ac')) ac.hidden = true;
@@ -4388,29 +4416,26 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
   let t = null;
 
-  // Autocomplete from /api/clubs
+  // Autocomplete local (cache _clubsCache) — instantané
   inp.addEventListener('input', () => {
-    clearTimeout(t);
     const q = inp.value.trim();
     if (q.length < 2) { ac.hidden = true; return; }
-    t = setTimeout(async () => {
-      const data = await apiFetch(`/api/clubs?top=8&q=${encodeURIComponent(q)}`);
-      if (!data || !data.length) { ac.hidden = true; return; }
-      ac.innerHTML = data.map(c => `
-        <div class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm club-ac-item"
-          data-nom="${c.nom.replace(/"/g,'&quot;')}">
-          <span class="font-medium">${c.nom}</span>
-          <span class="text-slate-400 ml-2 text-xs">${c.ville} · ${c.nb.toLocaleString('fr-FR')} licenciés</span>
-        </div>`).join('');
-      ac.hidden = false;
-      ac.querySelectorAll('.club-ac-item').forEach(el => {
-        el.addEventListener('click', () => {
-          inp.value = el.dataset.nom;
-          ac.hidden = true;
-          loadClubProfile(el.dataset.nom);
-        });
+    const data = _filterClubs(q, 8);
+    if (!data.length) { ac.hidden = true; return; }
+    ac.innerHTML = data.map(c => `
+      <div class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm club-ac-item"
+        data-nom="${(c.nom||'').replace(/"/g,'&quot;')}">
+        <span class="font-medium">${c.nom}</span>
+        <span class="text-slate-400 ml-2 text-xs">${c.ville || ''} · ${(c.nb||0).toLocaleString('fr-FR')} licenciés</span>
+      </div>`).join('');
+    ac.hidden = false;
+    ac.querySelectorAll('.club-ac-item').forEach(el => {
+      el.addEventListener('click', () => {
+        inp.value = el.dataset.nom;
+        ac.hidden = true;
+        loadClubProfile(el.dataset.nom);
       });
-    }, 220);
+    });
   });
   document.addEventListener('click', e => {
     if (!e.target.closest('#club-search-input') && !e.target.closest('#club-search-ac')) ac.hidden = true;
@@ -4901,7 +4926,24 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
 
   makeAC('cmp-a-input', 'cmp-a-ac', p => { cmpA = p; showCmpCard('cmp-a-card', p); runCompare(); });
   makeAC('cmp-b-input', 'cmp-b-ac', p => { cmpB = p; showCmpCard('cmp-b-card', p); runCompare(); });
+
+  // Permet au bouton "Comparer" du profil joueur de pré-remplir le Joueur A
+  window._setCmpA = function(p) {
+    cmpA = p;
+    const inp = document.getElementById('cmp-a-input');
+    if (inp) inp.value = p.label;
+    showCmpCard('cmp-a-card', p);
+  };
 })();
+
+// Lance le comparateur depuis un profil : pré-remplit Joueur A, focus Joueur B
+window.compareFromProfile = function(id, label, rank, club) {
+  document.querySelector('[data-view="compare"]')?.click();
+  setTimeout(() => {
+    window._setCmpA({ id, label, rank: rank || '', club: club || '' });
+    document.getElementById('cmp-b-input')?.focus();
+  }, 80);
+};
 
 // ── Suggesteur de partenaires ────────────────────────────────────────────────
 (function() {
@@ -5240,12 +5282,11 @@ document.querySelector('[data-view="leaderboard"]')?.addEventListener('click', (
     if (!q) { results.innerHTML = '<div class="sp-empty">Tape pour rechercher…</div>'; spItems = []; return; }
     if (q.length < 3) { results.innerHTML = '<div class="sp-empty">Tape au moins 3 lettres…</div>'; spItems = []; return; }
     const mySeq = ++spSeq;  // identifiant unique de cette requête
+    // Clubs & tournois : filtrés localement (instantané) — seuls les joueurs nécessitent l'API
+    const clubs       = _filterClubs(q, 3);
+    const tournaments = _filterTourns(q, 3);
     spTimer = setTimeout(async () => {
-      const [players, clubs, tournaments] = await Promise.all([
-        apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => []),
-        apiFetch(`/api/clubs?q=${encodeURIComponent(q)}&top=3`).catch(() => []),
-        apiFetch(`/api/tournaments?q=${encodeURIComponent(q)}&limit=3`).catch(() => []),
-      ]);
+      const players = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => []);
       if (mySeq !== spSeq) return;  // réponse périmée — une requête plus récente est en cours
       renderSpotlight(q, players, clubs, tournaments);
     }, 180);

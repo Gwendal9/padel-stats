@@ -1206,6 +1206,12 @@ def route_club_rankings():
     if sort not in ("best_h", "best_f", "avg_rank_h", "avg_rank_f", "nb_tournois"):
         sort = "best_h"
 
+    # Cache — les tris lourds (nb_tournois) peuvent prendre 20-30s sans cache
+    _cache_key = f"club_rankings_{sort}_{top}"
+    cached = _try_precomputed(_cache_key)
+    if cached is not None:
+        return cached
+
     current_year  = datetime.date.today().year
     current_month = datetime.date.today().month
     # Début de la fenêtre 12 mois (format DD/MM/YYYY)
@@ -1319,6 +1325,9 @@ def route_club_rankings():
         "avg_rank_f":     int(r["avg_rank_f"] or 0) if r["avg_rank_f"] else None,
         "nb_tournois_12m": int(r["nb_tournois_12m"] or 0),
     } for r in rows])
+    try: _store_in_mem(_cache_key, resp.get_data())
+    except Exception: pass
+    return resp
 
 
 @app.get("/api/stats/shared_positions")
