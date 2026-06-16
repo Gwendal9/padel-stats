@@ -87,19 +87,22 @@ def _fmt_joueur(r: dict) -> dict:
 def get_player_profile(player_id: str) -> dict | None:
     """
     Construit le profil complet d'un joueur :
-      - Infos de base
+      - Infos de base (+ champs enrichis pipeline JSON)
       - KPIs (nb tournois, points totaux, position moyenne)
       - Trophy shelf (top 5 par catégorie classique)
       - Top partenaires
       - Distribution des positions
       - Championnats (meilleurs résultats)
+      - Pyramide, percentile, stats dérivées, parcours détaillé (fiche v2)
     """
     # ── Infos de base ─────────────────────────────────────────────────────
     base = fetchone(
         """
         SELECT id_fft, nom, prenom, classement, meilleur_classement,
                variation_classement, classement_date,
-               club_nom, ville, sexe, naissance, scraped_at
+               club_nom, ville, sexe, naissance, scraped_at,
+               points, ligue, comite, dept_num, age, nationalite,
+               actif, categorie_age, niveau_galaxie
         FROM joueurs WHERE id_fft = ?
         """,
         (player_id,),
@@ -111,6 +114,16 @@ def get_player_profile(player_id: str) -> dict | None:
     # scraped_at NULL = joueur connu via CSV uniquement, sans historique de participations
     joueur["scraped_at"]   = base.get("scraped_at")
     joueur["csv_only"]     = base.get("scraped_at") is None
+    # Champs enrichis (pipeline JSON) — utilisés par la fiche joueur
+    joueur["points_officiels"] = base.get("points")
+    joueur["ligue"]            = base.get("ligue") or ""
+    joueur["comite"]           = base.get("comite") or ""
+    joueur["dept_num"]         = base.get("dept_num") or ""
+    joueur["age"]              = base.get("age")
+    joueur["nationalite"]      = base.get("nationalite") or ""
+    joueur["actif"]            = bool(base.get("actif")) if base.get("actif") is not None else None
+    joueur["categorie_age"]    = base.get("categorie_age")
+    joueur["niveau_galaxie"]   = base.get("niveau_galaxie") or ""
 
     # ── Toutes ses participations ─────────────────────────────────────────
     # Tri chronologique : DD/MM/YYYY → YYYYMMDD via SUBSTR, safe sur PG et SQLite.
@@ -119,9 +132,13 @@ def get_player_profile(player_id: str) -> dict | None:
     parts = fetchall(
         f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
-               p.date_tournoi, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi
+               p.date_tournoi, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi,
+               p.pris_en_compte, p.points_num, p.position_num,
+               ts.niveau_points, ts.classement_meilleur AS tableau_meilleur,
+               ts.nb_joueurs AS tableau_nb_joueurs
         FROM participations p
         JOIN tournois t ON p.id_tournoi = t.id_tournoi
+        LEFT JOIN tournois_stats ts ON ts.id_tournoi = p.id_tournoi
         WHERE p.id_joueur = ?
         ORDER BY {_date_order} DESC
         """,
@@ -180,7 +197,7 @@ def get_player_profile(player_id: str) -> dict | None:
     positions_dist = dict(sorted(positions_dist.items()))
 
     # ── Top partenaires ───────────────────────────────────────────────────
-    partners_raw = defaultdict(lambda: {"nb": 0, "victoires": 0, "positions": []})
+    partners_raw = defaultdict(lambda: {"nb": 0, "victoires": 0, "positions": [], "points": 0.0})
     for p in parts_classiques:
         pid = p["partenaire_id"]
         if not pid or pid == "":
@@ -191,6 +208,10 @@ def get_player_profile(player_id: str) -> dict | None:
             partners_raw[(pid, nom)]["victoires"] += 1
         try:
             partners_raw[(pid, nom)]["positions"].append(int(p["position"]))
+        except (ValueError, TypeError):
+            pass
+        try:
+            partners_raw[(pid, nom)]["points"] += float(p["points_num"] or 0)
         except (ValueError, TypeError):
             pass
 
@@ -206,7 +227,7 @@ def get_player_profile(player_id: str) -> dict | None:
         partner_info_map = {r["id_fft"]: r for r in partner_rows}
 
     top_partners = []
-    for (pid, nom), data in sorted(partners_raw.items(), key=lambda x: -x[1]["nb"]):
+    for (pid, nom), data in sorted(partners_raw.items(), key=lambda x: -x[1]["points"]):
         pos_list = data["positions"]
         pos_moy = round(sum(pos_list) / len(pos_list), 1) if pos_list else None
         taux_vic = round(data["victoires"] / data["nb"] * 100) if data["nb"] > 0 else 0
@@ -220,6 +241,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "nb_victoires": data["victoires"],
             "taux_victoire": taux_vic,
             "pos_moyenne":  pos_moy,
+            "points":       round(data["points"]),
             "classement":   partner_info.get("classement"),
             "club":         partner_info.get("club_nom", ""),
         })
@@ -309,6 +331,124 @@ def get_player_profile(player_id: str) -> dict | None:
         if r["classement"] is not None
     ]
 
+    # ── Pyramide — rang par environnement (dernier mois dispo) ────────────
+    pyramide = {}
+    try:
+        pyr_rows = fetchall(
+            """
+            SELECT environnement, rang, rang_bas
+            FROM rangs_pyramide
+            WHERE id_fft = ?
+              AND mois = (SELECT MAX(mois) FROM rangs_pyramide WHERE id_fft = ?)
+            """,
+            (player_id, player_id),
+        )
+        for r in pyr_rows:
+            pyramide[r["environnement"]] = {
+                "rang":  r["rang"],
+                "total": r["rang_bas"],  # nb de joueurs dans cet environnement
+            }
+    except Exception:
+        pyramide = {}
+
+    # ── Percentile national (dans le bon pool H/F — règle d'or) ───────────
+    percentile = None
+    total_classes = None
+    try:
+        if joueur["classement"] and joueur["sexe"] in ("H", "F"):
+            total_classes = fetchval(
+                "SELECT COUNT(*) FROM joueurs WHERE sexe = ? AND classement IS NOT NULL",
+                (joueur["sexe"],),
+            )
+            if total_classes:
+                percentile = round(100 * joueur["classement"] / total_classes, 2)
+    except Exception:
+        pass
+
+    # ── Stats dérivées du parcours ────────────────────────────────────────
+    pos_nums = [p["position_num"] for p in parts if p.get("position_num")]
+    meilleure_place = min(pos_nums) if pos_nums else None
+    nb_top8 = sum(1 for p in pos_nums if p <= 8)
+
+    # Répartition par niveau de tournoi (P25..P2000)
+    niveaux_dist = defaultdict(int)
+    for p in parts:
+        nv = p.get("niveau_points")
+        if nv:
+            niveaux_dist[int(nv)] += 1
+    niveaux_dist = dict(sorted(niveaux_dist.items()))
+
+    # Évolution sur 12 mois (delta de classement ; négatif = progression)
+    evolution_12m = None
+    if len(rang_historique) >= 2:
+        dernier = rang_historique[-1]["classement"]
+        cible = rang_historique[-13] if len(rang_historique) >= 13 else rang_historique[0]
+        if dernier is not None and cible["classement"] is not None:
+            evolution_12m = dernier - cible["classement"]
+
+    # Parcours détaillé (récent → ancien) avec niveau P et flag "comptée"
+    parcours_detail = [
+        {
+            "id_tournoi":     p["id_tournoi"],
+            "tournoi_nom":    p["tournoi_nom"] or "",
+            "categorie":      p["categorie"],
+            "niveau_points":  p.get("niveau_points"),
+            "date":           p["date_tournoi"] or "",
+            "type":           p["type"] or "",
+            "position":       p["position"],
+            "position_num":   p.get("position_num"),
+            "points":         p.get("points_num") or p["points"],
+            "partenaire":     p["partenaire_nom"] or "",
+            "partenaire_id":  p["partenaire_id"],
+            "pris_en_compte": bool(p.get("pris_en_compte")),
+            "tableau_nb_joueurs": p.get("tableau_nb_joueurs"),
+            "tableau_meilleur":   p.get("tableau_meilleur"),
+        }
+        for p in parts
+    ]
+    nb_comptees = sum(1 for p in parcours_detail if p["pris_en_compte"])
+
+    # Indice de difficulté par tournoi (table tournois_rating, si construite)
+    try:
+        tids = list({p["id_tournoi"] for p in parcours_detail if p["id_tournoi"]})
+        rmap = {}
+        if tids:
+            ph = ",".join(["?"] * len(tids))
+            rmap = {
+                r["id_tournoi"]: r
+                for r in fetchall(
+                    f"SELECT id_tournoi, indice_niveau, surcote_niveau, indice_categorie, "
+                    f"niveau_effectif, multi_board, equipes FROM tournois_rating WHERE id_tournoi IN ({ph})",
+                    tuple(tids),
+                )
+            }
+        for p in parcours_detail:
+            rr = rmap.get(p["id_tournoi"])
+            p["indice_niveau"]    = rr["indice_niveau"]    if rr else None
+            p["surcote_niveau"]   = rr["surcote_niveau"]   if rr else None
+            p["indice_categorie"] = rr["indice_categorie"] if rr else None
+    except Exception:
+        for p in parcours_detail:
+            p.setdefault("indice_niveau", None)
+            p.setdefault("surcote_niveau", None)
+            p.setdefault("indice_categorie", None)
+
+    # Perf pondérée par la difficulté du plateau (relevé pour sa catégorie)
+    for p in parcours_detail:
+        ic = p.get("indice_categorie")
+        pts = float(p.get("points") or 0)
+        w = (0.5 + ic / 100.0) if ic is not None else 1.0
+        p["perf_ponderee"] = round(pts * w)
+    base_counted = sum(float(p.get("points") or 0) for p in parcours_detail if p["pris_en_compte"])
+    points_ponderes = sum(p["perf_ponderee"] for p in parcours_detail if p["pris_en_compte"])
+    perf_ratio = round(points_ponderes / base_counted, 3) if base_counted else None
+
+    # Top performances (comptées) triées par points — "trophy shelf" v2
+    meilleures_perfs = sorted(
+        [p for p in parcours_detail if p["pris_en_compte"] and p["points"]],
+        key=lambda p: -float(p["points"]),
+    )[:3]
+
     return {
         **joueur,
         "trophy_shelf":      trophy_shelf,
@@ -320,4 +460,17 @@ def get_player_profile(player_id: str) -> dict | None:
         "date_activities":   date_activities,
         "nb_partenaires":    len(partners_raw),
         "rang_historique":   rang_historique,
+        # ── Champs fiche v2 ──
+        "pyramide":          pyramide,
+        "percentile":        percentile,
+        "total_classes":     total_classes,
+        "meilleure_place":   meilleure_place,
+        "nb_top8":           nb_top8,
+        "nb_comptees":       nb_comptees,
+        "niveaux_dist":      niveaux_dist,
+        "evolution_12m":     evolution_12m,
+        "parcours_detail":   parcours_detail,
+        "meilleures_perfs":  meilleures_perfs,
+        "points_ponderes":   points_ponderes,
+        "perf_ratio":        perf_ratio,
     }

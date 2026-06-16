@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphe · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .inp{height:38px;border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:0 11px;font-size:13px;width:100%}
+  .inp:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
+  #graph{height:72vh;min-height:460px}
+  .res{position:absolute;margin-top:2px;width:100%;background:#fff;border:1px solid #E7E9EC;border-radius:9px;overflow:hidden;z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  .res a{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;font-size:13px}
+  .res a:hover{background:#F5F6F7}
+  text{font-family:'Inter',sans-serif}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
+    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
+    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+  <main class="px-5 lg:px-8 py-6">
+    <h1 class="font-800 text-2xl tracking-tight">Graphe de jeu</h1>
+    <p class="text-sm text-muted mt-0.5">Réseau de partenaires et degrés de séparation (H et F séparés).</p>
+
+    <div class="grid lg:grid-cols-2 gap-3 mt-4">
+      <div class="card p-4">
+        <div class="lbl mb-2">Réseau d'un joueur</div>
+        <div class="relative"><input id="sA" class="inp" placeholder="Chercher un joueur…" autocomplete="off"><div id="rA" class="res hidden"></div></div>
+        <div id="pickA" class="text-xs text-muted mt-2">Aucun joueur sélectionné.</div>
+      </div>
+      <div class="card p-4">
+        <div class="lbl mb-2">Degrés de séparation</div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="relative"><input id="sB1" class="inp" placeholder="Joueur A…" autocomplete="off"><div id="rB1" class="res hidden"></div></div>
+          <div class="relative"><input id="sB2" class="inp" placeholder="Joueur B…" autocomplete="off"><div id="rB2" class="res hidden"></div></div>
+        </div>
+        <div id="pathOut" class="text-xs text-muted mt-2">Choisis deux joueurs.</div>
+      </div>
+    </div>
+
+    <div class="card mt-3 relative overflow-hidden">
+      <div id="graph"></div>
+      <div id="ginfo" class="absolute top-3 left-3 text-xs text-muted card px-3 py-2">Cherche un joueur pour afficher son réseau.</div>
+      <div class="absolute top-3 right-3 flex gap-2 text-[11px] text-muted card px-3 py-2">
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#0E9C86;display:inline-block"></span>joueur</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#6FCBB6;display:inline-block"></span>partenaire</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B4B2A9;display:inline-block"></span>anonyme</span>
+      </div>
+    </div>
+    <div id="suggests" class="mt-3"></div>
+  </main>
+</div>
+
+<script>
+const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+let A=null,B1=null,B2=null;
+
+function attachSearch(inp,res,onPick){
+  inp.addEventListener('input',debounce(async e=>{
+    const q=e.target.value.trim();
+    if(q.length<2){res.classList.add('hidden');return;}
+    let r=[]; try{r=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(x=>x.json());}catch(_){}
+    if(!r.length){res.classList.add('hidden');return;}
+    res.innerHTML=r.map(p=>`<a data-id="${p.id}" data-n="${(p.nom_complet||'').replace(/"/g,'')}"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
+    res.classList.remove('hidden');
+    res.querySelectorAll('a').forEach(a=>a.addEventListener('click',ev=>{
+      ev.preventDefault();
+      onPick({id:a.dataset.id,name:a.dataset.n}); inp.value=tc(a.dataset.n); res.classList.add('hidden');
+    }));
+  }));
+  document.addEventListener('click',e=>{ if(!res.parentElement.contains(e.target)) res.classList.add('hidden'); });
+}
+
+async function fetchJSON(url,tries=24){
+  for(let i=0;i<tries;i++){
+    const r=await fetch(url);
+    if(r.status===503){ document.getElementById('ginfo').textContent='Graphe en cours de chargement (1re fois, ~1 min)…'; await new Promise(s=>setTimeout(s,3000)); continue; }
+    if(!r.ok) throw new Error(r.status);
+    return r.json();
+  }
+  throw new Error('timeout');
+}
+
+attachSearch(document.getElementById('sA'),document.getElementById('rA'),p=>{A=p;document.getElementById('pickA').innerHTML=`<b class="text-ink">${tc(p.name)}</b> — réseau chargé`;loadEgo(p.id);loadSuggests(p.id);});
+attachSearch(document.getElementById('sB1'),document.getElementById('rB1'),p=>{B1=p;tryPath();});
+attachSearch(document.getElementById('sB2'),document.getElementById('rB2'),p=>{B2=p;tryPath();});
+
+async function tryPath(){
+  const out=document.getElementById('pathOut');
+  if(!B1||!B2){return;}
+  out.innerHTML='Calcul du chemin…';
+  try{
+    const d=await fetchJSON(`/api/path/${B1.id}/${B2.id}`);
+    if(d.error){ out.innerHTML='<span class="text-muted">Aucun chemin trouvé entre ces deux joueurs.</span>'; return; }
+    const chain=d.path.map(n=>{const nm=tc(`${n.prenom||''} ${n.nom||''}`.trim()||n.id);return `<a href="/joueur/${n.id}" class="text-brand-dark font-600">${nm}</a>`;}).join(' <span class="text-muted">→</span> ');
+    out.innerHTML=`<span class="inline-block px-2 py-0.5 rounded bg-brand-soft text-brand-dark font-700 num mr-2">${d.distance} degré${d.distance>1?'s':''}</span> ${chain}`;
+  }catch(e){ out.innerHTML='<span class="text-muted">Graphe indisponible (réessaie dans un instant).</span>'; }
+}
+
+async function loadSuggests(id){
+  const box=document.getElementById('suggests'); box.innerHTML='';
+  let s=[]; try{ s=await fetch('/api/suggest/'+id).then(r=>r.json()); }catch(_){}
+  if(!s.length) return;
+  box.innerHTML=`<div class="card p-4"><div class="lbl mb-3">Partenaires suggérés</div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">`+
+    s.slice(0,9).map(x=>`<a href="/joueur/${x.id}" class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-line hover:bg-paper text-sm"><span class="font-500 truncate">${tc(x.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${x.classement??'—'}</span></a>`).join('')+
+    `</div></div>`;
+}
+
+let sim=null;
+async function loadEgo(id){
+  const info=document.getElementById('ginfo'); info.textContent='Chargement du réseau…';
+  let g; try{ g=await fetchJSON('/api/ego/'+id+'?depth=2'); }catch(e){ info.textContent='Graphe indisponible (réessaie).'; return; }
+  if(!g.nodes||!g.nodes.length){ info.textContent='Aucun partenaire pour ce joueur.'; return; }
+  info.innerHTML=`<b class="text-ink">${g.nodes.length}</b> joueurs · <b class="text-ink">${g.links.length}</b> liens`;
+  drawGraph(g);
+}
+
+function drawGraph(g){
+  const el=document.getElementById('graph'); el.innerHTML='';
+  const W=el.clientWidth||900, H=el.clientHeight||520;
+  const svg=d3.select(el).append('svg').attr('width','100%').attr('height',H).attr('viewBox',`0 0 ${W} ${H}`);
+  const root=svg.append('g');
+  svg.call(d3.zoom().scaleExtent([.2,4]).on('zoom',ev=>root.attr('transform',ev.transform)));
+  const color=n=>n.is_center?'#0E9C86':n.is_anonymous?'#B4B2A9':(n.degree===1?'#2FA98F':'#6FCBB6');
+  const rad=n=>n.is_center?12:n.is_anonymous?4:6;
+
+  const link=root.append('g').attr('stroke','#cfd3d8').attr('stroke-opacity',.7)
+    .selectAll('line').data(g.links).join('line').attr('stroke-width',d=>Math.min(3,1+(d.weight||1)*0.5));
+  const node=root.append('g').selectAll('g').data(g.nodes).join('g').style('cursor','pointer')
+    .on('click',(e,d)=>{ if(!d.is_anonymous) location.href='/joueur/'+d.id; });
+  node.append('circle').attr('r',rad).attr('fill',color).attr('stroke','#fff').attr('stroke-width',1.5);
+  node.filter(d=>d.is_center||d.degree<=1).append('text').text(d=>d.label).attr('x',d=>rad(d)+3).attr('y',4)
+    .attr('font-size',d=>d.is_center?13:11).attr('font-weight',d=>d.is_center?700:500).attr('fill','#15191F').attr('pointer-events','none');
+  node.append('title').text(d=>d.label+(d.classement?` · #${d.classement}`:'')+(d.club?` · ${tc(d.club)}`:''));
+
+  sim&&sim.stop();
+  sim=d3.forceSimulation(g.nodes)
+    .force('link',d3.forceLink(g.links).id(d=>d.id).distance(d=>50+(d.weight?0:10)).strength(.6))
+    .force('charge',d3.forceManyBody().strength(-130))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('collide',d3.forceCollide().radius(d=>rad(d)+4))
+    .on('tick',()=>{
+      link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+      node.attr('transform',d=>`translate(${d.x},${d.y})`);
+    });
+  node.call(d3.drag()
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
+}
+</script>
+</body>
+</html>

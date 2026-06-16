@@ -52,10 +52,40 @@ _ensure_indexes()
 # dans la table cache_responses (lue par _try_precomputed dans chaque route).
 
 
+@app.get("/api/home")
+def route_home_data():
+    """Données légères pour la page d'accueil : compteurs + top 5 H/F."""
+    from db import fetchall, fetchone
+    counts = fetchone(
+        "SELECT "
+        "(SELECT COUNT(*) FROM joueurs WHERE classement IS NOT NULL AND sexe='H') AS nb_h, "
+        "(SELECT COUNT(*) FROM joueurs WHERE classement IS NOT NULL AND sexe='F') AS nb_f, "
+        "(SELECT COUNT(*) FROM clubs) AS nb_clubs, "
+        "(SELECT COUNT(DISTINCT id_tournoi) FROM participations) AS nb_tournois"
+    ) or {}
+    def top(sexe):
+        return fetchall(
+            "SELECT id_fft, nom, prenom, classement, points, club_nom, comite "
+            "FROM joueurs WHERE sexe=? AND classement IS NOT NULL "
+            "ORDER BY classement ASC LIMIT 5", (sexe,))
+    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F")})
+
+
 @app.route("/")
 def index():
+    return send_file(os.path.join(os.path.dirname(__file__), "home.html"))
+
+
+@app.route("/legacy")
+def index_legacy():
     html_path = os.path.join(os.path.dirname(__file__), "..", "dashboard_mockup.html")
     return send_file(os.path.abspath(html_path))
+
+
+@app.route("/joueur/<player_id>")
+def route_fiche_page(player_id: str):
+    """Sert la fiche joueur (v2). Les donnees sont chargees cote client via /api/player/<id>."""
+    return send_file(os.path.join(os.path.dirname(__file__), "fiche.html"))
 
 
 @app.get("/api/search")
@@ -84,11 +114,29 @@ def route_suggest(player_id: str):
     return jsonify(suggest_partners(player_id, n=n))
 
 
+import threading as _graph_th
+_graph_load_lock = _graph_th.Lock()
+_graph_loading = False
+
 def _graph_ready():
-    """Retourne une réponse 503 si le graphe n'est pas encore chargé, None sinon."""
-    if not engine._loaded:
-        return jsonify({"error": "graph_loading", "message": "Graphe en cours de chargement, réessaie dans quelques secondes"}), 503
-    return None
+    """Si le graphe n'est pas chargé : lance le chargement en tâche de fond (une seule fois)
+    et renvoie 503 le temps que ça charge. La page front réessaie automatiquement."""
+    global _graph_loading
+    if engine._loaded:
+        return None
+    with _graph_load_lock:
+        if not engine._loaded and not _graph_loading:
+            _graph_loading = True
+            def _bg_load():
+                global _graph_loading
+                try:
+                    engine.load()
+                except Exception as e:
+                    print(f"[GraphEngine] chargement échoué : {e}")
+                finally:
+                    _graph_loading = False
+            _graph_th.Thread(target=_bg_load, daemon=True, name="graph-load").start()
+    return jsonify({"error": "graph_loading", "message": "Graphe en cours de chargement (1re fois, ~1 min)…"}), 503
 
 @app.get("/api/path/<src_id>/<tgt_id>")
 def route_path(src_id: str, tgt_id: str):
@@ -445,6 +493,19 @@ def route_leaderboard():
         conditions.append("j.naissance IS NOT NULL AND (? - CAST(j.naissance AS INT)) >= 50")
         params.append(current_year)
 
+    ligue  = request.args.get("ligue", "").strip()
+    comite = request.args.get("comite", "").strip()
+    dept   = request.args.get("dept", "").strip()
+    if ligue:
+        conditions.append("j.ligue = ?")
+        params.append(ligue)
+    if comite:
+        conditions.append("j.comite = ?")
+        params.append(comite)
+    if dept:
+        conditions.append("j.dept_num = ?")
+        params.append(dept)
+
     where = " AND ".join(conditions)
     total_row = fetchone("SELECT COUNT(*) AS n FROM joueurs j WHERE " + where, tuple(params))
     total = total_row["n"] if total_row else 0
@@ -453,6 +514,7 @@ def route_leaderboard():
         "SELECT j.id_fft, j.nom, j.prenom, j.classement, j.meilleur_classement,"
         " j.variation_classement, j.classement_date,"
         " j.club_nom, j.ville, j.sexe, j.naissance,"
+        " j.ligue, j.comite, j.dept_num, j.points,"
         " (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois"
         " FROM joueurs j WHERE " + where +
         " ORDER BY j.classement ASC LIMIT ? OFFSET ?",
@@ -481,6 +543,10 @@ def route_leaderboard():
             "ville":                 r["ville"] or "",
             "sexe":                  r["sexe"] or "",
             "naissance_annee":       naissance_annee,
+            "ligue":                 r.get("ligue") or "",
+            "comite":                r.get("comite") or "",
+            "dept_num":              r.get("dept_num") or "",
+            "points":                r.get("points"),
             "nb_tournois":           r["nb_tournois"] or 0,
         }
 
@@ -1720,6 +1786,313 @@ def route_me_fav_check(player_id: str):
     if not user:
         return jsonify({"favorited": False})
     return jsonify({"favorited": is_favorite(user["user_id"], player_id)})
+
+
+@app.get("/api/geo/filters")
+def route_geo_filters():
+    """Listes pour les selecteurs du classement : ligues (regions) et departements.
+    Source : stats_geo_departement (table compacte, contient dept_num + comite + ligue)."""
+    from db import fetchall
+    try:
+        rows = fetchall(
+            "SELECT dept_num, comite, ligue FROM stats_geo_departement "
+            "WHERE dept_num IS NOT NULL ORDER BY ligue, dept_num"
+        )
+    except Exception:
+        rows = []
+    departements = [
+        {"dept_num": r["dept_num"], "comite": r.get("comite") or "", "ligue": r.get("ligue") or ""}
+        for r in rows
+    ]
+    ligues = sorted({d["ligue"] for d in departements if d["ligue"]})
+    return jsonify({"ligues": ligues, "departements": departements})
+
+
+@app.get("/api/geo/departements")
+def route_geo_departements():
+    """Donnees choropletche par departement (H/F separes). Source stats_geo_departement."""
+    from db import fetchall
+    sexe = request.args.get("sexe", "H").upper()
+    try:
+        rows = fetchall(
+            "SELECT dept_num, comite, ligue, nb_total, nb_h, nb_f, nb_clubs, "
+            "classement_moyen, classement_moyen_h, classement_moyen_f "
+            "FROM stats_geo_departement WHERE dept_num IS NOT NULL"
+        )
+    except Exception:
+        rows = []
+    out = []
+    for r in rows:
+        if sexe == "F":
+            nb, clt = r.get("nb_f"), r.get("classement_moyen_f")
+        elif sexe == "H":
+            nb, clt = r.get("nb_h"), r.get("classement_moyen_h")
+        else:
+            nb, clt = r.get("nb_total"), r.get("classement_moyen")
+        out.append({
+            "dept_num": r["dept_num"], "comite": r.get("comite") or "",
+            "ligue": r.get("ligue") or "", "nb": nb or 0,
+            "classement_moyen": clt, "nb_clubs": r.get("nb_clubs") or 0,
+        })
+    return jsonify(out)
+
+
+@app.get("/api/geo/clubs")
+def route_geo_clubs():
+    """Clubs geolocalises (marqueurs carte). Filtre optionnel par departement."""
+    from db import fetchall
+    dept = request.args.get("dept", "").strip()
+    conds = ["lat IS NOT NULL", "lon IS NOT NULL"]
+    params = []
+    if dept:
+        conds.append("dept_num = ?")
+        params.append(dept)
+    try:
+        rows = fetchall(
+            "SELECT id, nom, ville, dept_num, lat, lon FROM clubs WHERE "
+            + " AND ".join(conds), tuple(params)
+        )
+    except Exception:
+        rows = []
+    return jsonify([
+        {"id": r["id"], "nom": r["nom"] or "", "ville": r.get("ville") or "",
+         "dept_num": r.get("dept_num") or "", "lat": r["lat"], "lon": r["lon"]}
+        for r in rows
+    ])
+
+
+@app.route("/classement")
+def route_classement_page():
+    """Page classement H/F filtrable (region/departement/club). Donnees via /api/leaderboard."""
+    return send_file(os.path.join(os.path.dirname(__file__), "classement.html"))
+
+
+@app.get("/api/tournoi/<tid>")
+def route_tournoi_api(tid: str):
+    """Reconstruit le classement d'un tournoi : paires (2 joueurs) triées par position."""
+    from db import fetchall, fetchone
+    info = fetchone(
+        """
+        SELECT t.id_tournoi, t.nom, t.categorie,
+               ts.niveau_points, ts.nb_joueurs, ts.classement_meilleur, ts.classement_moyen,
+               tr.indice_niveau, tr.surcote_niveau, tr.indice_categorie, tr.niveau_effectif,
+               tr.multi_board, tr.equipes, tr.nb_paires
+        FROM tournois t
+        LEFT JOIN tournois_stats  ts ON ts.id_tournoi = t.id_tournoi
+        LEFT JOIN tournois_rating tr ON tr.id_tournoi = t.id_tournoi
+        WHERE t.id_tournoi = ?
+        """,
+        (tid,),
+    )
+    if not info:
+        return jsonify({"error": "Tournoi introuvable"}), 404
+    rows = fetchall(
+        """
+        SELECT p.id_joueur, j.nom, j.prenom, j.classement, j.sexe,
+               p.partenaire_id, p.partenaire_nom,
+               jp.nom AS pnom, jp.prenom AS pprenom, jp.classement AS pclt,
+               p.position, p.position_num, p.points_num, p.date_tournoi, p.type
+        FROM participations p
+        JOIN joueurs j ON j.id_fft = p.id_joueur
+        LEFT JOIN joueurs jp ON jp.id_fft = p.partenaire_id
+        WHERE p.id_tournoi = ?
+        """,
+        (tid,),
+    )
+
+    def _nom(prenom, nom):
+        return f"{(prenom or '').strip()} {(nom or '').strip()}".strip()
+
+    seen, pairs = set(), []
+    for r in rows:
+        pid = r["partenaire_id"]
+        key = tuple(sorted([str(r["id_joueur"]), str(pid)])) if pid else ("solo", str(r["id_joueur"]))
+        if key in seen:
+            continue
+        seen.add(key)
+        membres = [{"id": r["id_joueur"], "nom": _nom(r["prenom"], r["nom"]), "classement": r["classement"]}]
+        if pid:
+            nomp = _nom(r["pprenom"], r["pnom"]) or (r["partenaire_nom"] or "")
+            membres.append({"id": pid, "nom": (nomp if nomp and nomp != "None None" else "Partenaire inconnu"),
+                            "classement": r["pclt"]})
+        elif r["partenaire_nom"] and r["partenaire_nom"] != "None None":
+            membres.append({"id": None, "nom": r["partenaire_nom"], "classement": None})
+        pairs.append({
+            "position": r["position"], "position_num": r["position_num"],
+            "points": r["points_num"], "type": r["type"], "membres": membres,
+        })
+    pairs.sort(key=lambda x: (x["position_num"] is None, x["position_num"] or 99999))
+    date = next((r["date_tournoi"] for r in rows if r["date_tournoi"]), None)
+    return jsonify({"info": dict(info), "date": date, "nb_paires_reelles": len(pairs), "pairs": pairs})
+
+
+@app.get("/api/tournois/ranking")
+def route_tournois_ranking():
+    """Classement des tournois par niveau, triés par difficulté (indice ou surcote).
+    Exclut multi-tableaux et épreuves par équipes (baseline propre)."""
+    from db import fetchall
+    niveau = request.args.get("niveau", "").strip()      # niveau_effectif (25..2000)
+    sexe   = request.args.get("sexe", "").upper()
+    sort   = request.args.get("sort", "indice")           # indice | surcote
+    minp   = max(1, int(request.args.get("minp", 8)))
+    limit  = min(int(request.args.get("limit", 50)), 200)
+    offset = max(0, int(request.args.get("offset", 0)))
+
+    conds  = ["tr.equipes = 0", "tr.multi_board = 0", "tr.nb_paires >= ?"]
+    params = [minp]
+    if niveau:
+        conds.append("tr.niveau_effectif = ?"); params.append(int(niveau))
+    if sexe in ("H", "F"):
+        conds.append("tr.sexe = ?"); params.append(sexe)
+    order = "tr.indice_categorie DESC" if sort == "categorie" else "tr.indice_niveau DESC"
+    where = " AND ".join(conds)
+    try:
+        total = fetchall(f"SELECT COUNT(*) AS n FROM tournois_rating tr WHERE {where}", tuple(params))[0]["n"]
+        rows = fetchall(
+            f"""SELECT tr.id_tournoi, t.nom, tr.niveau_effectif, tr.sexe, tr.nb_paires,
+                       tr.indice_niveau, tr.surcote_niveau, tr.indice_categorie
+                FROM tournois_rating tr JOIN tournois t ON t.id_tournoi = tr.id_tournoi
+                WHERE {where} ORDER BY {order} LIMIT ? OFFSET ?""",
+            tuple(params) + (limit, offset),
+        )
+        levels = [r["niveau_effectif"] for r in fetchall(
+            "SELECT DISTINCT niveau_effectif FROM tournois_rating "
+            "WHERE niveau_effectif IS NOT NULL ORDER BY niveau_effectif")]
+    except Exception:
+        total, rows, levels = 0, [], []
+    return jsonify({"tournois": rows, "niveaux": levels, "total": total, "offset": offset})
+
+
+@app.get("/api/clubs/tournois-ranking")
+def route_clubs_tournois_ranking():
+    """Clubs classés par difficulté moyenne des tournois qu'ils organisent.
+    Rattachement tournoi→club via la table tournois_club (déduite du nom)."""
+    from db import fetchall
+    sexe   = request.args.get("sexe", "").upper()
+    niveau = request.args.get("niveau", "").strip()
+    mint   = max(1, int(request.args.get("mint", 5)))    # min tournois rattachés
+    limit  = min(int(request.args.get("limit", 50)), 200)
+    offset = max(0, int(request.args.get("offset", 0)))
+    conds  = ["tr.equipes = 0", "tr.multi_board = 0"]
+    params = []
+    if sexe in ("H", "F"):
+        conds.append("tr.sexe = ?"); params.append(sexe)
+    if niveau:
+        conds.append("tr.niveau_effectif = ?"); params.append(int(niveau))
+    where = " AND ".join(conds)
+    try:
+        rows = fetchall(
+            f"""SELECT tc.club_nom, COUNT(*) AS nb,
+                       ROUND(AVG(tr.indice_niveau), 1) AS indice_moy,
+                       MAX(tr.indice_niveau) AS indice_max
+                FROM tournois_club tc
+                JOIN tournois_rating tr ON tr.id_tournoi = tc.id_tournoi
+                WHERE {where}
+                GROUP BY tc.club_id
+                HAVING COUNT(*) >= ?
+                ORDER BY indice_moy DESC
+                LIMIT ? OFFSET ?""",
+            tuple(params) + (mint, limit, offset),
+        )
+        tot = fetchall(
+            f"""SELECT COUNT(*) AS n FROM (
+                  SELECT tc.club_id FROM tournois_club tc
+                  JOIN tournois_rating tr ON tr.id_tournoi = tc.id_tournoi
+                  WHERE {where} GROUP BY tc.club_id HAVING COUNT(*) >= ?)""",
+            tuple(params) + (mint,),
+        )
+        total = tot[0]["n"] if tot else 0
+    except Exception:
+        rows, total = [], 0
+    return jsonify({"clubs": rows, "total": total, "offset": offset})
+
+
+@app.route("/clubs")
+def route_clubs_page():
+    """Classement des clubs par difficulté de leurs tournois."""
+    return send_file(os.path.join(os.path.dirname(__file__), "clubs.html"))
+
+
+@app.route("/tournois")
+def route_tournois_page():
+    """Classement des tournois par niveau (difficulté)."""
+    return send_file(os.path.join(os.path.dirname(__file__), "tournois.html"))
+
+
+@app.route("/tournoi/<tid>")
+def route_tournoi_page(tid: str):
+    """Vue tournoi : classement reconstruit avec les paires + difficulté."""
+    return send_file(os.path.join(os.path.dirname(__file__), "tournoi.html"))
+
+
+@app.get("/api/geo/departement/<dept>")
+def route_geo_departement_detail(dept: str):
+    """Détail d'un département : stats H/F, top joueurs, top clubs, tournois les plus relevés."""
+    from db import fetchall, fetchone
+    sexe = request.args.get("sexe", "H").upper()
+    if sexe not in ("H", "F"):
+        sexe = "H"
+    info = fetchone(
+        "SELECT dept_num, comite, ligue, nb_total, nb_h, nb_f, nb_clubs, "
+        "classement_moyen, classement_moyen_h, classement_moyen_f "
+        "FROM stats_geo_departement WHERE dept_num = ?", (dept,)
+    )
+    top_joueurs = fetchall(
+        "SELECT id_fft, nom, prenom, classement, club_nom FROM joueurs "
+        "WHERE dept_num = ? AND sexe = ? AND classement IS NOT NULL "
+        "ORDER BY classement ASC LIMIT 6", (dept, sexe)
+    )
+    top_clubs = fetchall(
+        "SELECT club_nom, COUNT(*) AS nb, ROUND(AVG(classement)) AS clt_moy, MIN(classement) AS best "
+        "FROM joueurs WHERE dept_num = ? AND sexe = ? AND classement IS NOT NULL "
+        "AND club_nom IS NOT NULL AND club_nom != '' "
+        "GROUP BY club_nom HAVING COUNT(*) >= 3 ORDER BY clt_moy ASC LIMIT 6", (dept, sexe)
+    )
+    try:
+        top_tournois = fetchall(
+            """SELECT t.id_tournoi, t.nom, tr.niveau_effectif, tr.indice_niveau, tr.indice_categorie
+               FROM tournois_club tc
+               JOIN clubs cl            ON cl.id = tc.club_id
+               JOIN tournois_rating tr  ON tr.id_tournoi = tc.id_tournoi
+               JOIN tournois t          ON t.id_tournoi = tc.id_tournoi
+               WHERE cl.dept_num = ? AND tr.sexe = ? AND tr.multi_board = 0 AND tr.equipes = 0
+               ORDER BY tr.indice_niveau DESC LIMIT 5""", (dept, sexe)
+        )
+    except Exception:
+        top_tournois = []
+    return jsonify({
+        "dept": dept, "sexe": sexe,
+        "info": dict(info) if info else None,
+        "top_joueurs": top_joueurs, "top_clubs": top_clubs, "top_tournois": top_tournois,
+    })
+
+
+@app.get("/api/geo/villes/<dept>")
+def route_geo_villes(dept: str):
+    """Stats par ville (commune) d'un département : nb joueurs + classement moyen (H/F)."""
+    from db import fetchall
+    sexe = request.args.get("sexe", "H").upper()
+    if sexe not in ("H", "F"):
+        sexe = "H"
+    rows = fetchall(
+        "SELECT ville, COUNT(*) AS nb, ROUND(AVG(classement)) AS clt_moy "
+        "FROM joueurs WHERE dept_num = ? AND sexe = ? "
+        "AND ville IS NOT NULL AND ville != '' AND classement IS NOT NULL "
+        "GROUP BY ville", (dept, sexe)
+    )
+    return jsonify({"dept": dept, "sexe": sexe, "villes": rows})
+
+
+@app.route("/carte")
+def route_carte_page():
+    """Carte : choropleche departements + marqueurs clubs."""
+    return send_file(os.path.join(os.path.dirname(__file__), "carte.html"))
+
+
+@app.route("/graphe")
+def route_graphe_page():
+    """Graphe de jeu + degres de separation."""
+    return send_file(os.path.join(os.path.dirname(__file__), "graphe.html"))
 
 
 if __name__ == "__main__":

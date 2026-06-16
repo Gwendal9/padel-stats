@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournoi · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .pct-font{font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}.nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
+    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
+    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un joueur…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
+  <main class="px-5 lg:px-8 pb-20" id="root">
+    <div class="mt-8 text-center text-muted text-sm" id="loading">Chargement du tournoi…</div>
+  </main>
+</div>
+
+<script>
+const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
+const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+const PLEVEL={25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
+const diffColor=v=>{ if(v==null) return ['#9aa3af','rgba(255,255,255,.12)']; if(v>=65) return ['#E0AE45','rgba(224,174,69,.18)']; if(v>=50) return ['#8b87f5','rgba(139,135,245,.18)']; if(v>=35) return ['#13C2A6','rgba(19,194,166,.18)']; if(v>=22) return ['#5BB8F0','rgba(91,184,240,.18)']; return ['#cbd0d6','rgba(255,255,255,.12)']; };
+function getId(){ return location.pathname.split('/').filter(Boolean).pop(); }
+
+const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
+sb.addEventListener('input',debounce(async e=>{
+  const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
+  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
+  if(!res.length){sr.classList.add('hidden');return;}
+  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  sr.classList.remove('hidden');
+}));
+document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
+
+async function load(){
+  let d; try{ const r=await fetch('/api/tournoi/'+encodeURIComponent(getId())); if(!r.ok) throw 0; d=await r.json(); }
+  catch(e){ document.getElementById('loading').textContent='Tournoi introuvable.'; return; }
+  render(d);
+}
+
+function memberHtml(m){
+  const nm=tc(m.nom)||'Joueur'; const clt=m.classement!=null?`<span class="text-[11px] text-muted num shrink-0">#${m.classement}</span>`:'';
+  const inner=`<div class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(m.nom)||'?'}</div><span class="text-sm font-500 truncate">${nm}</span>${clt}`;
+  return m.id?`<a href="/joueur/${m.id}" class="flex items-center gap-2 min-w-0 hover:underline">${inner}</a>`:`<span class="flex items-center gap-2 min-w-0 opacity-70">${inner}</span>`;
+}
+
+function render(d){
+  document.getElementById('loading').remove();
+  const root=document.getElementById('root');
+  const i=d.info||{}; const nivP=i.niveau_effectif||i.niveau_points;
+  const [dc,dbg]=diffColor(i.indice_niveau);
+  const tags=[];
+  if(i.multi_board) tags.push('<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-white/12">multi-tableaux</span>');
+  if(i.equipes) tags.push('<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-white/12">par équipes</span>');
+  const cat = i.indice_categorie!=null ? Math.round(i.indice_categorie) : null;
+  const surTxt = cat!=null ? `${cat}<span class="opacity-70">/100 chez les P${nivP||'?'}</span>` : '';
+
+  root.innerHTML=`
+  <div class="mt-5 text-xs text-muted flex items-center gap-1.5"><a href="/classement" class="hover:text-ink">Tournois</a><span>/</span><span class="text-ink font-500 truncate">${i.nom||'Tournoi'}</span></div>
+
+  <section class="mt-3 rounded-2xl overflow-hidden text-white" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
+    <div class="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-6">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 flex-wrap mb-2">
+          ${nivP?`<span class="num font-700 text-[11px] px-2 py-0.5 rounded bg-white/15">P${nivP}</span>`:''}
+          ${d.date?`<span class="text-[11px] text-white/75">${d.date}</span>`:''}
+          ${tags.join('')}
+        </div>
+        <h1 class="font-800 text-3xl sm:text-4xl leading-tight tracking-tight">${i.nom||'Tournoi'}</h1>
+        <div class="mt-3 text-[13px] text-white/85 font-500">${fr(d.nb_paires_reelles)} paires classées${i.classement_meilleur?` · meilleure paire ~#${i.classement_meilleur}`:''}</div>
+      </div>
+      <div class="shrink-0 lg:border-l lg:border-white/15 lg:pl-6">
+        <div class="lbl text-white/55">Difficulté du plateau (/100)</div>
+        <div class="flex items-end gap-2 mt-1">
+          <span class="pct-font font-800 text-6xl leading-none" style="color:#fff">${i.indice_niveau!=null?Math.round(i.indice_niveau):'—'}</span>
+          <span class="text-white/55 text-lg font-600 mb-1">/100</span>
+        </div>
+        ${surTxt?`<div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-700 pct-font" style="background:${dbg};color:#fff">${surTxt}</div>`:''}
+      </div>
+    </div>
+  </section>
+
+  <details class="card mt-4 px-4 py-3">
+    <summary class="flex items-center gap-2 text-sm font-600 text-brand-dark" style="cursor:pointer;list-style:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>Comment la difficulté du plateau est-elle calculée ?</summary>
+    <div class="text-[13px] text-muted mt-3 space-y-1.5 leading-relaxed">
+      <div>1. Chaque joueur : rang → score <span class="num">s = ln(N / rang)</span> (N = classés du pool H/F). Un 2000<sup>e</sup> pèse bien plus qu'un 40000<sup>e</sup>.</div>
+      <div>2. Paire = <b class="text-ink">0,6 × le plus fort + 0,4 × le moins fort</b>.</div>
+      <div>3. Force = <b class="text-ink">0,6 × plafond (top 25 % des paires) + 0,4 × profondeur (médiane)</b>.</div>
+      <div>4. <b class="text-ink">Indice /100</b> = comparable entre tous les tournois ; <b class="text-ink">surcote</b> = écart vs les tournois de même niveau P et même sexe.</div>
+    </div>
+  </details>
+
+  <section class="mt-4 grid sm:grid-cols-3 gap-3" id="podium"></section>
+  <section class="mt-4 card overflow-hidden">
+    <div class="px-4 py-3 border-b border-line flex items-center justify-between">
+      <h2 class="font-700 text-base">Classement des paires</h2>
+      <span class="text-xs text-muted">${fr(d.nb_paires_reelles)} paires</span>
+    </div>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><tbody id="rows" class="divide-y divide-line"></tbody></table></div>
+  </section>`;
+
+  const medals=['#E0AE45','#9AA3AE','#B07B4F'];
+  const podium=(d.pairs||[]).slice(0,3);
+  document.getElementById('podium').innerHTML=podium.map((p,idx)=>`
+    <div class="card p-4 relative" style="border-color:${medals[idx]}66">
+      <div class="flex items-center gap-2 mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${medals[idx]}" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg><span class="num font-800 text-lg">${p.position}e</span>${p.points?`<span class="num text-xs text-brand-dark font-700 ml-auto">+${Math.round(p.points)} pts</span>`:''}</div>
+      <div class="space-y-1.5">${(p.membres||[]).map(memberHtml).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('rows').innerHTML=(d.pairs||[]).map(p=>`
+    <tr class="hover:bg-paper/60">
+      <td class="px-4 py-2.5 num font-700 text-muted w-14">${p.position||'—'}<span class="text-[11px] font-500">${p.position?'e':''}</span></td>
+      <td class="px-4 py-2.5"><div class="flex flex-col sm:flex-row sm:items-center gap-x-5 gap-y-1">${(p.membres||[]).map(memberHtml).join('')}</div></td>
+      <td class="px-4 py-2.5 text-right num font-700 w-24">${p.points?'+'+Math.round(p.points):'—'}</td>
+    </tr>`).join('');
+}
+load();
+</script>
+</body>
+</html>

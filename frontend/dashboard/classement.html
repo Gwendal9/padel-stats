@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classement · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .sel{height:38px;border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:0 30px 0 11px;font-size:13px;color:#15191F;
+    appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23697483' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+  .inp{height:38px;border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:0 11px;font-size:13px;color:#15191F}
+  .inp:focus,.sel:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
+    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/classement" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
+    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un joueur…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-5 lg:px-8 pb-20">
+    <div class="mt-6 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="font-800 text-2xl tracking-tight">Classement</h1>
+        <p class="text-sm text-muted mt-0.5" id="subtitle">—</p>
+      </div>
+      <div class="inline-flex p-1 rounded-xl bg-white border border-line">
+        <button data-sexe="H" class="seg px-4 h-9 rounded-lg text-sm font-600">Messieurs</button>
+        <button data-sexe="F" class="seg px-4 h-9 rounded-lg text-sm font-600">Dames</button>
+      </div>
+    </div>
+
+    <div class="card p-4 mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div><div class="lbl mb-1">Région</div><select id="f-ligue" class="sel w-full"><option value="">Toutes les régions</option></select></div>
+      <div><div class="lbl mb-1">Département</div><select id="f-dept" class="sel w-full"><option value="">Tous</option></select></div>
+      <div><div class="lbl mb-1">Club</div><input id="f-club" class="inp w-full" placeholder="Nom du club…"></div>
+      <div><div class="lbl mb-1">Joueur</div><input id="f-q" class="inp w-full" placeholder="Nom ou prénom…"></div>
+    </div>
+
+    <div class="mt-4 overflow-x-auto card">
+      <table class="w-full text-sm">
+        <thead class="text-muted text-[10.5px] uppercase tracking-wider border-b border-line">
+          <tr>
+            <th class="text-left font-600 px-4 py-3 w-14">#</th>
+            <th class="text-left font-600 px-4 py-3">Joueur</th>
+            <th class="text-left font-600 px-4 py-3 hidden md:table-cell">Département</th>
+            <th class="text-left font-600 px-4 py-3 hidden lg:table-cell">Club</th>
+            <th class="text-right font-600 px-4 py-3">Points</th>
+            <th class="text-right font-600 px-4 py-3 hidden sm:table-cell">Meilleur</th>
+            <th class="text-right font-600 px-4 py-3 hidden sm:table-cell">Tournois</th>
+          </tr>
+        </thead>
+        <tbody id="rows" class="divide-y divide-line"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex items-center justify-center">
+      <button id="more" class="px-5 h-10 rounded-lg border border-line bg-white text-sm font-600 hover:bg-paper hidden">Charger plus</button>
+      <div id="empty" class="text-sm text-muted hidden py-6">Aucun joueur ne correspond à ces filtres.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
+const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const $=id=>document.getElementById(id);
+const debounce=(fn,d=300)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+
+const sb=$('searchbox'),sr=$('searchres');
+sb.addEventListener('input',debounce(async e=>{
+  const q=e.target.value.trim();
+  if(q.length<2){sr.classList.add('hidden');return;}
+  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
+  if(!res.length){sr.classList.add('hidden');return;}
+  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  sr.classList.remove('hidden');
+}));
+document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
+
+let geo={ligues:[],departements:[]};
+let state={sexe:'H',ligue:'',dept:'',club:'',q:'',offset:0,limit:50,total:0};
+
+function paintSeg(){document.querySelectorAll('.seg').forEach(b=>{
+  const on=b.dataset.sexe===state.sexe;
+  b.className='seg px-4 h-9 rounded-lg text-sm font-600 '+(on?'bg-ink text-white':'text-muted hover:bg-paper');});}
+
+function fillDepts(){
+  const sel=$('f-dept'); const cur=state.dept;
+  const list=geo.departements.filter(d=>!state.ligue||d.ligue===state.ligue);
+  sel.innerHTML='<option value="">Tous les départements</option>'+list.map(d=>`<option value="${d.dept_num}">${d.dept_num} · ${tc(d.comite)}</option>`).join('');
+  sel.value=cur;
+}
+
+async function loadGeo(){
+  try{ geo=await fetch('/api/geo/filters').then(r=>r.json()); }catch(e){ geo={ligues:[],departements:[]}; }
+  $('f-ligue').innerHTML='<option value="">Toutes les régions</option>'+geo.ligues.map(l=>`<option value="${l}">${tc(l)}</option>`).join('');
+  fillDepts();
+}
+
+function rowHtml(p){
+  const dept=p.dept_num?`${p.dept_num} · ${tc(p.comite)}`:'—';
+  return `<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/joueur/${p.id}'">
+    <td class="px-4 py-3 num font-700 text-muted">${p.classement}</td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini(p.nom_complet)}</div>
+        <div class="min-w-0"><div class="font-600 truncate">${tc(p.nom_complet)}</div><div class="text-[12px] text-muted truncate lg:hidden">${p.club?tc(p.club):'—'}</div></div>
+      </div>
+    </td>
+    <td class="px-4 py-3 text-muted hidden md:table-cell">${dept}</td>
+    <td class="px-4 py-3 text-muted hidden lg:table-cell truncate max-w-[220px]">${p.club?tc(p.club):'—'}</td>
+    <td class="px-4 py-3 text-right num font-700">${p.points!=null?fr(Math.round(p.points)):'—'}</td>
+    <td class="px-4 py-3 text-right num text-muted hidden sm:table-cell">${p.meilleur_classement!=null?p.meilleur_classement+'e':'—'}</td>
+    <td class="px-4 py-3 text-right num text-muted hidden sm:table-cell">${p.nb_tournois||0}</td>
+  </tr>`;
+}
+
+function pool(){return state.sexe==='F'?'Dames':'Messieurs';}
+function filtersActive(){return state.ligue||state.dept||state.club||state.q;}
+
+async function fetchPage(append){
+  const qs=new URLSearchParams({sexe:state.sexe,offset:state.offset,limit:state.limit});
+  if(state.ligue)qs.set('ligue',state.ligue);
+  if(state.dept)qs.set('dept',state.dept);
+  if(state.club)qs.set('club',state.club);
+  if(state.q)qs.set('q',state.q);
+  let data={players:[],total:0};
+  try{ data=await fetch('/api/leaderboard?'+qs).then(r=>r.json()); }catch(_){}
+  state.total=data.total;
+  const tb=$('rows');
+  const html=data.players.map(rowHtml).join('');
+  if(append) tb.insertAdjacentHTML('beforeend',html); else tb.innerHTML=html;
+  const shown=state.offset+data.players.length;
+  $('subtitle').textContent=`${pool()} · ${fr(state.total)} joueurs classés`+(filtersActive()?' (filtré)':'');
+  $('empty').classList.toggle('hidden',state.total>0);
+  $('more').classList.toggle('hidden',shown>=state.total);
+}
+
+function reload(){ state.offset=0; fetchPage(false); }
+
+document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{state.sexe=b.dataset.sexe;paintSeg();reload();}));
+$('f-ligue').addEventListener('change',e=>{state.ligue=e.target.value;state.dept='';fillDepts();reload();});
+$('f-dept').addEventListener('change',e=>{state.dept=e.target.value;reload();});
+$('f-club').addEventListener('input',debounce(e=>{state.club=e.target.value.trim();reload();}));
+$('f-q').addEventListener('input',debounce(e=>{state.q=e.target.value.trim();reload();}));
+$('more').addEventListener('click',()=>{state.offset+=state.limit;fetchPage(true);});
+
+const _qp=new URLSearchParams(location.search);
+if(_qp.get('club')){ state.club=_qp.get('club'); const el=$('f-club'); if(el) el.value=state.club; }
+{ const sx=(_qp.get('sexe')||'').toUpperCase(); if(sx==='H'||sx==='F') state.sexe=sx; }
+paintSeg();
+loadGeo().then(reload);
+</script>
+</body>
+</html>

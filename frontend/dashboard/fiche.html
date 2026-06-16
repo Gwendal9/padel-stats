@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche joueur · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+  .pct-font{font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
+    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
+    <a href="#" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un joueur…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-5 lg:px-8 pb-20" id="root">
+    <div class="mt-8 text-center text-muted text-sm" id="loading">Chargement de la fiche…</div>
+  </main>
+</div>
+
+<template id="tpl">
+<div class="mt-5 text-xs text-muted flex items-center gap-1.5">
+  <a href="/" class="hover:text-ink">Joueurs</a><span>/</span>
+  <span class="hover:text-ink" data-pool></span><span>/</span>
+  <span class="text-ink font-500" data-name></span>
+</div>
+
+<section class="mt-3 rounded-2xl overflow-hidden text-white relative" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
+  <div class="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-6">
+    <div class="flex items-center gap-5 min-w-0 flex-1">
+      <div class="shrink-0"><div class="w-[88px] h-[88px] rounded-2xl bg-white/12 border border-white/25 grid place-items-center font-800 text-3xl text-white" data-initials></div></div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap mb-1.5" data-badges></div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <h1 class="font-800 text-4xl sm:text-5xl leading-none tracking-tight" data-name2></h1>
+          <span data-perc-wrap class="pct-font inline-flex flex-col items-start gap-0.5 px-3 py-1.5 rounded-xl bg-amber-300 text-amber-900">
+            <span class="flex items-center gap-1.5 text-[15px] font-800 leading-none"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg><span data-perc></span></span>
+            <span class="text-[10.5px] font-600 leading-none text-amber-800/90" data-perc-sub></span>
+          </span>
+        </div>
+        <div class="mt-2.5 flex items-center gap-x-4 gap-y-1 flex-wrap text-[13px] text-white/85 font-500" data-meta></div>
+      </div>
+    </div>
+    <div class="shrink-0 w-full lg:w-96 xl:w-[520px]">
+      <div class="flex items-baseline justify-between mb-1">
+        <span class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Trajectoire</span>
+        <span class="text-[11px] text-white/65" data-traj-sum></span>
+      </div>
+      <div class="h-20"><canvas id="journey"></canvas></div>
+    </div>
+    <div class="shrink-0 lg:text-right lg:border-l lg:border-white/15 lg:pl-6">
+      <div class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Classement national</div>
+      <div class="flex items-end gap-2 lg:justify-end mt-1"><span class="pct-font num font-800 text-6xl leading-none" data-rank></span></div>
+      <div class="mt-2 flex items-center gap-2 lg:justify-end text-sm" data-ranksub></div>
+      <div class="mt-1.5 text-[12px] text-white/75" data-rankmeta></div>
+      <div class="mt-2 flex items-center gap-3 lg:justify-end text-[12px] text-white/85 font-500" data-rankstats></div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-4 grid grid-cols-2 lg:grid-cols-6 gap-3" data-kpi></section>
+
+<section class="mt-4 grid lg:grid-cols-3 gap-4">
+  <div class="card p-5 lg:col-span-2">
+    <h2 class="font-700 text-base mb-3">Pyramide — rang par environnement</h2>
+    <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3" data-pyr></div>
+  </div>
+  <div class="card p-5">
+    <h2 class="font-700 text-base mb-1">Niveau des tournois</h2>
+    <p class="text-[13px] text-muted mb-4" data-niv-sub></p>
+    <div class="space-y-3" data-levels></div>
+  </div>
+</section>
+
+<section class="mt-4" data-shelf-wrap>
+  <div class="flex items-center gap-2 mb-3"><h2 class="font-700 text-base">Meilleures performances</h2><span class="text-xs text-muted">— comptées au classement</span></div>
+  <div class="grid sm:grid-cols-3 gap-3" data-shelf></div>
+</section>
+
+<section class="mt-4 grid lg:grid-cols-3 gap-4">
+  <div class="card p-5 lg:col-span-2">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-700 text-base">Parcours</h2>
+      <span class="text-xs text-muted flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand"></span>comptée dans les 12 meilleures</span>
+    </div>
+    <div class="overflow-hidden rounded-lg border border-line">
+      <table class="w-full text-sm">
+        <thead class="bg-paper text-muted text-[10.5px] uppercase tracking-wider">
+          <tr><th class="text-left font-600 px-3 py-2">Niveau</th><th class="text-left font-600 px-3 py-2">Tournoi</th><th class="text-left font-600 px-3 py-2 hidden sm:table-cell">Partenaire</th><th class="text-center font-600 px-3 py-2 hidden md:table-cell">Difficulté</th><th class="text-center font-600 px-3 py-2">Place</th><th class="text-right font-600 px-3 py-2">Pts</th></tr>
+        </thead>
+        <tbody data-parcours class="divide-y divide-line"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card p-5">
+    <h2 class="font-700 text-base mb-1">Partenaires</h2>
+    <p class="text-[13px] text-muted mb-4">Par points marqués ensemble.</p>
+    <div class="space-y-2.5" data-partners></div>
+  </div>
+</section>
+</template>
+
+<script>
+const PLEVEL={25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
+const diffChip=v=>{ if(v==null) return '<span class="text-muted text-xs">—</span>'; const x=Math.round(v); let c='bg-gray-100 text-gray-600'; if(v>=65)c='bg-amber-100 text-amber-800'; else if(v>=50)c='bg-indigo-50 text-indigo-700'; else if(v>=35)c='bg-brand-soft text-brand-dark'; else if(v>=22)c='bg-sky-50 text-sky-700'; return `<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${c}" title="Niveau du plateau /100">${x}</span>`; };
+const FLAG={FRA:'🇫🇷',ESP:'🇪🇸',ARG:'🇦🇷',BEL:'🇧🇪',ITA:'🇮🇹',POR:'🇵🇹',BRA:'🇧🇷',NED:'🇳🇱',SUI:'🇨🇭'};
+const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
+const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const MOIS=['','janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const frMois=m=>{ if(!m||m.length<7) return m||''; const[y,mo]=m.split('-'); return (MOIS[+mo]||'')+' '+y; };
+const yearLines={id:'yearLines',afterDatasetsDraw(chart){const a=chart.chartArea,x=chart.scales.x,ctx=chart.ctx;if(!a)return;ctx.save();ctx.setLineDash([3,3]);ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,0.22)';const L=chart.data.labels||[];L.forEach((m,i)=>{const cur=(m||'').slice(0,4),prev=i>0?(L[i-1]||'').slice(0,4):'';if(i>0&&cur&&cur!==prev){const px=x.getPixelForValue(i);ctx.beginPath();ctx.moveTo(px,a.top);ctx.lineTo(px,a.bottom);ctx.stroke();}});ctx.restore();}};
+const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+function getId(){ const p=location.pathname.split('/').filter(Boolean); return p[p.length-1]; }
+
+const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
+sb.addEventListener('input',debounce(async e=>{
+  const q=e.target.value.trim();
+  if(q.length<2){sr.classList.add('hidden');return;}
+  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
+  if(!res.length){sr.classList.add('hidden');return;}
+  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  sr.classList.remove('hidden');
+}));
+document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
+
+async function load(){
+  let prof;
+  try{ const r=await fetch('/api/player/'+encodeURIComponent(getId())); if(!r.ok) throw 0; prof=await r.json(); }
+  catch(e){ document.getElementById('loading').textContent='Joueur introuvable.'; return; }
+  render(prof);
+}
+
+function render(p){
+  document.getElementById('loading').remove();
+  const root=document.getElementById('root');
+  root.appendChild(document.getElementById('tpl').content.cloneNode(true));
+  const $=s=>root.querySelector(s);
+  const pool = p.sexe==='F'?'Dames':'Messieurs';
+  const name = tc(p.nom_complet);
+  $('[data-pool]').textContent=pool;
+  $('[data-name]').textContent=name;
+  $('[data-name2]').innerHTML = (p.prenom||p.nom) ? `${tc(p.prenom||'')} <span class="text-white">${(p.nom||'').toUpperCase()}</span>`.trim() : name;
+  $('[data-initials]').textContent=ini(p.nom_complet);
+
+  const flag=FLAG[p.nationalite]||'';
+  let badges=`<span class="text-[10.5px] font-600 tracking-wider px-2 py-0.5 rounded bg-white/10">${pool.toUpperCase()}</span>`;
+  if(p.nationalite) badges+=`<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-white/10">${flag} ${p.nationalite}</span>`;
+  if(p.actif) badges+=`<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-brand/25 text-brand-soft flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-brand"></span>ACTIF</span>`;
+  $('[data-badges]').innerHTML=badges;
+
+  const mi=(d,t)=>`<span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${d}</svg>${t}</span>`;
+  const meta=[];
+  if(p.club) meta.push(mi('<path d="M3 21V8l8-5 8 5v13M3 21h18M9 21v-6h6v6"/>', tc(p.club)));
+  if(p.comite) meta.push(mi('<path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/>', tc(p.comite)));
+  if(p.ligue) meta.push(mi('<path d="M4 22V4l8 2 8-3v13l-8 3-8-2Z"/>', tc(p.ligue)));
+  if(p.age) meta.push(mi('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', p.age+' ans'));
+  $('[data-meta]').innerHTML=meta.join('<span class="text-white/30">·</span>');
+
+  $('[data-rank]').innerHTML=p.classement!=null?p.classement+'<span class="text-2xl text-white/35 font-600">e</span>':'—';
+  // Variation du MOIS (claire) calculée sur l'historique mensuel
+  const rh=(p.rang_historique||[]).filter(h=>h.classement!=null);
+  const dMois = rh.length>=2 ? rh[rh.length-1].classement - rh[rh.length-2].classement : null;
+  let chip='';
+  if(dMois===0){
+    chip=`<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/12 text-white/85 text-[13px] font-600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/></svg>stable ce mois</span>`;
+  } else if(dMois!=null){
+    const worse=dMois>0;
+    const col=worse?'bg-rose-500/22 text-rose-100':'bg-emerald-400/25 text-emerald-50';
+    const dir=worse?'M12 5v14M6 13l6 6 6-6':'M12 19V5M6 11l6-6 6 6';
+    chip=`<span class="pct-font inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${col} text-[15px] font-800"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="${dir}"/></svg>${Math.abs(dMois)}<span class="font-600 text-[12px] opacity-90"> places ce mois</span></span>`;
+  }
+  $('[data-ranksub]').innerHTML=chip;
+  const rmEl=$('[data-rankmeta]'); if(rmEl){ const bits=[]; if(p.points_officiels!=null) bits.push(`<b class="text-white font-700">${fr(Math.round(p.points_officiels))}</b> pts`); if(p.meilleur_classement!=null) bits.push(`meilleur <b class="text-white font-700">${p.meilleur_classement}e</b>`); rmEl.innerHTML=bits.join(' · '); }
+  const si=(d,t)=>`<span class="flex items-center gap-1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${d}</svg>${t}</span>`;
+  const st=[];
+  if(p.nb_top8!=null) st.push(si('<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/>', `<b class="text-white font-700">${p.nb_top8}</b> top-8`));
+  if(p.nb_tournois) st.push(si('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>', `${p.nb_tournois} tournois`));
+  const stEl=$('[data-rankstats]'); if(stEl) stEl.innerHTML=st.join('<span class="text-white/30">·</span>');
+
+  if(p.percentile!=null){
+    $('[data-perc]').textContent='Top '+String(p.percentile).replace('.',',')+' %';
+    const ps=$('[data-perc-sub]'); if(ps) ps.textContent='parmi '+fr(p.total_classes)+' '+(p.sexe==='F'?'femmes':'hommes');
+  } else { $('[data-perc-wrap]').style.display='none'; }
+
+  const hist=(p.rang_historique||[]).filter(h=>h.classement!=null);
+  if(hist.length){
+    const best=Math.min(...hist.map(h=>h.classement));
+    $('[data-traj-sum]').innerHTML=`<span class="text-white/55">classé depuis ${frMois(hist[0].mois)}</span> · ${hist[0].classement}e → <b class="text-amber-200 font-700">${best}e</b> → ${hist[hist.length-1].classement}e`;
+    new Chart(root.querySelector('#journey'),{type:'line',plugins:[yearLines],
+      data:{labels:hist.map(h=>h.mois),datasets:[{data:hist.map(h=>h.classement),borderColor:'#ffffff',borderWidth:2,
+        fill:true,backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,80);g.addColorStop(0,'rgba(255,255,255,.22)');g.addColorStop(1,'rgba(255,255,255,0)');return g;},
+        tension:.3,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#fff',pointHoverBorderColor:'#0e7c66',pointHoverBorderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{top:2}},
+        plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{title:c=>frMois(c[0].label),label:c=>'Classement '+c.parsed.y+'e'}}},
+        scales:{y:{reverse:true,display:false},
+          x:{grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,0.65)',font:{size:10},maxRotation:0,autoSkip:false,callback:function(val,idx){const L=this.chart.data.labels;const cur=(L[idx]||'').slice(0,4);const prev=idx>0?(L[idx-1]||'').slice(0,4):'';return cur&&cur!==prev?cur:'';}}}}}});
+  }
+
+  const e='<span class="text-sm text-muted font-600">e</span>';
+  const slash=n=>'<span class="text-sm text-muted font-600">/'+n+'</span>';
+  const kpi=[
+    ['National', (p.classement!=null?p.classement+e:'—'), p.percentile!=null?'top '+String(p.percentile).replace('.',',')+' %':'', true],
+    ['Meilleur', (p.meilleur_classement!=null?p.meilleur_classement+e:'—'), 'en carrière', false],
+    ['Points', fr(Math.round(p.points_officiels||0)), p.nb_comptees+' comptées', false],
+    ['Meilleure place', (p.meilleure_place!=null?p.meilleure_place+e:'—'), 'sur '+p.nb_tournois+' tournois', false],
+    ['Top 8', p.nb_top8+slash(p.nb_tournois), p.nb_tournois?Math.round(100*p.nb_top8/p.nb_tournois)+'% des tournois':'', false],
+    ['Perf pondérée', fr(p.points_ponderes||0), p.perf_ratio!=null?((p.perf_ratio>=1?'+':'')+Math.round((p.perf_ratio-1)*100)+'% vs brut'):'résultats × difficulté', p.perf_ratio>1],
+  ];
+  $('[data-kpi]').innerHTML=kpi.map(([l,v,s,hot])=>`<div class="card p-3.5"><div class="lbl">${l}</div><div class="num font-800 text-2xl mt-1">${v}</div><div class="text-[11px] ${hot?'text-brand-dark font-600':'text-muted'} mt-0.5">${s}</div></div>`).join('');
+
+  const order=[['club','Club'],['comite','Comité'],['ligue','Ligue'],['national','National']];
+  $('[data-pyr]').innerHTML=order.filter(([k])=>p.pyramide&&p.pyramide[k]).map(([k,lab])=>{
+    const r=p.pyramide[k].rang, tot=p.pyramide[k].total;
+    const pct=100*r/tot, top=pct<1?'top '+pct.toFixed(2)+'%':'top '+pct.toFixed(0)+'%';
+    const fill=Math.max(3,100-100*(r-1)/tot);
+    return `<div><div class="flex items-baseline justify-between mb-1"><span class="font-600 text-sm">${lab}</span><div class="num font-700 text-sm">${r}<span class="text-muted text-xs">e</span> <span class="text-muted font-400 text-xs">/ ${fr(tot)}</span></div></div><div class="h-1.5 rounded-full bg-paper overflow-hidden"><div class="h-full rounded-full bg-brand" style="width:${fill}%"></div></div><div class="text-[10.5px] text-brand-dark font-600 mt-0.5">${top}</div></div>`;
+  }).join('');
+
+  const niv=p.niveaux_dist||{}; const totN=Object.values(niv).reduce((a,b)=>a+b,0);
+  $('[data-niv-sub]').textContent=p.nb_tournois+' tournois joués.';
+  const palette={25:'bg-gray-400',100:'bg-gray-500',250:'bg-sky-500',500:'bg-brand',1000:'bg-indigo-500',1500:'bg-amber-500',2000:'bg-amber-600'};
+  $('[data-levels]').innerHTML=Object.entries(niv).sort((a,b)=>b[0]-a[0]).map(([lv,n])=>`<div><div class="flex justify-between text-sm mb-1"><span class="font-500">P${lv}</span><span class="num text-muted">${n} <span class="text-[11px]">(${Math.round(100*n/totN)}%)</span></span></div><div class="h-2 rounded-full bg-paper overflow-hidden"><div class="h-full rounded-full ${palette[lv]||'bg-brand'}" style="width:${100*n/totN}%"></div></div></div>`).join('');
+
+  const medals=['#C8972F','#9AA3AE','#B07B4F'];
+  const perfs=p.meilleures_perfs||[];
+  if(!perfs.length){ $('[data-shelf-wrap]').style.display='none'; }
+  else $('[data-shelf]').innerHTML=perfs.map((m,i)=>`<div class="card p-4 relative cursor-pointer hover:border-brand" onclick="location.href='/tournoi/${m.id_tournoi}'">
+    <span class="absolute right-3 top-3 num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[m.niveau_points]||'bg-gray-100 text-gray-600'}">P${m.niveau_points||'?'}</span>
+    <div class="flex items-center gap-2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${medals[i]}" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg><span class="num font-800 text-lg">${m.position}e</span>${m.tableau_nb_joueurs?`<span class="text-xs text-muted">/ ${m.tableau_nb_joueurs} paires</span>`:''}</div>
+    <div class="font-600 text-sm mt-3 leading-tight">${m.tournoi_nom||'—'}</div>
+    <div class="text-xs text-muted">${m.partenaire&&m.partenaire!=='None None'?'avec '+tc(m.partenaire):''}</div>
+    <div class="flex items-center justify-between mt-2"><span class="num font-700 text-brand-dark text-sm">+${Math.round(m.points)} pts</span>${m.indice_niveau!=null?`<span class="text-[10.5px] text-muted flex items-center gap-1">plateau ${diffChip(m.indice_niveau)}</span>`:''}</div></div>`).join('');
+
+  const pc=(p.parcours_detail||[]).slice(0,16);
+  $('[data-parcours]').innerHTML=pc.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'">
+    <td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td>
+    <td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}</td>
+    <td class="px-3 py-2 text-muted hidden sm:table-cell">${r.partenaire&&r.partenaire!=='None None'?tc(r.partenaire):'—'}</td>
+    <td class="px-3 py-2 text-center hidden md:table-cell">${diffChip(r.indice_niveau)}</td>
+    <td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td>
+    <td class="px-3 py-2 text-right"><div class="num font-700 ${r.pris_en_compte?'text-brand-dark':'text-muted'}">${Math.round(r.points||0)}</div>${(r.perf_ponderee!=null&&r.perf_ponderee!==Math.round(r.points||0))?`<div class="num text-[10px] ${r.perf_ponderee>(r.points||0)?'text-emerald-600':'text-muted'}" title="perf pondérée par la difficulté">→ ${r.perf_ponderee}</div>`:''}</td></tr>`).join('');
+
+  const prt=(p.top_partners||[]).slice(0,6); const maxp=Math.max(1,...prt.map(x=>x.points||0));
+  $('[data-partners]').innerHTML=prt.map(x=>`<div class="flex items-center gap-3">
+    <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-xs font-700">${ini(x.nom_complet)}</div>
+    <div class="min-w-0 flex-1"><div class="flex justify-between items-baseline"><span class="text-sm font-500 truncate">${tc(x.nom_complet)}</span><span class="num text-xs font-700 text-brand-dark ml-2">${fr(x.points)}</span></div>
+    <div class="h-1.5 rounded-full bg-paper mt-1 overflow-hidden"><div class="h-full rounded-full bg-brand/70" style="width:${100*(x.points||0)/maxp}%"></div></div></div>
+    <span class="text-[11px] text-muted shrink-0">${x.nb_tournois}×</span></div>`).join('');
+}
+load();
+</script>
+</body>
+</html>

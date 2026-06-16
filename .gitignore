@@ -38,3 +38,12 @@ probe_*.py
 Thumbs.db
 *.log
 .ipynb_checkpoints/
+
+# ── Secrets & artefacts (ajout) ───────────────────────────────────────────────
+cookie_header.txt
+cookies_new.json
+cookies*.json
+*.bak
+.fuse_hidden*
+.*.LoohME
+*-journal
