@@ -47,3 +47,9 @@ cookies*.json
 .fuse_hidden*
 .*.LoohME
 *-journal
+
+# --- Méthode de scraping : garder PRIVÉE (le site/VPS n'en a pas besoin) ---
+scraper_json.py
+backend/scraper_json.py
+DOC_SCRAPER_JSON.md
+N8N_WORKFLOW.md
