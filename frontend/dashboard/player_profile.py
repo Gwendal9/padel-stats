@@ -433,6 +433,20 @@ def get_player_profile(player_id: str) -> dict | None:
             p.setdefault("surcote_niveau", None)
             p.setdefault("indice_categorie", None)
 
+    # Club où le tournoi a été joué (organisateur déduit, table tournois_club)
+    try:
+        _ctids = list({p["id_tournoi"] for p in parcours_detail if p["id_tournoi"]})
+        cmap = {}
+        if _ctids:
+            ph_c = ",".join(["?"] * len(_ctids))
+            cmap = {r["id_tournoi"]: r["club_nom"] for r in fetchall(
+                f"SELECT id_tournoi, club_nom FROM tournois_club WHERE id_tournoi IN ({ph_c})", tuple(_ctids))}
+        for p in parcours_detail:
+            p["club"] = cmap.get(p["id_tournoi"])
+    except Exception:
+        for p in parcours_detail:
+            p.setdefault("club", None)
+
     # Perf pondérée par la difficulté du plateau (relevé pour sa catégorie)
     for p in parcours_detail:
         ic = p.get("indice_categorie")

@@ -44,12 +44,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
     <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
     <a href="/carte" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
     <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 <div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher une ville…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
   <main class="px-5 lg:px-8 py-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <div><h1 class="font-800 text-2xl tracking-tight">Carte de France</h1><p class="text-sm text-muted mt-0.5" id="subtitle">Répartition par département · clique sur un département pour voir ses clubs par commune.</p></div>
@@ -81,6 +91,8 @@ let state={sexe:'H',metric:'nb'};
 let depData={}, geo=null, geojsonLayer=null, layerByCode={}, bounds=[1,1], curHi=null, curDept=null;
 
 const map=L.map('map',{zoomControl:true}).setView([46.6,2.4],6);
+map.createPane('communes'); map.getPane('communes').style.zIndex=450;  // communes AU-DESSUS des départements (SVG)
+map.on('click',()=>{ if(document.getElementById('side').dataset.mode==='detail') backToFrance(); });  // clic sur le fond (hors dept/commune) -> retour région
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
 
 function paintSeg(){document.querySelectorAll('.seg').forEach(b=>{const on=b.dataset.sexe===state.sexe;b.className='seg '+(on?'bg-ink text-white':'text-muted hover:bg-paper');});}
@@ -88,7 +100,7 @@ function metricVal(code){ const d=depData[code]; if(!d) return null; return stat
 function values(){ return Object.keys(depData).map(metricVal).filter(v=>v!=null&&v>0); }
 function computeBounds(){ const v=values(); bounds=v.length?[Math.min(...v),Math.max(...v)]:[0,1]; }
 function colorFor(val){ if(val==null||val<=0) return '#EEF0F2'; const[mn,mx]=bounds; let t=(val-mn)/((mx-mn)||1); if(state.metric==='classement_moyen') t=1-t; const i=Math.min(SHADES.length-1,Math.max(0,Math.round(t*(SHADES.length-1)))); return SHADES[i]; }
-function styleDep(f){ return {className:'dep',fillColor:colorFor(metricVal(f.properties.code)),fillOpacity:.85,color:'#fff',weight:.6}; }
+function styleDep(f){ return {className:'dep',fill:true,stroke:true,fillColor:colorFor(metricVal(f.properties.code)),fillOpacity:.85,color:'#fff',weight:.6}; }
 function tooltip(f){ const code=f.properties.code,d=depData[code],nom=f.properties.nom||code; if(!d) return `<b>${nom} (${code})</b><br><span style="color:#697483">aucune donnée</span>`; return `<b>${nom} (${code})</b><br>${fr(d.nb)} joueurs ${state.sexe==='F'?'(D)':'(H)'}`+(d.classement_moyen?`<br>Clt moyen ${fr(d.classement_moyen)}e`:'')+(d.nb_clubs?`<br>${d.nb_clubs} clubs`:''); }
 
 function metricLabel(){ return state.metric==='nb'?'Nombre de joueurs':(state.metric==='nb_clubs'?'Nombre de clubs':'Classement moyen'); }
@@ -110,7 +122,7 @@ function renderChoropleth(){
     l.bindTooltip(()=>tooltip(f),{sticky:true});
     l.on('mouseover',()=>{ if(document.getElementById('side').dataset.mode!=='detail') setHi(f.properties.code); });
     l.on('mouseout',()=>{ if(document.getElementById('side').dataset.mode!=='detail') clearHi(); });
-    l.on('click',()=>openDept(f.properties.code, f.properties.nom));
+    l.on('click',(e)=>{ L.DomEvent.stopPropagation(e); openDept(f.properties.code, f.properties.nom); });
   }}).addTo(map);
   drawLegend();
   if(document.getElementById('side').dataset.mode!=='detail') showList();
@@ -140,8 +152,11 @@ function showList(){
 async function openDept(code, nom){
   const side=document.getElementById('side'); side.dataset.mode='detail'; curDept=code;
   // Vue d\'exploration : on efface la choroplèthe, on ne garde que le contour du département + ses clubs
-  Object.values(layerByCode).forEach(x=>x.setStyle({fillOpacity:0,weight:.4,color:'rgba(0,0,0,.12)'}));
-  const l=layerByCode[code]; if(l){ l.setStyle({fillOpacity:0,weight:2.5,color:'#0F141B'}); l.bringToFront(); try{ map.fitBounds(l.getBounds(),{padding:[20,20]});}catch(_){} }
+  // On GRISE les autres départements (toujours visibles et cliquables pour naviguer de l'un
+  // à l'autre) afin que le département ouvert — coloré en communes — ressorte nettement.
+  // Le dept ouvert : on masque son liseré blanc (le contour noir des communes le remplace).
+  Object.values(layerByCode).forEach(x=>{ if(x.feature) x.setStyle({fill:true,stroke:true,fillColor:'#D7DCE1',fillOpacity:.75,color:'#fff',weight:.5}); });
+  const l=layerByCode[code]; if(l){ l.setStyle({fill:true,fillColor:'#D7DCE1',fillOpacity:.75,stroke:false}); try{ map.fitBounds(l.getBounds(),{padding:[20,20]});}catch(_){} }
   showDeptCommunes(code);
   side.innerHTML='<div class="text-sm text-muted px-1 py-4">Chargement…</div>';
   let d={}; try{ d=await fetch('/api/geo/departement/'+encodeURIComponent(code)+'?sexe='+state.sexe).then(r=>r.json()); }catch(_){}
@@ -156,7 +171,7 @@ async function openDept(code, nom){
       <div class="bg-paper rounded-lg p-2 text-center"><div class="num font-800 text-lg">${clt?fr(Math.round(clt)):'—'}</div><div class="text-[10px] text-muted">clt moyen</div></div>
     </div>`;
   if((d.top_joueurs||[]).length){ h+=`<div class="lbl mt-4 mb-1.5">Top joueurs</div>`+d.top_joueurs.map(j=>`<a href="/joueur/${j.id_fft}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper"><span class="num text-[12px] text-muted w-9">#${fr(j.classement)}</span><span class="w-6 h-6 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[9px] font-700">${ini((j.prenom||'')+' '+(j.nom||''))}</span><span class="text-[13px] font-500 truncate">${tc((j.prenom||'')+' '+(j.nom||''))}</span></a>`).join(''); }
-  if((d.top_clubs||[]).length){ h+=`<div class="lbl mt-4 mb-1.5">Meilleurs clubs (niveau moyen)</div>`+d.top_clubs.map(cl=>`<div class="flex items-center gap-2 px-1.5 py-1"><span class="text-[13px] font-500 flex-1 truncate">${tc(cl.club_nom)}</span><span class="num text-[11px] text-muted">${cl.nb} j · moy ${fr(Math.round(cl.clt_moy))}e</span></div>`).join(''); }
+  if((d.top_clubs||[]).length){ h+=`<div class="lbl mt-4 mb-1.5">Meilleurs clubs (niveau moyen)</div>`+d.top_clubs.map(cl=>`<a href="/club?nom=${encodeURIComponent(cl.club_nom)}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper"><span class="text-[13px] font-500 flex-1 truncate">${tc(cl.club_nom)}</span><span class="num text-[11px] text-muted">${cl.nb} j · moy ${fr(Math.round(cl.clt_moy))}e</span></a>`).join(''); }
   if((d.top_tournois||[]).length){ h+=`<div class="lbl mt-4 mb-1.5">Tournois les plus relevés</div>`+d.top_tournois.map(t=>`<a href="/tournoi/${t.id_tournoi}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper"><span class="num font-700 text-[10px] px-1.5 py-0.5 rounded ${PLEVEL[t.niveau_effectif]||'bg-gray-100 text-gray-600'}">P${t.niveau_effectif}</span><span class="text-[13px] font-500 flex-1 truncate">${t.nom}</span><span class="pct-font text-[12px] font-700">${Math.round(t.indice_niveau)}</span></a>`).join(''); }
   side.innerHTML=h;
   side.querySelector('#back').addEventListener('click',backToFrance);
@@ -173,6 +188,8 @@ function backToFrance(){
 }
 
 let communeLayer=null;
+const communeRenderer=L.canvas({padding:.5,pane:'communes'});   // rendu canvas, pane au-dessus des départements
+const communeCache={};                            // code dept -> {gj, mx, nbClubs}
 function pipRing(pt,ring){ let x=pt[0],y=pt[1],inside=false; for(let i=0,j=ring.length-1;i<ring.length;j=i++){ const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1]; const inter=((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/((yj-yi)||1e-12)+xi); if(inter) inside=!inside; } return inside; }
 function pipFeature(pt,f){ const g=f.geometry; if(!g) return false; if(g.type==='Polygon') return pipRing(pt,g.coordinates[0]); if(g.type==='MultiPolygon') return g.coordinates.some(poly=>pipRing(pt,poly[0])); return false; }
 function drawCommuneLegend(mx){
@@ -181,23 +198,50 @@ function drawCommuneLegend(mx){
   for(let i=0;i<n;i++){ const a=mx*i/n,b=mx*(i+1)/n; h+=`<div class="flex items-center gap-2 mb-0.5"><span style="width:14px;height:14px;border-radius:3px;background:${SHADES[i]};display:inline-block"></span><span class="num text-muted">${Math.round(a)} – ${Math.round(b)}</span></div>`; }
   lg.innerHTML=h;
 }
-async function showDeptCommunes(code){
-  const hint=document.getElementById('hint'); hint.style.display='block'; hint.innerHTML='Chargement des communes…';
-  let clubs=[]; try{ clubs=await fetch('/api/geo/clubs?dept='+encodeURIComponent(code)).then(r=>r.json()); }catch(_){}
-  let gj=null; try{ gj=await fetch('https://geo.api.gouv.fr/departements/'+encodeURIComponent(code)+'/communes?format=geojson&geometry=contour&fields=nom').then(r=>r.json()); }catch(_){}
-  if(communeLayer){ map.removeLayer(communeLayer); communeLayer=null; }
-  if(!gj||!gj.features){ hint.innerHTML='Communes indisponibles.'; return; }
-  gj.features.forEach(f=>{ f.properties._clubs=[]; });
-  clubs.forEach(cl=>{ const pt=[Number(cl.lon),Number(cl.lat)]; for(const f of gj.features){ if(pipFeature(pt,f)){ if(norm(cl.nom)!==norm(f.properties.nom)) f.properties._clubs.push(cl.nom); break; } } });
-  const vals=gj.features.map(f=>f.properties._clubs.length).filter(x=>x>0); const mx=vals.length?Math.max(...vals):1;
-  const ccolor=v=>{ if(!v) return '#EEF0F2'; const t=v/mx; const i=Math.min(SHADES.length-1,Math.max(0,Math.round(t*(SHADES.length-1)))); return SHADES[i]; };
-  communeLayer=L.geoJSON(gj,{
-    style:f=>({fillColor:ccolor(f.properties._clubs.length),fillOpacity:.85,color:'#fff',weight:.7}),
+function buildCommuneLayer(gj,mx){
+  const ccolor=v=>{ if(!v) return '#C7CED6'; const t=v/mx; const i=Math.min(SHADES.length-1,Math.max(0,Math.round(t*(SHADES.length-1)))); return SHADES[i]; };
+  // Sous-couche : tracé épais foncé sur la géométrie des communes. Les remplissages opaques
+  // posés par-dessus recouvrent les bords internes -> seul le périmètre extérieur reste visible,
+  // donc le contour du département épouse EXACTEMENT le découpage communal.
+  const outline=L.geoJSON(gj,{renderer:communeRenderer,interactive:false,
+    style:{fill:false,color:'#0F141B',weight:3.5,opacity:1,lineJoin:'round',lineCap:'round'}});
+  const fills=L.geoJSON(gj,{renderer:communeRenderer,
+    style:f=>({fillColor:ccolor(f.properties._clubs.length),fillOpacity:1,color:'#fff',weight:.7}),
     onEachFeature:(f,l)=>{ const cls=f.properties._clubs, n=cls.length;
       const liste = n ? cls.slice(0,10).map(tc).join('<br>')+(n>10?`<br>+${n-10} autres`:'') : '<span style="color:#697483">aucun club</span>';
       l.bindTooltip(`<b>${f.properties.nom}</b> · ${n} club${n>1?'s':''}<br>${liste}`,{sticky:true});
+      l.on('click',e=>L.DomEvent.stopPropagation(e));
     }
-  }).addTo(map);
+  });
+  return L.layerGroup([outline,fills]);
+}
+async function showDeptCommunes(code){
+  const hint=document.getElementById('hint'); hint.style.display='block'; hint.innerHTML='Chargement des communes…';
+  if(communeLayer){ map.removeLayer(communeLayer); communeLayer=null; }
+  const hit=communeCache[code];
+  if(hit){
+    communeLayer=buildCommuneLayer(hit.gj,hit.mx).addTo(map);
+    drawCommuneLegend(hit.mx);
+    hint.innerHTML=`${hit.gj.features.length} communes · ${hit.nbClubs} clubs localisés`;
+    return;
+  }
+  let clubs=[], gj=null;
+  try{ [clubs,gj]=await Promise.all([
+    fetch('/api/geo/clubs?dept='+encodeURIComponent(code)).then(r=>r.json()),
+    fetch('https://geo.api.gouv.fr/departements/'+encodeURIComponent(code)+'/communes?format=geojson&geometry=contour&fields=nom').then(r=>r.json())
+  ]); }catch(_){}
+  if(curDept!==code) return;
+  if(!gj||!gj.features){ hint.innerHTML='Communes indisponibles.'; return; }
+  gj.features.forEach(f=>{ f.properties._clubs=[]; });
+  const byName={}; gj.features.forEach(f=>{ byName[norm(f.properties.nom)]=f; });
+  clubs.forEach(cl=>{
+    let f = cl.ville ? byName[norm(cl.ville)] : null;                 // 1) ville déclarée du club (fiable)
+    if(!f){ const pt=[Number(cl.lon),Number(cl.lat)]; for(const g of gj.features){ if(pipFeature(pt,g)){ f=g; break; } } } // 2) repli : point-dans-polygone
+    if(f && norm(cl.nom)!==norm(f.properties.nom)) f.properties._clubs.push(cl.nom);
+  });
+  const vals=gj.features.map(f=>f.properties._clubs.length).filter(x=>x>0); const mx=vals.length?Math.max(...vals):1;
+  communeCache[code]={gj,mx,nbClubs:clubs.length};
+  communeLayer=buildCommuneLayer(gj,mx).addTo(map);
   drawCommuneLegend(mx);
   hint.innerHTML=`${gj.features.length} communes · ${clubs.length} clubs localisés`;
 }
@@ -215,6 +259,23 @@ async function loadGeo(){
 document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{state.sexe=b.dataset.sexe;paintSeg();if(curDept){backToFrance();}document.getElementById('side').dataset.mode='list';loadDepData();}));
 document.getElementById('metric').addEventListener('change',e=>{state.metric=e.target.value;if(!curDept&&geo){renderChoropleth();}});
 paintSeg(); loadDepData().then(loadGeo);
+</script>
+<script>
+(function(){
+  const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
+  if(!sb)return; let t;
+  sb.addEventListener('input',e=>{clearTimeout(t);t=setTimeout(()=>run(e.target.value.trim()),280);});
+  document.addEventListener('click',e=>{if(!e.target.closest('#searchwrap'))sr.classList.add('hidden');});
+  async function run(q){
+    if(q.length<2){sr.classList.add('hidden');return;}
+    let d={}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+    const a=d.villes||[];
+    if(!a.length){sr.classList.add('hidden');return;}
+    sr.innerHTML=a.map(v=>`<button data-dept="${v.dept_num||''}" class="vres w-full text-left flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></button>`).join('');
+    sr.querySelectorAll('.vres').forEach(b=>b.addEventListener('click',()=>{const dn=b.dataset.dept;sr.classList.add('hidden');sb.value='';if(dn&&typeof openDept==='function')openDept(dn);}));
+    sr.classList.remove('hidden');
+  }
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .pct-font{font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}.nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .tg{padding:0 12px;height:26px;border-radius:7px}
+  @keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes growy{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  @keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .card{animation:fadeup .35s ease both}
+  .barY{transform-origin:bottom;animation:growy .55s cubic-bezier(.2,.7,.3,1) both}
+  .barX{transform-origin:left;animation:growx .55s cubic-bezier(.2,.7,.3,1) both}
+  @media (prefers-reduced-motion:reduce){.card,.barY,.barX{animation:none}}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
+    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
+    <a href="/clubs" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
+    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un joueur…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
+  <main class="px-5 lg:px-8 pb-20" id="root">
+    <div class="mt-8 text-center text-muted text-sm" id="loading">Chargement du club…</div>
+  </main>
+</div>
+
+<script>
+const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
+const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
+const PLEVEL={25:'bg-gray-100 text-gray-500',50:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
+const diffColor=v=>{ if(v==null) return '#9aa3af'; if(v>=65) return '#E0AE45'; if(v>=50) return '#8b87f5'; if(v>=35) return '#13C2A6'; if(v>=22) return '#5BB8F0'; return '#cbd0d6'; };
+const getNom=()=>new URLSearchParams(location.search).get('nom')||'';
+
+const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
+sb.addEventListener('input',debounce(async e=>{
+  const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
+  let d={joueurs:[],clubs:[],villes:[]}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+  const sec=t=>`<div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted font-600 border-t border-line first:border-0">${t}</div>`;
+  let h='';
+  if((d.joueurs||[]).length) h+=sec('Joueurs')+d.joueurs.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  if((d.clubs||[]).length) h+=sec('Clubs')+d.clubs.map(o=>`<a href="/club?nom=${encodeURIComponent(o.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(o.nom)}</span><span class="text-[11px] text-muted shrink-0">${o.nb} licenciés</span></a>`).join('');
+  if((d.villes||[]).length) h+=sec('Villes')+d.villes.map(v=>`<a href="/classement?ville=${encodeURIComponent(v.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></a>`).join('');
+  if(!h){sr.classList.add('hidden');return;}
+  sr.innerHTML=h; sr.classList.remove('hidden');
+}));
+document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
+
+function kpi(label,big,sub,icon,col){ col=col||'#0E9C86'; return `<div class="card p-4"><div class="flex items-center gap-2 mb-1.5"><span class="w-7 h-7 rounded-lg grid place-items-center shrink-0" style="background:${col}1f;color:${col}">${icon||''}</span><span class="lbl">${label}</span></div><div class="pct-font font-800 text-2xl leading-none">${big}</div><div class="text-[11px] text-muted mt-1">${sub||''}</div></div>`; }
+function topRow(p){ return `<a href="/joueur/${p.id}" class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-paper"><span class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(p.nom_complet)}</span><span class="text-sm font-500 flex-1 truncate">${tc(p.nom_complet)}</span><span class="num text-[12px] text-muted shrink-0">#${fr(p.classement)}</span></a>`; }
+function bossRows(arr){
+  const medal=['#E0AE45','#9AA3AE','#B07B4F'];
+  const rows=(arr||[]).map((p,i)=>{ const col=medal[i]||'#c2c9d0', top=i===0, ratio=Math.round(p.points/Math.max(1,p.tournois));
+    return `<a href="/joueur/${p.id}" class="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-paper" ${top?'style="background:linear-gradient(120deg,#fff7e6,#ffffff);border:1px solid #E0AE4533"':''}>
+      <span class="num font-800 text-sm w-5 text-center shrink-0" style="color:${col}">${i+1}</span>
+      <span class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini(p.nom_complet)}</span>
+      <span class="flex-1 min-w-0"><span class="text-sm font-600 truncate block leading-tight">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted">${fr(p.tournois)} tournois · ${fr(ratio)} pts/t</span></span>
+      <span class="text-right shrink-0"><span class="pct-font font-800 text-base leading-none">${fr(p.points)}</span><span class="text-[9.5px] text-muted block mt-0.5">points</span></span></a>`;
+  }).join('');
+  return rows||'<div class="text-sm text-muted px-1 py-6 text-center">Pas encore de boss ici.</div>';
+}
+
+function bossPodium(arr){
+  arr=arr||[];
+  if(arr.length<3) return bossRows(arr);
+  const medal=['#E0AE45','#9AA3AE','#B07B4F'], order=[1,0,2], ht=['h-12','h-9','h-7'];
+  const pod=order.map(idx=>{const p=arr[idx]; return `<a href="/joueur/${p.id}" class="flex flex-col items-center gap-1 flex-1 min-w-0 text-center hover:opacity-90">
+    <span class="rounded-full bg-brand-soft text-brand-dark grid place-items-center font-800 ${idx===0?'w-11 h-11 text-sm':'w-9 h-9 text-[11px]'}" style="box-shadow:0 0 0 2px ${medal[idx]}">${ini(p.nom_complet)}</span>
+    <span class="text-[10.5px] font-600 truncate w-full leading-tight">${tc(p.nom_complet)}</span>
+    <span class="pct-font text-[13px] font-800 leading-none">${fr(p.points)}<span class="text-[8px] text-muted font-600"> pts</span></span>
+    <span class="text-[9px] text-muted leading-tight">${fr(p.tournois)} tournois</span>
+    <div class="w-full ${ht[idx]} rounded-t grid place-items-start justify-center pt-0.5 barY" style="background:${medal[idx]}2e"><span class="num font-800 text-xs" style="color:${medal[idx]}">${idx+1}</span></div>
+  </a>`;}).join('');
+  const rest=arr.slice(3);
+  const list=rest.length?`<div class="space-y-0.5 mt-2 pt-2 border-t border-line">${rest.map((p,i)=>`<a href="/joueur/${p.id}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper"><span class="num text-[11px] text-muted w-4 text-center shrink-0">${i+4}</span><span class="text-sm font-500 flex-1 truncate">${tc(p.nom_complet)}</span><span class="num text-[11px] text-muted shrink-0">${fr(p.points)} pts · ${fr(p.tournois)} t</span></a>`).join('')}</div>`:'';
+  return `<div class="flex items-end gap-1.5">${pod}</div>${list}`;
+}
+let TOP_LIC={H:[],F:[]}, TOP_PLAY={H:[],F:[]}, curSrc='lic', curSexe='H', BOSS={H:[],F:[]}, curBoss='H';
+function renderTop(){
+  const src=(curSrc==='play')?TOP_PLAY:TOP_LIC;
+  const list=(src[curSexe]||[]).slice(0,50);
+  document.getElementById('toplist').innerHTML=list.length?list.map(topRow).join(''):`<div class="text-sm text-muted px-2 py-6 text-center">Aucun⋅e classé⋅e.</div>`;
+  document.getElementById('tg_h').className='tg '+(curSexe==='H'?'bg-ink text-white':'text-muted');
+  document.getElementById('tg_f').className='tg '+(curSexe==='F'?'bg-ink text-white':'text-muted');
+  const sl=document.getElementById('src_lic'), sp=document.getElementById('src_play');
+  if(sl){ sl.className='tg '+(curSrc==='lic'?'bg-ink text-white':'text-muted'); sp.className='tg '+(curSrc==='play'?'bg-ink text-white':'text-muted'); }
+}
+function renderBoss(){
+  document.getElementById('bosslist').innerHTML=bossPodium(BOSS[curBoss]);
+  document.getElementById('bg_h').className='tg '+(curBoss==='H'?'bg-ink text-white':'text-muted');
+  document.getElementById('bg_f').className='tg '+(curBoss==='F'?'bg-ink text-white':'text-muted');
+}
+
+async function load(){
+  const nom=getNom();
+  if(!nom){ document.getElementById('loading').textContent='Aucun club spécifié.'; return; }
+  let c={},d={};
+  try{ [c,d]=await Promise.all([
+    fetch('/api/club?nom='+encodeURIComponent(nom)).then(r=>r.json()),
+    fetch('/api/club_detail?nom='+encodeURIComponent(nom)).then(r=>r.json())
+  ]); }catch(e){ document.getElementById('loading').textContent='Club introuvable.'; return; }
+  render(nom,c,d);
+}
+
+function render(name,c,d){
+  document.getElementById('loading')?.remove();
+  const root=document.getElementById('root');
+  const geo=d.geo||null;
+  const loc=[geo&&tc(geo.ville), geo&&geo.dept_num?'('+geo.dept_num+')':''].filter(Boolean).join(' ');
+  const pct=d.nb_total?Math.round(100*d.nb_actifs/d.nb_total):null;
+  const pools=d.pools||{h:0,f:0}, t10=d.top10||{h:0,f:0};
+  const pctRank=(avg,pool)=>(avg&&pool)?'top '+(Math.max(0.1,Math.round(1000*avg/pool)/10))+'%':'—';
+  const r=d.renouvellement||{}; const rt=(r.depuis_2025||0)+(r.nouveaux_2026||0)+(r.sans_match||0);
+  const seg=(v,col)=>rt?`<div style="width:${100*v/rt}%;background:${col}" class="h-2"></div>`:'';
+  const pr=d.progression, dc=d.dept_compare, bn=d.binomes||[], act=d.activite||[];
+  const cmp=(a,b)=>(a&&b)?`<span style="color:${a<b?'#0E9C86':'#d4574e'}">${fr(a)}</span><span class="text-muted"> / ${fr(b)}</span>`:'—';
+  const statCards=[];
+  if(pr) statCards.push(`<div class="card p-4"><div class="lbl">Dynamique du club</div><div class="flex items-baseline gap-2 mt-1"><span class="pct-font font-800 text-3xl" style="color:${pr.relatif>=0?'#0E9C86':'#d4574e'}">${pr.relatif>=0?'+':''}${fr(pr.relatif)}</span><span class="text-[11px] text-muted">places/mois vs moyenne</span></div><div class="text-[12px] text-muted mt-1.5">${pr.relatif>=0?'Progresse plus vite que la moyenne.':'Progresse moins vite que la moyenne.'} ${pr.up}/${pr.n} en hausse.</div></div>`);
+  if(dc) statCards.push(`<div class="card p-4"><div class="lbl">vs département ${dc.dept_num}</div><div class="mt-2 space-y-1 text-[12.5px]"><div class="flex justify-between gap-2"><span class="text-muted">Clt moyen H</span><span class="num font-600">${cmp(c.avg_rank_h,dc.avg_h)}</span></div><div class="flex justify-between gap-2"><span class="text-muted">Clt moyen F</span><span class="num font-600">${cmp(c.avg_rank_f,dc.avg_f)}</span></div><div class="flex justify-between gap-2"><span class="text-muted">Effectif</span><span class="num font-600">${fr(c.nb_joueurs)}<span class="text-muted"> / ${fr(dc.club_size_avg)}</span></span></div></div><div class="text-[10.5px] text-muted mt-1.5">Club / moy. dépt · vert = mieux.</div></div>`);
+  statCards.push(`<div class="card p-4"><div class="lbl">Renouvellement</div><div class="flex rounded-full overflow-hidden mt-2 mb-1.5 bg-paper h-2 barX">${seg(r.depuis_2025,'#0E7C66')}${seg(r.nouveaux_2026,'#6FCBB6')}${seg(r.sans_match,'#E2E6EA')}</div><div class="text-[12px] space-y-0.5"><div><b>${fr(r.depuis_2025)}</b> <span class="text-muted">actifs depuis 2025</span></div><div><b>${fr(r.nouveaux_2026)}</b> <span class="text-muted">nouveaux en 2026</span></div><div><b>${fr(r.sans_match)}</b> <span class="text-muted">sans match</span></div></div></div>`);
+  const statCols=statCards.length>=3?'md:grid-cols-3':(statCards.length===2?'sm:grid-cols-2':'');
+  const PCOL={25:'#A7DED2',50:'#6FCBB6',100:'#2FA98F',250:'#0E9C86',500:'#0A7766',1000:'#0a5848',1500:'#083f34',2000:'#062b24'};
+  const amx=Math.max(1,...act.map(a=>a.n));
+  const actCard = act.length?`<div class="card p-4"><div class="flex items-baseline justify-between mb-2"><h2 class="font-700 text-base">Activité mensuelle</h2><span class="text-[11px] text-muted">participations des membres</span></div><div class="flex items-end gap-1 h-16">${act.map(a=>`<div class="flex-1 rounded-t bg-brand barY" style="height:${Math.max(6,Math.round(100*a.n/amx))}%" title="${a.mois} · ${a.n}"></div>`).join('')}</div><div class="flex justify-between text-[9.5px] text-muted mt-1"><span>${act.length?act[0].mois:''}</span><span>${act.length?act[act.length-1].mois:''}</span></div></div>`:'';
+  const ts=d.tournois_stats;
+  const orgaCard=(ts&&ts.total)?`<div class="card p-4"><div class="flex items-baseline justify-between gap-2"><h2 class="font-700 text-base">Tournois organisés</h2>${ts.indice_moy!=null?`<span class="text-[12px] text-muted">diff. moy <b class="pct-font text-ink">${ts.indice_moy}</b>/100</span>`:''}</div><div class="pct-font font-800 text-2xl mt-1">${fr(ts.total)}<span class="text-sm text-muted font-600"> tournois</span></div>${(ts.by_niveau||[]).length?`<div class="flex h-2.5 rounded-full overflow-hidden mt-3 barX">${ts.by_niveau.map(l=>`<div title="P${l.niv} · ${l.n}" style="flex:${l.n};background:${PCOL[l.niv]||'#cbd0d6'}"></div>`).join('')}</div><div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-2 text-[11px]">${ts.by_niveau.map(l=>`<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:${PCOL[l.niv]||'#cbd0d6'}"></span>P${l.niv} <b>${l.n}</b></span>`).join('')}</div>`:''}${(d.tournois_organises||[]).length?`<div class="lbl mt-3 mb-1">Les plus relevés</div><div class="space-y-0.5">${d.tournois_organises.slice(0,4).map(t=>`<a href="/tournoi/${t.id_tournoi}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper">${t.niveau?`<span class="num font-700 text-[9.5px] px-1 py-0.5 rounded ${PLEVEL[t.niveau]||'bg-gray-100 text-gray-600'} shrink-0">P${t.niveau}</span>`:''}<span class="text-[13px] font-500 flex-1 truncate">${tc(t.nom)}</span>${t.indice!=null?`<span class="pct-font text-[12px] font-700 shrink-0" style="color:${diffColor(t.indice)}">${Math.round(t.indice)}</span>`:''}</a>`).join('')}</div>`:''}</div>`:'';
+
+  root.innerHTML=`
+  <div class="mt-5 text-xs text-muted flex items-center gap-1.5"><a href="/clubs" class="hover:text-ink">Clubs</a><span>/</span><span class="text-ink font-500 truncate">${tc(name)}</span></div>
+
+  <section class="mt-3 rounded-2xl overflow-hidden text-white" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
+    <div class="p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center gap-5">
+      <div class="min-w-0 flex-1">
+        ${loc?`<div class="flex items-center gap-1.5 text-[12.5px] text-white/80 mb-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg>${loc}${geo&&geo.ligue?' · '+tc(geo.ligue):''}</div>`:''}
+        <h1 class="font-800 text-2xl sm:text-3xl leading-tight tracking-tight">${tc(name)}</h1>
+        <div class="mt-2 text-[13px] text-white/85 font-500">${fr(c.nb_joueurs)} licenciés · ${fr(c.nb_h)} H · ${fr(c.nb_f)} F${d.age_moyen?` · ${d.age_moyen} ans`:''}</div>
+      </div>
+      <div class="shrink-0 lg:border-l lg:border-white/15 lg:pl-5 grid grid-cols-2 gap-5">
+        <div><div class="lbl text-white/55">Rang · H</div><div class="pct-font font-800 text-2xl mt-0.5">${c.rang_h?'#'+fr(c.rang_h):'—'}</div></div>
+        <div><div class="lbl text-white/55">Rang · F</div><div class="pct-font font-800 text-2xl mt-0.5">${c.rang_f?'#'+fr(c.rang_f):'—'}</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+    ${kpi('Meilleur classement', `#${fr(c.best_h)} <span class="text-muted text-base">/</span> #${fr(c.best_f)}`, 'Homme / Femme', '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg>', '#E0AE45')}
+    ${kpi('Classement moyen', `${fr(c.avg_rank_h)} <span class="text-muted text-base">/</span> ${fr(c.avg_rank_f)}`, `${pctRank(c.avg_rank_h,pools.h)} / ${pctRank(c.avg_rank_f,pools.f)}`, '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l3-3 3 3 4-5"/></svg>', '#0E9C86')}
+    ${kpi('Joueurs top 10%', `${fr(t10.h)} <span class="text-muted text-base">/</span> ${fr(t10.f)}`, 'de leur pool · H / F', '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.8L12 17.3 5.8 20.8l1.6-6.8L2.2 8.9l6.9-.6z"/></svg>', '#6366F1')}
+    ${kpi('Effectif actif', pct!=null?pct+'%':'—', `${fr(d.nb_actifs)} / ${fr(d.nb_total)} licenciés`, '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 0 0 0-6M21 20a6 6 0 0 0-5-5.9"/></svg>', '#13C2A6')}
+  </section>
+
+  <section class="mt-4 grid gap-3 ${statCols}">${statCards.join('')}</section>
+
+  <section class="mt-4 grid gap-3 ${bn.length?'sm:grid-cols-2 lg:grid-cols-3':'sm:grid-cols-2'}">
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-2 gap-2">
+        <h2 class="font-700 text-base flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A7766" stroke-width="2"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17.3 6.5 21 8 13.5 3 9l6.5-.5z"/></svg>Maîtres locaux</h2>
+        <div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[12px] font-600"><button id="bg_h" class="tg">H</button><button id="bg_f" class="tg">F</button></div>
+      </div>
+      <div id="bosslist" class="space-y-0.5"></div>
+    </div>
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-2 gap-2">
+        <h2 class="font-700 text-base">Meilleurs joueurs</h2>
+        <div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[12px] font-600"><button id="tg_h" class="tg">H</button><button id="tg_f" class="tg">F</button></div>
+      </div>
+      <div id="srcwrap" class="hidden mb-2"><div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[11px] font-600"><button id="src_lic" class="tg">Licenciés</button><button id="src_play" class="tg">Ont joué ici</button></div></div>
+      <div id="toplist" class="space-y-0.5 max-h-[440px] overflow-auto pr-1"></div>
+    </div>
+    ${bn.length?`<div class="card p-4"><h2 class="font-700 text-base mb-2">Binômes du club</h2><div id="binomes" class="space-y-0.5"></div><div class="text-[11px] text-muted mt-2">Duos les plus présents dans les tournois organisés par le club.</div></div>`:''}
+  </section>
+
+  ${(actCard||orgaCard)?`<section class="mt-4 grid gap-3 ${actCard&&orgaCard?'lg:grid-cols-2':''}">${actCard}${orgaCard}</section>`:''}
+
+  <section id="sec_champ" class="mt-4 card p-4 hidden">
+    <h2 class="font-700 text-base mb-2">Compétitions par équipes & championnats</h2>
+    <div id="champ" class="space-y-0.5"></div>
+  </section>`;
+
+  // Boss
+  BOSS={H:(d.boss&&d.boss.h)||[],F:(d.boss&&d.boss.f)||[]};
+  curBoss=(BOSS.H.length>=BOSS.F.length)?'H':'F'; renderBoss();
+  document.getElementById('bg_h').addEventListener('click',()=>{curBoss='H';renderBoss();});
+  document.getElementById('bg_f').addEventListener('click',()=>{curBoss='F';renderBoss();});
+
+  // Meilleurs joueurs (licenciés / ont joué ici)
+  TOP_LIC={H:(c.top_h||[]),F:(c.top_f||[])};
+  TOP_PLAY={H:((d.joue_ici&&d.joue_ici.h)||[]),F:((d.joue_ici&&d.joue_ici.f)||[])};
+  curSexe=(TOP_LIC.H.length>=TOP_LIC.F.length)?'H':'F'; curSrc='lic';
+  if(TOP_PLAY.H.length||TOP_PLAY.F.length) document.getElementById('srcwrap').classList.remove('hidden');
+  renderTop();
+  document.getElementById('tg_h').addEventListener('click',()=>{curSexe='H';renderTop();});
+  document.getElementById('tg_f').addEventListener('click',()=>{curSexe='F';renderTop();});
+  const _sl=document.getElementById('src_lic'),_sp=document.getElementById('src_play');
+  if(_sl){ _sl.addEventListener('click',()=>{curSrc='lic';renderTop();}); _sp.addEventListener('click',()=>{curSrc='play';renderTop();}); }
+
+  // Binômes
+  if(bn.length) document.getElementById('binomes').innerHTML=bn.map(b=>`<div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-paper"><span class="text-sm truncate"><a href="/joueur/${b.a_id}" class="font-500 hover:underline">${tc(b.a)}</a> <span class="text-muted">&</span> <a href="/joueur/${b.b_id}" class="font-500 hover:underline">${tc(b.b)}</a></span><span class="num text-[12px] text-muted shrink-0">${b.nb} tournois${b.best!=null?' · '+b.best+'e':''}</span></div>`).join('');
+
+  // Championnats
+  if((d.championnats||[]).length){
+    document.getElementById('sec_champ').classList.remove('hidden');
+    document.getElementById('champ').innerHTML=d.championnats.map(t=>`<a href="/tournoi/${t.id_tournoi}" class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-paper"><span class="text-[10.5px] font-600 px-1.5 py-0.5 rounded bg-brand-soft text-brand-dark shrink-0">${tc(t.categorie)}</span><span class="text-sm font-500 flex-1 truncate">${tc(t.nom)}</span>${t.best?`<span class="num text-[12px] text-muted shrink-0">${t.best}e</span>`:''}</a>`).join('');
+  }
+
+}
+load();
+</script>
+</body>
+</html>

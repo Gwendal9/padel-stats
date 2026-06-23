@@ -34,8 +34,9 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
     <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
     <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <a href="/tournois" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
+    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
     <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
     <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
@@ -70,10 +71,14 @@ function getId(){ return location.pathname.split('/').filter(Boolean).pop(); }
 const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
 sb.addEventListener('input',debounce(async e=>{
   const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
-  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
-  if(!res.length){sr.classList.add('hidden');return;}
-  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
-  sr.classList.remove('hidden');
+  let d={joueurs:[],clubs:[],villes:[]}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+  const sec=t=>`<div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted font-600 border-t border-line first:border-0">${t}</div>`;
+  let h='';
+  if((d.joueurs||[]).length) h+=sec('Joueurs')+d.joueurs.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  if((d.clubs||[]).length) h+=sec('Clubs')+d.clubs.map(o=>`<a href="/club?nom=${encodeURIComponent(o.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(o.nom)}</span><span class="text-[11px] text-muted shrink-0">${o.nb} licenciés</span></a>`).join('');
+  if((d.villes||[]).length) h+=sec('Villes')+d.villes.map(v=>`<a href="/classement?ville=${encodeURIComponent(v.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></a>`).join('');
+  if(!h){sr.classList.add('hidden');return;}
+  sr.innerHTML=h; sr.classList.remove('hidden');
 }));
 document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
 
@@ -85,7 +90,8 @@ async function load(){
 
 function memberHtml(m){
   const nm=tc(m.nom)||'Joueur'; const clt=m.classement!=null?`<span class="text-[11px] text-muted num shrink-0">#${m.classement}</span>`:'';
-  const inner=`<div class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(m.nom)||'?'}</div><span class="text-sm font-500 truncate">${nm}</span>${clt}`;
+  const club=m.club?`<a href="/club?nom=${encodeURIComponent(m.club)}" class="text-[10.5px] text-muted truncate block leading-tight hover:text-brand-dark hover:underline" onclick="event.stopPropagation()">${tc(m.club)}</a>`:'';
+  const inner=`<div class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(m.nom)||'?'}</div><span class="min-w-0 flex-1"><span class="text-sm font-500 truncate block leading-tight">${nm}</span>${club}</span>${clt}`;
   return m.id?`<a href="/joueur/${m.id}" class="flex items-center gap-2 min-w-0 hover:underline">${inner}</a>`:`<span class="flex items-center gap-2 min-w-0 opacity-70">${inner}</span>`;
 }
 
@@ -99,9 +105,10 @@ function render(d){
   if(i.equipes) tags.push('<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-white/12">par équipes</span>');
   const cat = i.indice_categorie!=null ? Math.round(i.indice_categorie) : null;
   const surTxt = cat!=null ? `${cat}<span class="opacity-70">/100 chez les P${nivP||'?'}</span>` : '';
+  const team = !!i.equipes || !!i.multi_board || /(hampionnat|quipe|nterclub)/i.test(i.nom||'') || /(hampionnat|quipe)/i.test(i.categorie||'');
 
   root.innerHTML=`
-  <div class="mt-5 text-xs text-muted flex items-center gap-1.5"><a href="/classement" class="hover:text-ink">Tournois</a><span>/</span><span class="text-ink font-500 truncate">${i.nom||'Tournoi'}</span></div>
+  <div class="mt-5 text-xs text-muted flex items-center gap-1.5"><a href="/tournois" class="hover:text-ink">Tournois</a><span>/</span><span class="text-ink font-500 truncate">${i.nom||'Tournoi'}</span></div>
 
   <section class="mt-3 rounded-2xl overflow-hidden text-white" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
     <div class="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-6">
@@ -115,17 +122,17 @@ function render(d){
         <div class="mt-3 text-[13px] text-white/85 font-500">${fr(d.nb_paires_reelles)} paires classées${i.classement_meilleur?` · meilleure paire ~#${i.classement_meilleur}`:''}</div>
       </div>
       <div class="shrink-0 lg:border-l lg:border-white/15 lg:pl-6">
-        <div class="lbl text-white/55">Difficulté du plateau (/100)</div>
+        ${team?`<div class="lbl text-white/55">Format</div><div class="font-800 text-2xl mt-1 leading-tight">${i.multi_board&&!i.equipes?'Tournoi multi-tableaux':'Épreuve par équipes'}</div><div class="text-white/60 text-[12px] mt-1.5 max-w-[210px]">${i.multi_board&&!i.equipes?'Tableaux H et D combinés : la difficulté est calculée par tableau, pas globalement.':'Difficulté de plateau non pertinente pour un interclub / championnat.'}</div>`:`<div class="lbl text-white/55">Difficulté du plateau (/100)</div>
         <div class="flex items-end gap-2 mt-1">
           <span class="pct-font font-800 text-6xl leading-none" style="color:#fff">${i.indice_niveau!=null?Math.round(i.indice_niveau):'—'}</span>
           <span class="text-white/55 text-lg font-600 mb-1">/100</span>
         </div>
-        ${surTxt?`<div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-700 pct-font" style="background:${dbg};color:#fff">${surTxt}</div>`:''}
+        ${surTxt?`<div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-700 pct-font" style="background:${dbg};color:#fff">${surTxt}</div>`:''}`}
       </div>
     </div>
   </section>
 
-  <details class="card mt-4 px-4 py-3">
+  ${team?'':`<details class="card mt-4 px-4 py-3">
     <summary class="flex items-center gap-2 text-sm font-600 text-brand-dark" style="cursor:pointer;list-style:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>Comment la difficulté du plateau est-elle calculée ?</summary>
     <div class="text-[13px] text-muted mt-3 space-y-1.5 leading-relaxed">
       <div>1. Chaque joueur : rang → score <span class="num">s = ln(N / rang)</span> (N = classés du pool H/F). Un 2000<sup>e</sup> pèse bien plus qu'un 40000<sup>e</sup>.</div>
@@ -133,28 +140,31 @@ function render(d){
       <div>3. Force = <b class="text-ink">0,6 × plafond (top 25 % des paires) + 0,4 × profondeur (médiane)</b>.</div>
       <div>4. <b class="text-ink">Indice /100</b> = comparable entre tous les tournois ; <b class="text-ink">surcote</b> = écart vs les tournois de même niveau P et même sexe.</div>
     </div>
-  </details>
+  </details>`}
 
   <section class="mt-4 grid sm:grid-cols-3 gap-3" id="podium"></section>
   <section class="mt-4 card overflow-hidden">
-    <div class="px-4 py-3 border-b border-line flex items-center justify-between">
+    <div class="px-4 py-3 border-b border-line flex items-center justify-between gap-2 flex-wrap">
       <h2 class="font-700 text-base">Classement des paires</h2>
-      <span class="text-xs text-muted">${fr(d.nb_paires_reelles)} paires</span>
+      <div class="flex items-center gap-2"><span class="text-xs text-muted"><span id="tcount">${fr(d.nb_paires_reelles)}</span> paires${d.mois?` · classements de ${d.mois}`:''}</span></div>
     </div>
     <div class="overflow-x-auto"><table class="w-full text-sm"><tbody id="rows" class="divide-y divide-line"></tbody></table></div>
   </section>`;
 
   const medals=['#E0AE45','#9AA3AE','#B07B4F'];
-  const podium=(d.pairs||[]).slice(0,3);
-  document.getElementById('podium').innerHTML=podium.map((p,idx)=>`
+  const SEXB={H:['#2563eb','H'],F:['#db2777','F'],X:['#7c3aed','Mixte']};
+  const sexBadge=sx=>{ const b=SEXB[sx]; return b?`<span class="text-[10px] font-700 px-1.5 py-0.5 rounded shrink-0" style="background:${b[0]}1f;color:${b[0]}">${b[1]}</span>`:''; };
+  const ALLP=d.pairs||[];
+  document.getElementById('tcount').textContent=fr(ALLP.length);
+  document.getElementById('podium').innerHTML=ALLP.slice(0,3).map((p,idx)=>`
     <div class="card p-4 relative" style="border-color:${medals[idx]}66">
-      <div class="flex items-center gap-2 mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${medals[idx]}" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg><span class="num font-800 text-lg">${p.position}e</span>${p.points?`<span class="num text-xs text-brand-dark font-700 ml-auto">+${Math.round(p.points)} pts</span>`:''}</div>
+      <div class="flex items-center gap-2 mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${medals[idx]}" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg><span class="num font-800 text-lg">${p.position}e</span>${sexBadge(p.sexe)}${p.points?`<span class="num text-xs text-brand-dark font-700 ml-auto">+${Math.round(p.points)} pts</span>`:''}</div>
       <div class="space-y-1.5">${(p.membres||[]).map(memberHtml).join('')}</div>
     </div>`).join('');
-
-  document.getElementById('rows').innerHTML=(d.pairs||[]).map(p=>`
+  document.getElementById('rows').innerHTML=ALLP.map(p=>`
     <tr class="hover:bg-paper/60">
       <td class="px-4 py-2.5 num font-700 text-muted w-14">${p.position||'—'}<span class="text-[11px] font-500">${p.position?'e':''}</span></td>
+      <td class="px-3 py-2.5 w-10">${sexBadge(p.sexe)}</td>
       <td class="px-4 py-2.5"><div class="flex flex-col sm:flex-row sm:items-center gap-x-5 gap-y-1">${(p.membres||[]).map(memberHtml).join('')}</div></td>
       <td class="px-4 py-2.5 text-right num font-700 w-24">${p.points?'+'+Math.round(p.points):'—'}</td>
     </tr>`).join('');

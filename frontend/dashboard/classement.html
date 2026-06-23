@@ -27,6 +27,8 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23697483' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
   .inp{height:38px;border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:0 11px;font-size:13px;color:#15191F}
   .inp:focus,.sel:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
+  .rang-col{display:none}
+  table.show-rang .rang-col{display:table-cell}
 </style>
 </head>
 <body class="antialiased">
@@ -40,8 +42,9 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
     <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
     <a href="/classement" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
+    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
     <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
     <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
@@ -83,7 +86,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       <table class="w-full text-sm">
         <thead class="text-muted text-[10.5px] uppercase tracking-wider border-b border-line">
           <tr>
-            <th class="text-left font-600 px-4 py-3 w-14">#</th>
+            <th class="rang-col text-left font-600 px-4 py-3 w-16">Rang</th><th class="text-left font-600 px-4 py-3 w-14">#</th>
             <th class="text-left font-600 px-4 py-3">Joueur</th>
             <th class="text-left font-600 px-4 py-3 hidden md:table-cell">Département</th>
             <th class="text-left font-600 px-4 py-3 hidden lg:table-cell">Club</th>
@@ -112,12 +115,15 @@ const debounce=(fn,d=300)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()
 
 const sb=$('searchbox'),sr=$('searchres');
 sb.addEventListener('input',debounce(async e=>{
-  const q=e.target.value.trim();
-  if(q.length<2){sr.classList.add('hidden');return;}
-  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
-  if(!res.length){sr.classList.add('hidden');return;}
-  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
-  sr.classList.remove('hidden');
+  const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
+  let d={joueurs:[],clubs:[],villes:[]}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+  const sec=t=>`<div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted font-600 border-t border-line first:border-0">${t}</div>`;
+  let h='';
+  if((d.joueurs||[]).length) h+=sec('Joueurs')+d.joueurs.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  if((d.clubs||[]).length) h+=sec('Clubs')+d.clubs.map(o=>`<a href="/club?nom=${encodeURIComponent(o.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(o.nom)}</span><span class="text-[11px] text-muted shrink-0">${o.nb} licenciés</span></a>`).join('');
+  if((d.villes||[]).length) h+=sec('Villes')+d.villes.map(v=>`<a href="/classement?ville=${encodeURIComponent(v.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></a>`).join('');
+  if(!h){sr.classList.add('hidden');return;}
+  sr.innerHTML=h; sr.classList.remove('hidden');
 }));
 document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
 
@@ -141,18 +147,20 @@ async function loadGeo(){
   fillDepts();
 }
 
-function rowHtml(p){
+function rowHtml(p,i){
   const dept=p.dept_num?`${p.dept_num} · ${tc(p.comite)}`:'—';
+  const pos=state.offset+(i||0)+1;
   return `<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/joueur/${p.id}'">
+    <td class="rang-col px-4 py-3 num font-800 text-brand-dark">${fr(pos)}<span class="text-[11px] font-500">e</span></td>
     <td class="px-4 py-3 num font-700 text-muted">${p.classement}</td>
     <td class="px-4 py-3">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini(p.nom_complet)}</div>
-        <div class="min-w-0"><div class="font-600 truncate">${tc(p.nom_complet)}</div><div class="text-[12px] text-muted truncate lg:hidden">${p.club?tc(p.club):'—'}</div></div>
+        <div class="min-w-0"><div class="font-600 truncate">${tc(p.nom_complet)}</div><div class="text-[12px] text-muted truncate lg:hidden">${p.club?`<a href="/club?nom=${encodeURIComponent(p.club)}" class="hover:underline" onclick="event.stopPropagation()">${tc(p.club)}</a>`:'—'}</div></div>
       </div>
     </td>
     <td class="px-4 py-3 text-muted hidden md:table-cell">${dept}</td>
-    <td class="px-4 py-3 text-muted hidden lg:table-cell truncate max-w-[220px]">${p.club?tc(p.club):'—'}</td>
+    <td class="px-4 py-3 text-muted hidden lg:table-cell truncate max-w-[220px]">${p.club?`<a href="/club?nom=${encodeURIComponent(p.club)}" class="hover:text-brand-dark hover:underline" onclick="event.stopPropagation()">${tc(p.club)}</a>`:'—'}</td>
     <td class="px-4 py-3 text-right num font-700">${p.points!=null?fr(Math.round(p.points)):'—'}</td>
     <td class="px-4 py-3 text-right num text-muted hidden sm:table-cell">${p.meilleur_classement!=null?p.meilleur_classement+'e':'—'}</td>
     <td class="px-4 py-3 text-right num text-muted hidden sm:table-cell">${p.nb_tournois||0}</td>
@@ -160,22 +168,24 @@ function rowHtml(p){
 }
 
 function pool(){return state.sexe==='F'?'Dames':'Messieurs';}
-function filtersActive(){return state.ligue||state.dept||state.club||state.q;}
+function filtersActive(){return state.ligue||state.dept||state.club||state.q||state.ville;}
 
 async function fetchPage(append){
   const qs=new URLSearchParams({sexe:state.sexe,offset:state.offset,limit:state.limit});
   if(state.ligue)qs.set('ligue',state.ligue);
   if(state.dept)qs.set('dept',state.dept);
   if(state.club)qs.set('club',state.club);
+  if(state.ville)qs.set('ville',state.ville);
   if(state.q)qs.set('q',state.q);
   let data={players:[],total:0};
   try{ data=await fetch('/api/leaderboard?'+qs).then(r=>r.json()); }catch(_){}
   state.total=data.total;
   const tb=$('rows');
-  const html=data.players.map(rowHtml).join('');
+  const html=data.players.map((p,i)=>rowHtml(p,i)).join('');
   if(append) tb.insertAdjacentHTML('beforeend',html); else tb.innerHTML=html;
+  document.querySelector('table').classList.toggle('show-rang', filtersActive());
   const shown=state.offset+data.players.length;
-  $('subtitle').textContent=`${pool()} · ${fr(state.total)} joueurs classés`+(filtersActive()?' (filtré)':'');
+  $('subtitle').textContent=`${pool()} · ${fr(state.total)} joueurs classés`+(state.ville?` · ${tc(state.ville)}`:'')+(filtersActive()?' (filtré)':'');
   $('empty').classList.toggle('hidden',state.total>0);
   $('more').classList.toggle('hidden',shown>=state.total);
 }
@@ -191,6 +201,7 @@ $('more').addEventListener('click',()=>{state.offset+=state.limit;fetchPage(true
 
 const _qp=new URLSearchParams(location.search);
 if(_qp.get('club')){ state.club=_qp.get('club'); const el=$('f-club'); if(el) el.value=state.club; }
+if(_qp.get('ville')){ state.ville=_qp.get('ville'); }
 { const sx=(_qp.get('sexe')||'').toUpperCase(); if(sx==='H'||sx==='F') state.sexe=sx; }
 paintSeg();
 loadGeo().then(reload);

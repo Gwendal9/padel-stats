@@ -83,10 +83,14 @@ const $=id=>document.getElementById(id);
 const sb=$('searchbox'),sr=$('searchres');
 sb.addEventListener('input',debounce(async e=>{
   const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
-  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
-  if(!res.length){sr.classList.add('hidden');return;}
-  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
-  sr.classList.remove('hidden');
+  let d={joueurs:[],clubs:[],villes:[]}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+  const sec=t=>`<div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted font-600 border-t border-line first:border-0">${t}</div>`;
+  let h='';
+  if((d.joueurs||[]).length) h+=sec('Joueurs')+d.joueurs.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  if((d.clubs||[]).length) h+=sec('Clubs')+d.clubs.map(o=>`<a href="/club?nom=${encodeURIComponent(o.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(o.nom)}</span><span class="text-[11px] text-muted shrink-0">${o.nb} licenciés</span></a>`).join('');
+  if((d.villes||[]).length) h+=sec('Villes')+d.villes.map(v=>`<a href="/classement?ville=${encodeURIComponent(v.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></a>`).join('');
+  if(!h){sr.classList.add('hidden');return;}
+  sr.innerHTML=h; sr.classList.remove('hidden');
 }));
 document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
 

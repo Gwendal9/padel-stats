@@ -40,13 +40,23 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <a href="/tournois" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
     <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="#" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
     <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
     <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 
 <div class="ml-14 lg:ml-60 min-w-0">
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
+      <div id="searchwrap" class="relative w-full max-w-md">
+        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un tournoi…" autocomplete="off">
+        </div>
+        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
+      </div>
+    </div>
+  </header>
   <main class="px-5 lg:px-8 py-6">
     <h1 class="font-800 text-2xl tracking-tight">Tournois — classement par difficulté</h1>
     <p class="text-sm text-muted mt-0.5" id="subtitle">Les tournois dont le plateau était le plus relevé.</p>
@@ -136,6 +146,22 @@ document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{sta
 document.querySelectorAll('.srt').forEach(b=>b.addEventListener('click',()=>{state.sort=b.dataset.sort;paintSeg();reload();}));
 $('more').addEventListener('click',()=>{state.offset+=state.limit;fetchPage(true);});
 paintSeg(); reload();
+</script>
+<script>
+(function(){
+  const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
+  if(!sb)return; let t;
+  sb.addEventListener('input',e=>{clearTimeout(t);t=setTimeout(()=>run(e.target.value.trim()),280);});
+  document.addEventListener('click',e=>{if(!e.target.closest('#searchwrap'))sr.classList.add('hidden');});
+  async function run(q){
+    if(q.length<2){sr.classList.add('hidden');return;}
+    let d={}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+    const a=d.tournois||[];
+    if(!a.length){sr.classList.add('hidden');return;}
+    sr.innerHTML=a.map(x=>`<a href="/tournoi/${x.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(x.nom)}</span>${x.niveau?`<span class="text-[11px] text-muted shrink-0">P${x.niveau}</span>`:''}</a>`).join('');
+    sr.classList.remove('hidden');
+  }
+})();
 </script>
 </body>
 </html>

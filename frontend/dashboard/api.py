@@ -1888,9 +1888,9 @@ def route_tournoi_api(tid: str):
         return jsonify({"error": "Tournoi introuvable"}), 404
     rows = fetchall(
         """
-        SELECT p.id_joueur, j.nom, j.prenom, j.classement, j.sexe,
+        SELECT p.id_joueur, j.nom, j.prenom, j.classement, j.sexe, j.club_nom AS club,
                p.partenaire_id, p.partenaire_nom,
-               jp.nom AS pnom, jp.prenom AS pprenom, jp.classement AS pclt,
+               jp.nom AS pnom, jp.prenom AS pprenom, jp.classement AS pclt, jp.club_nom AS pclub, jp.sexe AS psexe,
                p.position, p.position_num, p.points_num, p.date_tournoi, p.type
         FROM participations p
         JOIN joueurs j ON j.id_fft = p.id_joueur
@@ -1900,30 +1900,57 @@ def route_tournoi_api(tid: str):
         (tid,),
     )
 
+    date = next((r["date_tournoi"] for r in rows if r["date_tournoi"]), None)
+    tmonth = (date[6:10] + "-" + date[3:5]) if date and len(date) >= 10 else None
+    # Classement de chaque joueur AU MOMENT du tournoi (snapshot mensuel) ; fallback = classement actuel
+    hist = {}
+    if tmonth:
+        _ids = set()
+        for r in rows:
+            _ids.add(str(r["id_joueur"]))
+            if r["partenaire_id"]:
+                _ids.add(str(r["partenaire_id"]))
+        if _ids:
+            _iph = ",".join("?" * len(_ids))
+            for hr in fetchall(
+                f"SELECT id_joueur, classement FROM classements_historique WHERE mois=? AND id_joueur IN ({_iph})",
+                (tmonth,) + tuple(_ids)):
+                if hr["classement"] is not None:
+                    hist[str(hr["id_joueur"])] = hr["classement"]
+
+    def _clt(idv, cur):
+        return hist.get(str(idv), cur)
+
     def _nom(prenom, nom):
         return f"{(prenom or '').strip()} {(nom or '').strip()}".strip()
 
+    def _sig(nm):
+        return re.sub(r"[^a-z0-9]", "", (nm or "").lower())
     seen, pairs = set(), []
     for r in rows:
         pid = r["partenaire_id"]
-        key = tuple(sorted([str(r["id_joueur"]), str(pid)])) if pid else ("solo", str(r["id_joueur"]))
-        if key in seen:
-            continue
-        seen.add(key)
-        membres = [{"id": r["id_joueur"], "nom": _nom(r["prenom"], r["nom"]), "classement": r["classement"]}]
+        membres = [{"id": r["id_joueur"], "nom": _nom(r["prenom"], r["nom"]),
+                    "classement": _clt(r["id_joueur"], r["classement"]), "club": r["club"], "sexe": r["sexe"]}]
         if pid:
             nomp = _nom(r["pprenom"], r["pnom"]) or (r["partenaire_nom"] or "")
             membres.append({"id": pid, "nom": (nomp if nomp and nomp != "None None" else "Partenaire inconnu"),
-                            "classement": r["pclt"]})
+                            "classement": _clt(pid, r["pclt"]), "club": r["pclub"], "sexe": r["psexe"]})
         elif r["partenaire_nom"] and r["partenaire_nom"] != "None None":
-            membres.append({"id": None, "nom": r["partenaire_nom"], "classement": None})
+            membres.append({"id": None, "nom": r["partenaire_nom"], "classement": None, "club": None, "sexe": None})
+        # Dedup ROBUSTE par ensemble de noms (gere les doublons de fiche FFT pour une meme personne)
+        sig = frozenset(_sig(m["nom"]) for m in membres if m.get("nom")) or frozenset({str(r["id_joueur"])})
+        keyp = (r["position_num"], sig)
+        if keyp in seen:
+            continue
+        seen.add(keyp)
+        _sx = {m["sexe"] for m in membres if m.get("sexe")}
+        psexe = "H" if _sx == {"H"} else ("F" if _sx == {"F"} else "X")
         pairs.append({
             "position": r["position"], "position_num": r["position_num"],
-            "points": r["points_num"], "type": r["type"], "membres": membres,
+            "points": r["points_num"], "type": r["type"], "membres": membres, "sexe": psexe,
         })
     pairs.sort(key=lambda x: (x["position_num"] is None, x["position_num"] or 99999))
-    date = next((r["date_tournoi"] for r in rows if r["date_tournoi"]), None)
-    return jsonify({"info": dict(info), "date": date, "nb_paires_reelles": len(pairs), "pairs": pairs})
+    return jsonify({"info": dict(info), "date": date, "mois": tmonth, "nb_paires_reelles": len(pairs), "pairs": pairs})
 
 
 @app.get("/api/tournois/ranking")
@@ -2093,6 +2120,270 @@ def route_carte_page():
 def route_graphe_page():
     """Graphe de jeu + degres de separation."""
     return send_file(os.path.join(os.path.dirname(__file__), "graphe.html"))
+
+
+@app.get("/api/club_detail")
+def route_club_detail():
+    """Compléments page club : géo, âge/actifs, pools & top 10%, renouvellement,
+    boss top 5 par sexe, championnats, tournois organisés."""
+    from db import fetchall, fetchone
+    import re as _re, unicodedata as _ud, math as _math
+    nom = request.args.get("nom", "").strip()
+    if not nom:
+        return jsonify({"error": "nom requis"}), 400
+
+    def _n(s):
+        s = _ud.normalize("NFKD", s or "").encode("ascii", "ignore").decode().upper()
+        return _re.sub(r"\s+", " ", _re.sub(r"[^A-Z0-9]", " ", s)).strip()
+
+    key = _n(nom)
+    like_op = "ILIKE" if USE_POSTGRES else "LIKE"
+    cand = fetchall(
+        f"SELECT DISTINCT club_nom FROM joueurs WHERE UPPER(club_nom) {like_op} ?",
+        (f"%{key}%",),
+    )
+    variants = [r["club_nom"] for r in cand if _n(r["club_nom"]) == key] or [nom]
+    if nom not in variants:
+        variants.append(nom)
+    ph = ",".join("?" * len(variants))
+    vt = tuple(variants)
+
+    def _full(r):
+        return f"{(r.get('prenom') or '').strip()} {(r.get('nom') or '').strip()}".strip()
+
+    # Géo + méta
+    geo = None
+    for r in fetchall(
+        f"SELECT nom, ville, dept_num, comite, ligue, lat, lon FROM clubs WHERE UPPER(nom) {like_op} ?",
+        (f"%{key}%",),
+    ):
+        if _n(r["nom"]) == key:
+            geo = {"ville": r.get("ville") or "", "dept_num": r.get("dept_num") or "",
+                   "comite": r.get("comite") or "", "ligue": r.get("ligue") or "",
+                   "lat": r.get("lat"), "lon": r.get("lon")}
+            break
+
+    agg = fetchone(
+        f"""SELECT ROUND(AVG(age),1) AS age_moyen,
+                   SUM(CASE WHEN actif=1 THEN 1 ELSE 0 END) AS nb_actifs,
+                   COUNT(*) AS tot
+            FROM joueurs WHERE club_nom IN ({ph})""", vt) or {}
+    tot = int(agg.get("tot") or 0)
+
+    # Pools H/F (classés) -> seuils top 10 %, et nb de membres du club dans le top 10 %
+    pools = {}
+    for r in fetchall("SELECT sexe, COUNT(*) AS n FROM joueurs WHERE classement IS NOT NULL AND sexe IN ('H','F') GROUP BY sexe"):
+        pools[r["sexe"]] = int(r["n"] or 0)
+
+    def _top10(sexe):
+        thr = int(_math.ceil(pools.get(sexe, 0) * 0.10))
+        if thr <= 0:
+            return 0
+        r = fetchone(
+            f"SELECT COUNT(*) AS n FROM joueurs WHERE club_nom IN ({ph}) AND sexe=? AND classement IS NOT NULL AND classement<=?",
+            vt + (sexe, thr))
+        return int((r or {}).get("n") or 0)
+
+    top10 = {"h": _top10("H"), "f": _top10("F")}
+
+    # Renouvellement : année de 1re participation
+    ren = fetchall(
+        f"""SELECT annee, COUNT(*) AS n FROM (
+              SELECT j.id_fft, MIN(SUBSTR(p.date_tournoi,7,4)) AS annee
+              FROM joueurs j JOIN participations p ON p.id_joueur=j.id_fft
+              WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_tournoi)>=10
+              GROUP BY j.id_fft) GROUP BY annee""", vt)
+    by_year = {r["annee"]: int(r["n"] or 0) for r in ren if r["annee"]}
+    avec = sum(by_year.values())
+    renouvellement = {"depuis_2025": by_year.get("2025", 0),
+                      "nouveaux_2026": by_year.get("2026", 0),
+                      "sans_match": max(0, tot - avec)}
+
+    # Boss de l'arene : top 5 par sexe (victoires puis assiduite). H/F separes (regle d'or).
+    def _boss(sexe):
+        return [
+            {"id": r["id_fft"], "nom_complet": _full(r),
+             "points": int(r["points"] or 0), "tournois": int(r["tournois"] or 0)}
+            for r in fetchall(
+                f"""SELECT j.id_fft, j.nom, j.prenom,
+                           COUNT(p.id) AS tournois,
+                           COALESCE(SUM(p.points_num),0) AS points
+                    FROM joueurs j JOIN participations p ON p.id_joueur=j.id_fft
+                    WHERE j.club_nom IN ({ph}) AND j.sexe=?
+                    GROUP BY j.id_fft
+                    ORDER BY points DESC, tournois DESC LIMIT 10""", vt + (sexe,))
+        ]
+    boss = {"h": _boss("H"), "f": _boss("F")}
+
+    championnats = [
+        {"id_tournoi": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
+         "best": r.get("best"), "nb_joueurs": int(r["nbj"] or 0)}
+        for r in fetchall(
+            f"""SELECT t.id_tournoi, t.nom, t.categorie,
+                       MIN(p.position_num) AS best, COUNT(DISTINCT p.id_joueur) AS nbj
+                FROM joueurs j JOIN participations p ON p.id_joueur=j.id_fft
+                JOIN tournois t ON t.id_tournoi=p.id_tournoi
+                WHERE j.club_nom IN ({ph})
+                  AND (t.categorie LIKE '%hampionnat%' OR t.categorie LIKE '%quipe%')
+                GROUP BY t.id_tournoi ORDER BY best ASC LIMIT 10""", vt)
+    ]
+
+    club_ids = [r["id"] for r in fetchall(
+        f"SELECT id, nom FROM clubs WHERE UPPER(nom) {like_op} ?", (f"%{key}%",)) if _n(r["nom"]) == key]
+    tournois_orga = []
+    if club_ids:
+        iph = ",".join("?" * len(club_ids))
+        tournois_orga = [
+            {"id_tournoi": r["id_tournoi"], "nom": r["nom"] or "", "niveau": r.get("niveau_effectif"),
+             "indice": r.get("indice_niveau"), "indice_categorie": r.get("indice_categorie")}
+            for r in fetchall(
+                f"""SELECT tc.id_tournoi, t.nom, tr.niveau_effectif, tr.indice_niveau, tr.indice_categorie
+                    FROM tournois_club tc JOIN tournois t ON t.id_tournoi=tc.id_tournoi
+                    LEFT JOIN tournois_rating tr ON tr.id_tournoi=tc.id_tournoi
+                    WHERE tc.club_id IN ({iph})
+                    ORDER BY (tr.indice_niveau IS NULL), tr.indice_niveau DESC LIMIT 12""",
+                tuple(club_ids))
+        ]
+
+    # --- Binômes : duos qui reviennent le plus dans les tournois ORGANISÉS par le club ---
+    binomes = []
+    if club_ids:
+        _iph2 = ",".join("?" * len(club_ids))
+        pair_rows = fetchall(
+            f"""SELECT CASE WHEN p.id_joueur<p.partenaire_id THEN p.id_joueur ELSE p.partenaire_id END AS a,
+                       CASE WHEN p.id_joueur<p.partenaire_id THEN p.partenaire_id ELSE p.id_joueur END AS b,
+                       COUNT(DISTINCT p.id_tournoi) AS nb, MIN(p.position_num) AS best
+                FROM participations p
+                WHERE p.id_tournoi IN (SELECT id_tournoi FROM tournois_club WHERE club_id IN ({_iph2}))
+                  AND p.partenaire_id IS NOT NULL AND p.partenaire_id!=''
+                GROUP BY a, b ORDER BY nb DESC, best ASC LIMIT 10""", tuple(club_ids))
+        _pids = set()
+        for r in pair_rows:
+            _pids.add(r["a"]); _pids.add(r["b"])
+        _names = {}
+        if _pids:
+            _iph = ",".join("?" * len(_pids))
+            for r in fetchall(f"SELECT id_fft, nom, prenom FROM joueurs WHERE id_fft IN ({_iph})", tuple(_pids)):
+                _names[r["id_fft"]] = _full(r)
+        binomes = [{"a_id": r["a"], "b_id": r["b"], "a": _names.get(r["a"], "?"), "b": _names.get(r["b"], "?"),
+                    "nb": int(r["nb"] or 0), "best": r["best"]} for r in pair_rows]
+
+    # --- Activité mensuelle (participations des membres) ---
+    activite = [{"mois": r["ym"], "n": int(r["n"] or 0)} for r in fetchall(
+        f"""SELECT SUBSTR(p.date_tournoi,7,4)||'-'||SUBSTR(p.date_tournoi,4,2) AS ym, COUNT(*) AS n
+            FROM participations p JOIN joueurs j ON j.id_fft=p.id_joueur
+            WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_tournoi)>=10
+            GROUP BY ym ORDER BY ym""", vt)]
+
+    # --- Progression RELATIVE (variation du club vs moyenne nationale = neutralise l'inflation) ---
+    prog = None
+    _mr = fetchone("SELECT MAX(mois) AS m FROM classements_historique")
+    if _mr and _mr.get("m"):
+        _latest = _mr["m"]
+        _g = fetchone("SELECT AVG(variation) AS a FROM classements_historique WHERE mois=? AND variation IS NOT NULL", (_latest,))
+        _cl = fetchone(
+            f"""SELECT AVG(h.variation) AS a, COUNT(*) AS n,
+                       SUM(CASE WHEN h.variation>0 THEN 1 ELSE 0 END) AS up
+                FROM classements_historique h JOIN joueurs j ON j.id_fft=h.id_joueur
+                WHERE h.mois=? AND j.club_nom IN ({ph}) AND h.variation IS NOT NULL""", (_latest,) + vt)
+        if _cl and _cl.get("n"):
+            prog = {"mois": _latest, "relatif": round((_cl["a"] or 0) - ((_g or {}).get("a") or 0)),
+                    "up": int(_cl["up"] or 0), "n": int(_cl["n"])}
+
+    # --- Comparaison au département ---
+    dept_compare = None
+    if geo and geo.get("dept_num"):
+        _dn = geo["dept_num"]
+        _da = {r["sexe"]: r["a"] for r in fetchall(
+            "SELECT sexe, ROUND(AVG(classement)) AS a FROM joueurs WHERE dept_num=? AND classement IS NOT NULL AND sexe IN ('H','F') GROUP BY sexe", (_dn,))}
+        _sz = fetchone("SELECT AVG(cnt) AS a FROM (SELECT club_nom, COUNT(*) AS cnt FROM joueurs WHERE dept_num=? AND club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom)", (_dn,))
+        dept_compare = {"dept_num": _dn, "avg_h": _da.get("H"), "avg_f": _da.get("F"),
+                        "club_size_avg": round(_sz["a"]) if _sz and _sz.get("a") else None}
+
+
+    # --- Stats des tournois organisés (synthèse compacte) ---
+    tournois_stats = None
+    if club_ids:
+        _tph = ",".join("?" * len(club_ids))
+        _total = fetchone(f"SELECT COUNT(*) AS n FROM tournois_club WHERE club_id IN ({_tph})", tuple(club_ids))
+        _rows = fetchall(
+            f"""SELECT tr.niveau_effectif AS niv, COUNT(*) AS n, AVG(tr.indice_niveau) AS ind
+                FROM tournois_club tc JOIN tournois_rating tr ON tr.id_tournoi=tc.id_tournoi
+                WHERE tc.club_id IN ({_tph}) AND COALESCE(tr.equipes,0)=0 AND tr.niveau_effectif IS NOT NULL
+                GROUP BY tr.niveau_effectif ORDER BY tr.niveau_effectif""", tuple(club_ids))
+        _num = sum((r["ind"] or 0) * (r["n"] or 0) for r in _rows)
+        _den = sum((r["n"] or 0) for r in _rows)
+        tournois_stats = {
+            "total": int((_total or {}).get("n") or 0),
+            "by_niveau": [{"niv": r["niv"], "n": int(r["n"] or 0)} for r in _rows],
+            "indice_moy": round(_num / _den) if _den else None,
+        }
+
+    # --- Meilleurs joueurs ayant JOUÉ un tournoi du club (pas forcément licenciés) ---
+    joue_ici = {"h": [], "f": []}
+    if club_ids:
+        _jph = ",".join("?" * len(club_ids))
+        _jtids = [r["id_tournoi"] for r in fetchall(
+            f"SELECT id_tournoi FROM tournois_club WHERE club_id IN ({_jph})", tuple(club_ids))]
+        if _jtids:
+            _jtiph = ",".join("?" * len(_jtids))
+            for _sx, _k in (("H", "h"), ("F", "f")):
+                joue_ici[_k] = [
+                    {"id": r["id_fft"], "nom_complet": _full(r), "classement": r["classement"]}
+                    for r in fetchall(
+                        f"""SELECT j.id_fft, j.nom, j.prenom, j.classement
+                            FROM participations p JOIN joueurs j ON j.id_fft = p.id_joueur
+                            WHERE p.id_tournoi IN ({_jtiph}) AND j.sexe=? AND j.classement IS NOT NULL
+                            GROUP BY j.id_fft ORDER BY j.classement ASC LIMIT 50""",
+                        tuple(_jtids) + (_sx,))
+                ]
+
+    return jsonify({
+        "nom": nom, "geo": geo,
+        "age_moyen": agg.get("age_moyen"), "nb_actifs": int(agg.get("nb_actifs") or 0), "nb_total": tot,
+        "pools": {"h": pools.get("H", 0), "f": pools.get("F", 0)},
+        "top10": top10,
+        "renouvellement": renouvellement,
+        "boss": boss,
+        "championnats": championnats,
+        "tournois_organises": tournois_orga,
+        "tournois_stats": tournois_stats,
+        "joue_ici": joue_ici,
+        "binomes": binomes,
+        "activite": activite,
+        "progression": prog,
+        "dept_compare": dept_compare,
+    })
+
+
+@app.route("/club")
+def route_club_page():
+    """Page dédiée d'un club (données via /api/club?nom= et /api/club_detail?nom=)."""
+    return send_file(os.path.join(os.path.dirname(__file__), "club.html"))
+
+
+@app.get("/api/search_all")
+def route_search_all():
+    """Recherche unifiée pour la barre : joueurs + clubs + villes."""
+    from db import fetchall
+    q = request.args.get("q", "").strip()
+    if len(q) < 2:
+        return jsonify({"joueurs": [], "clubs": [], "villes": []})
+    op = "ILIKE" if USE_POSTGRES else "LIKE"
+    joueurs = search_players(q, limit=6)
+    clubs = [{"nom": r["club_nom"], "nb": int(r["n"] or 0)} for r in fetchall(
+        f"""SELECT club_nom, COUNT(*) AS n FROM joueurs
+            WHERE club_nom IS NOT NULL AND club_nom!='' AND UPPER(club_nom) {op} UPPER(?)
+            GROUP BY club_nom ORDER BY n DESC LIMIT 5""", ("%" + q + "%",))]
+    villes = [{"nom": r["ville"], "dept_num": r.get("dept_num"), "nb": int(r["n"] or 0)} for r in fetchall(
+        f"""SELECT ville, dept_num, COUNT(*) AS n FROM joueurs
+            WHERE ville IS NOT NULL AND ville!='' AND UPPER(ville) {op} UPPER(?)
+            GROUP BY ville, dept_num ORDER BY n DESC LIMIT 5""", (q + "%",))]
+    tournois = [{"id": r["id_tournoi"], "nom": r["nom"] or "", "niveau": r.get("niveau_effectif")} for r in fetchall(
+        f"""SELECT t.id_tournoi, t.nom, tr.niveau_effectif FROM tournois t
+            LEFT JOIN tournois_rating tr ON tr.id_tournoi = t.id_tournoi
+            WHERE t.nom IS NOT NULL AND UPPER(t.nom) {op} UPPER(?) LIMIT 6""", ("%" + q + "%",))]
+    return jsonify({"joueurs": joueurs, "clubs": clubs, "villes": villes, "tournois": tournois})
 
 
 if __name__ == "__main__":

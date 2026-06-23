@@ -37,9 +37,10 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   <nav class="flex flex-col gap-1 text-sm">
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
     <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <a href="/classement" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
+    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
+    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="#" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
     <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
     <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
@@ -65,13 +66,13 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <template id="tpl">
 <div class="mt-5 text-xs text-muted flex items-center gap-1.5">
-  <a href="/" class="hover:text-ink">Joueurs</a><span>/</span>
+  <a href="/classement" class="hover:text-ink">Classement</a><span>/</span>
   <span class="hover:text-ink" data-pool></span><span>/</span>
   <span class="text-ink font-500" data-name></span>
 </div>
 
 <section class="mt-3 rounded-2xl overflow-hidden text-white relative" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
-  <div class="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-6">
+  <div class="p-6 sm:p-7 flex flex-col xl:flex-row xl:items-center gap-6">
     <div class="flex items-center gap-5 min-w-0 flex-1">
       <div class="shrink-0"><div class="w-[88px] h-[88px] rounded-2xl bg-white/12 border border-white/25 grid place-items-center font-800 text-3xl text-white" data-initials></div></div>
       <div class="min-w-0">
@@ -86,19 +87,19 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
         <div class="mt-2.5 flex items-center gap-x-4 gap-y-1 flex-wrap text-[13px] text-white/85 font-500" data-meta></div>
       </div>
     </div>
-    <div class="shrink-0 w-full lg:w-96 xl:w-[520px]">
+    <div class="shrink-0 w-full xl:w-[460px]">
       <div class="flex items-baseline justify-between mb-1">
         <span class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Trajectoire</span>
         <span class="text-[11px] text-white/65" data-traj-sum></span>
       </div>
       <div class="h-20"><canvas id="journey"></canvas></div>
     </div>
-    <div class="shrink-0 lg:text-right lg:border-l lg:border-white/15 lg:pl-6">
+    <div class="shrink-0 xl:text-right xl:border-l xl:border-white/15 xl:pl-6">
       <div class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Classement national</div>
-      <div class="flex items-end gap-2 lg:justify-end mt-1"><span class="pct-font num font-800 text-6xl leading-none" data-rank></span></div>
-      <div class="mt-2 flex items-center gap-2 lg:justify-end text-sm" data-ranksub></div>
+      <div class="flex items-end gap-2 xl:justify-end mt-1"><span class="pct-font num font-800 text-6xl leading-none" data-rank></span></div>
+      <div class="mt-2 flex items-center gap-2 xl:justify-end text-sm" data-ranksub></div>
       <div class="mt-1.5 text-[12px] text-white/75" data-rankmeta></div>
-      <div class="mt-2 flex items-center gap-3 lg:justify-end text-[12px] text-white/85 font-500" data-rankstats></div>
+      <div class="mt-2 flex items-center gap-3 xl:justify-end text-[12px] text-white/85 font-500" data-rankstats></div>
     </div>
   </div>
 </section>
@@ -143,6 +144,15 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <div class="space-y-2.5" data-partners></div>
   </div>
 </section>
+
+<section class="mt-4 card p-5" data-suggest-wrap style="display:none">
+  <div class="flex items-center justify-between gap-2 mb-1">
+    <h2 class="font-700 text-base">Partenaires suggérés</h2>
+    <span class="text-[11px] text-muted">niveau · ville/club · réseau</span>
+  </div>
+  <p class="text-[13px] text-muted mb-3">Joueurs jamais associés, proches en niveau et en géographie.</p>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2" data-suggest></div>
+</section>
 </template>
 
 <script>
@@ -160,12 +170,15 @@ function getId(){ const p=location.pathname.split('/').filter(Boolean); return p
 
 const sb=document.getElementById('searchbox'),sr=document.getElementById('searchres');
 sb.addEventListener('input',debounce(async e=>{
-  const q=e.target.value.trim();
-  if(q.length<2){sr.classList.add('hidden');return;}
-  let res=[]; try{res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(r=>r.json());}catch(_){}
-  if(!res.length){sr.classList.add('hidden');return;}
-  sr.innerHTML=res.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
-  sr.classList.remove('hidden');
+  const q=e.target.value.trim(); if(q.length<2){sr.classList.add('hidden');return;}
+  let d={joueurs:[],clubs:[],villes:[]}; try{d=await fetch('/api/search_all?q='+encodeURIComponent(q)).then(r=>r.json());}catch(_){}
+  const sec=t=>`<div class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted font-600 border-t border-line first:border-0">${t}</div>`;
+  let h='';
+  if((d.joueurs||[]).length) h+=sec('Joueurs')+d.joueurs.map(p=>`<a href="/joueur/${p.id}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted shrink-0 num">#${p.classement} · ${p.sexe}</span></a>`).join('');
+  if((d.clubs||[]).length) h+=sec('Clubs')+d.clubs.map(o=>`<a href="/club?nom=${encodeURIComponent(o.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(o.nom)}</span><span class="text-[11px] text-muted shrink-0">${o.nb} licenciés</span></a>`).join('');
+  if((d.villes||[]).length) h+=sec('Villes')+d.villes.map(v=>`<a href="/classement?ville=${encodeURIComponent(v.nom)}" class="flex items-center justify-between gap-2 px-3 py-2 hover:bg-paper text-sm"><span class="font-500 truncate">${tc(v.nom)}${v.dept_num?` <span class="text-muted">(${v.dept_num})</span>`:''}</span><span class="text-[11px] text-muted shrink-0">${v.nb} joueurs</span></a>`).join('');
+  if(!h){sr.classList.add('hidden');return;}
+  sr.innerHTML=h; sr.classList.remove('hidden');
 }));
 document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
 
@@ -194,9 +207,9 @@ function render(p){
   if(p.actif) badges+=`<span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-brand/25 text-brand-soft flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-brand"></span>ACTIF</span>`;
   $('[data-badges]').innerHTML=badges;
 
-  const mi=(d,t)=>`<span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${d}</svg>${t}</span>`;
+  const mi=(d,t)=>`<span class="flex items-center gap-1.5 whitespace-nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${d}</svg>${t}</span>`;
   const meta=[];
-  if(p.club) meta.push(mi('<path d="M3 21V8l8-5 8 5v13M3 21h18M9 21v-6h6v6"/>', tc(p.club)));
+  if(p.club) meta.push(`<a href="/club?nom=${encodeURIComponent(p.club)}" class="hover:underline">`+mi('<path d="M3 21V8l8-5 8 5v13M3 21h18M9 21v-6h6v6"/>', tc(p.club))+`</a>`);
   if(p.comite) meta.push(mi('<path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/>', tc(p.comite)));
   if(p.ligue) meta.push(mi('<path d="M4 22V4l8 2 8-3v13l-8 3-8-2Z"/>', tc(p.ligue)));
   if(p.age) meta.push(mi('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', p.age+' ans'));
@@ -280,7 +293,7 @@ function render(p){
   const pc=(p.parcours_detail||[]).slice(0,16);
   $('[data-parcours]').innerHTML=pc.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'">
     <td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td>
-    <td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}</td>
+    <td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td>
     <td class="px-3 py-2 text-muted hidden sm:table-cell">${r.partenaire&&r.partenaire!=='None None'?tc(r.partenaire):'—'}</td>
     <td class="px-3 py-2 text-center hidden md:table-cell">${diffChip(r.indice_niveau)}</td>
     <td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td>
@@ -292,6 +305,27 @@ function render(p){
     <div class="min-w-0 flex-1"><div class="flex justify-between items-baseline"><span class="text-sm font-500 truncate">${tc(x.nom_complet)}</span><span class="num text-xs font-700 text-brand-dark ml-2">${fr(x.points)}</span></div>
     <div class="h-1.5 rounded-full bg-paper mt-1 overflow-hidden"><div class="h-full rounded-full bg-brand/70" style="width:${100*(x.points||0)/maxp}%"></div></div></div>
     <span class="text-[11px] text-muted shrink-0">${x.nb_tournois}×</span></div>`).join('');
+  loadSuggest(p.id);
+}
+async function loadSuggest(pid){
+  const wrap=document.querySelector('[data-suggest-wrap]'), box=document.querySelector('[data-suggest]');
+  if(!box) return;
+  let s=[]; try{ s=await fetch('/api/suggest/'+encodeURIComponent(pid)+'?n=9').then(r=>r.json()); }catch(_){}
+  if(!Array.isArray(s)||!s.length){ if(wrap) wrap.style.display='none'; return; }
+  const TAG={'même_ville':'Même ville','même_club':'Même club','niveau_très_proche':'Niveau très proche','niveau_proche':'Niveau proche','âge_proche':'Âge proche'};
+  box.innerHTML=s.map(x=>{
+    const chips=[];
+    (x.tags||[]).forEach(t=>{ if(t==='ami_d_ami'){ if(x.connexion) chips.push(`<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">${tc(x.connexion)}</span>`); } else if(TAG[t]) chips.push(`<span class="text-[10px] px-1.5 py-0.5 rounded bg-brand-soft text-brand-dark">${TAG[t]}</span>`); });
+    const sub=[tc(x.club),tc(x.ville)].filter(Boolean).join(' · ');
+    return `<a href="/joueur/${x.id}" class="flex items-start gap-2.5 p-2.5 rounded-lg border border-line hover:border-brand hover:bg-paper">
+      <span class="w-9 h-9 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini(x.nom_complet)}</span>
+      <span class="min-w-0 flex-1">
+        <span class="flex items-center justify-between gap-2"><span class="text-sm font-600 truncate">${tc(x.nom_complet)}</span><span class="num text-[11px] text-muted shrink-0">#${fr(x.classement)}</span></span>
+        ${sub?`<span class="text-[11px] text-muted truncate block">${sub}</span>`:''}
+        ${chips.length?`<span class="flex flex-wrap gap-1 mt-1">${chips.join('')}</span>`:''}
+      </span></a>`;
+  }).join('');
+  if(wrap) wrap.style.display='';
 }
 load();
 </script>

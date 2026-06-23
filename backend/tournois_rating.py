@@ -34,6 +34,7 @@ SHOW = '--show' in sys.argv
 # ── Paramètres calibrables ──────────────────────────────────────────────────
 W         = 0.60   # pondération vers le joueur le plus fort dans une paire (0.5 = moyenne géo)
 BETA      = 0.60   # plafond vs profondeur dans la force du plateau
+MALUS_F   = 0.90   # malus niveau absolu femmes : à percentile égal, une femme compte 90% (calibrable)
 TOPK_FRAC = 0.25   # fraction de "meilleures paires" pour le plafond
 TOPK_MIN  = 4      # au moins 4 paires pour le plafond
 
@@ -54,22 +55,50 @@ def levels_in_name(nom):
 def main():
     c = sqlite3.connect(DB, isolation_level=None)
 
-    # Taille des pools H / F (joueurs classés) -> N pour s = ln(N/rang)
-    N = {}
-    for sexe, n in c.execute(
-        "SELECT sexe, COUNT(*) FROM joueurs WHERE classement IS NOT NULL "
-        "AND sexe IN ('H','F') GROUP BY sexe"
-    ):
-        N[sexe] = n
-    if not N:
-        print("❌ Aucun joueur classé trouvé."); return
-    lnN = {s: math.log(n) for s, n in N.items() if n > 0}
-    print(f"Pools : {N}")
+    # Mois présents dans les tournois (via participations) -> on ne charge que ceux-là
+    mois_set = set()
+    for (ym,) in c.execute(
+        "SELECT DISTINCT SUBSTR(date_tournoi,7,4)||'-'||SUBSTR(date_tournoi,4,2) "
+        "FROM participations WHERE LENGTH(date_tournoi)>=10"):
+        if ym and len(ym) == 7:
+            mois_set.add(ym)
+    if not mois_set:
+        print("❌ Aucune date de tournoi exploitable."); return
+    mph = ",".join("?" * len(mois_set)); mlist = tuple(mois_set)
 
-    def skill(rank, sexe):
-        if not rank or rank < 1 or sexe not in N:
+    # Pools par (mois, sexe) depuis classements_historique  -> N[mois][sexe]
+    N = defaultdict(dict)
+    for mois, sexe, n in c.execute(
+        f"SELECT h.mois, j.sexe, COUNT(*) FROM classements_historique h "
+        f"JOIN joueurs j ON j.id_fft = h.id_joueur "
+        f"WHERE h.mois IN ({mph}) AND h.classement IS NOT NULL AND j.sexe IN ('H','F') "
+        f"GROUP BY h.mois, j.sexe", mlist):
+        N[mois][sexe] = n
+    lnN = {m: {sx: math.log(v) for sx, v in d.items() if v > 0} for m, d in N.items()}
+    GLNN = max((v for d in lnN.values() for v in d.values()), default=1.0)
+    # Pool courant (secours si un mois n'a pas de snapshot)
+    Ncur = {}
+    for sexe, n in c.execute("SELECT sexe, COUNT(*) FROM joueurs WHERE classement IS NOT NULL AND sexe IN ('H','F') GROUP BY sexe"):
+        Ncur[sexe] = n
+    print(f"Mois couverts : {len(mois_set)}  (pools mensuels chargés)")
+
+    # Classement D'ÉPOQUE : hrank[(id_joueur, mois)] = classement de ce mois-là
+    print("⏳ Chargement des classements historiques (mois des tournois)…")
+    hrank = {}
+    for idj, mois, clt in c.execute(
+        f"SELECT id_joueur, mois, classement FROM classements_historique "
+        f"WHERE mois IN ({mph}) AND classement IS NOT NULL", mlist):
+        hrank[(str(idj), mois)] = clt
+    print(f"  {len(hrank):,} classements d'époque chargés.")
+
+    def skill(rank, sexe, mois):
+        if not rank or rank < 1 or sexe not in ('H', 'F'):
             return None
-        return math.log(N[sexe] / rank)   # 0 (dernier) .. ln(N) (rang 1)
+        nm = (N.get(mois) or {}).get(sexe) or Ncur.get(sexe)
+        if not nm:
+            return None
+        sc = math.log(nm / rank)     # rang d'époque, pool du mois (= percentile log)
+        return sc * MALUS_F if sexe == "F" else sc
 
     # niveau_points nominal (tournois_stats) + nom (tournois) -> niveau effectif
     niveau_nom = {}    # id -> niveau nominal
@@ -118,7 +147,7 @@ def main():
     print("⏳ Lecture des participations (joueur + partenaire)…")
     cur = c.execute('''
         SELECT p.id_tournoi, p.id_joueur, j.classement, j.sexe,
-               p.partenaire_id, jp.classement AS prank, jp.sexe AS psexe, p.type
+               p.partenaire_id, jp.classement AS prank, jp.sexe AS psexe, p.type, p.date_tournoi
         FROM participations p
         JOIN joueurs  j  ON j.id_fft  = p.id_joueur
         LEFT JOIN joueurs jp ON jp.id_fft = p.partenaire_id
@@ -129,8 +158,14 @@ def main():
     mixte_count = [0]
 
     def flush(tid, rows):
-        # Construit les paires ET compte les paires MIXTES (1 H + 1 F) pour détecter
-        # un tournoi mixte de façon robuste (le type DX et le mot "MIXTE" manquent souvent).
+        # Mois du tournoi (le plus fréquent parmi les dates) -> classement & pool d'époque
+        _mc = defaultdict(int)
+        for _r in rows:
+            _d = _r[7]
+            if _d and len(_d) >= 10:
+                _mc[_d[6:10] + "-" + _d[3:5]] += 1
+        tmonth = max(_mc, key=_mc.get) if _mc else None
+        # Construit les paires ET compte les paires MIXTES (1 H + 1 F).
         type_count = defaultdict(int)
         for r in rows:
             type_count[(r[6] or '').upper()] += 1
@@ -138,18 +173,20 @@ def main():
         sexe_count = defaultdict(int)
         pair_total = 0
         pair_mixed = 0
-        for (idj, rank, sexe, pid, prank, psexe, typ) in rows:
-            s = skill(rank, sexe)
+        for (idj, rank, sexe, pid, prank, psexe, typ, dat) in rows:
+            r_at = hrank.get((str(idj), tmonth), rank) if tmonth else rank
+            s = skill(r_at, sexe, tmonth)
             if s is None:
                 continue
             sexe_count[sexe] += 1
-            if pid and prank:
+            pr_at = hrank.get((str(pid), tmonth), prank) if (pid and tmonth) else prank
+            if pid and pr_at:
                 key = tuple(sorted((idj, pid)))
                 if key not in pairs:
                     pair_total += 1
                     if sexe and psexe and sexe != psexe:
                         pair_mixed += 1
-                sp = skill(prank, psexe or sexe)
+                sp = skill(pr_at, psexe or sexe, tmonth)
                 if sp is None:
                     sp = s
                 hi, lo = (s, sp) if s >= sp else (sp, s)
@@ -182,7 +219,7 @@ def main():
         force = BETA * plafond + (1 - BETA) * profondeur
         sexe_dom = max(sexe_count, key=sexe_count.get) if sexe_count else None
         eff, multi = niveau_eff_and_flag(tid)
-        results.append((tid, niveau_nom.get(tid), eff, multi, sexe_dom, n, plafond, profondeur, force, equipes_map.get(tid, 0)))
+        results.append((tid, niveau_nom.get(tid), eff, multi, sexe_dom, n, plafond, profondeur, force, equipes_map.get(tid, 0), tmonth))
 
     cur_tid, buf = None, []
     for row in cur:
@@ -217,8 +254,8 @@ def main():
         return round(100.0 * i / (len(arr) - 1), 1)
 
     out = []
-    for (tid, niv_nom, niv_eff, multi, sexe_dom, n, plafond, profondeur, force, equipes) in results:
-        ref_lnN = lnN.get(sexe_dom, max(lnN.values()))
+    for (tid, niv_nom, niv_eff, multi, sexe_dom, n, plafond, profondeur, force, equipes, tmonth) in results:
+        ref_lnN = (lnN.get(tmonth) or {}).get(sexe_dom) or (math.log(Ncur[sexe_dom]) if Ncur.get(sexe_dom) else None) or GLNN
         indice = max(0.0, min(100.0, 100.0 * force / ref_lnN))
         mu, sd = stats.get((niv_eff, sexe_dom), (force, 1.0))
         surcote = (force - mu) / sd

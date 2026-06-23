@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche joueur — Bilal Duprat · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      ink:    '#0F141B',
+      panel:  '#1A222C',
+      brand:  { DEFAULT:'#0E9C86', dark:'#0A7766', soft:'#E6F4F1' },
+      paper:  '#F5F6F7',
+      line:   '#E7E9EC',
+      muted:  '#697483',
+    },
+  }}
+}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#9aa3af;font-weight:600}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ===== TOP BAR ===== -->
+<header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
+  <div class="max-w-5xl mx-auto px-5 h-14 flex items-center gap-3">
+    <div class="flex items-center gap-2 font-700 text-ink">
+      <span class="w-7 h-7 rounded-md bg-brand text-white grid place-items-center text-sm">P</span>
+      Padel<span class="text-brand">Stats</span>
+    </div>
+    <nav class="hidden sm:flex items-center gap-1 ml-4 text-sm text-muted">
+      <a class="px-3 py-1.5 rounded-md hover:bg-paper cursor-pointer">Classement</a>
+      <a class="px-3 py-1.5 rounded-md bg-brand-soft text-brand-dark font-600 cursor-pointer">Joueurs</a>
+      <a class="px-3 py-1.5 rounded-md hover:bg-paper cursor-pointer">Carte</a>
+      <a class="px-3 py-1.5 rounded-md hover:bg-paper cursor-pointer">Graphe</a>
+    </nav>
+    <div class="ml-auto hidden sm:flex items-center gap-2 px-3 h-9 rounded-md border border-line text-sm text-muted w-56">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+      Rechercher un joueur…
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-5 pb-20">
+
+<!-- breadcrumb -->
+<div class="mt-5 text-xs text-muted flex items-center gap-1.5">
+  <span class="hover:text-ink cursor-pointer">Joueurs</span><span>/</span>
+  <span class="hover:text-ink cursor-pointer">Messieurs</span><span>/</span>
+  <span class="text-ink font-500">Bilal Duprat</span>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="mt-3 rounded-2xl bg-ink text-white">
+  <div class="p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-6">
+    <div class="shrink-0">
+      <div class="w-20 h-20 rounded-xl bg-panel border border-white/10 grid place-items-center font-800 text-3xl text-brand">BD</div>
+    </div>
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2 flex-wrap mb-2">
+        <span class="text-[10.5px] font-600 tracking-wider px-2 py-0.5 rounded bg-white/10">MESSIEURS</span>
+        <span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-white/10">🇫🇷 FRA</span>
+        <span class="text-[10.5px] font-600 px-2 py-0.5 rounded bg-brand/25 text-brand-soft flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-brand"></span>ACTIF</span>
+      </div>
+      <h1 class="font-800 text-4xl sm:text-[2.7rem] leading-none tracking-tight">Bilal Duprat</h1>
+      <div class="mt-3 flex items-center gap-x-4 gap-y-1 flex-wrap text-sm text-white/60">
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg>Vauzelles A.S.A.</span>
+        <span class="text-white/25">·</span><span>Nièvre</span>
+        <span class="text-white/25">·</span><span>Bourgogne-Franche-Comté</span>
+        <span class="text-white/25">·</span><span>31 ans</span>
+      </div>
+    </div>
+    <div class="shrink-0 sm:text-right sm:border-l sm:border-white/10 sm:pl-7">
+      <div class="lbl text-white/40">Classement national</div>
+      <div class="flex items-end gap-2 sm:justify-end mt-1">
+        <span class="num font-800 text-6xl leading-none">300<span class="text-2xl text-white/35 font-600">e</span></span>
+      </div>
+      <div class="mt-2 flex items-center gap-2 sm:justify-end text-sm">
+        <span class="num font-700 text-white/90">5 040 pts</span>
+        <span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-300 text-xs font-600 flex items-center gap-0.5 num">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>248 (12 m)
+        </span>
+      </div>
+    </div>
+  </div>
+  <!-- hero bottom : percentile + trajectoire -->
+  <div class="px-7 sm:px-8 pb-7 grid sm:grid-cols-[minmax(0,150px)_1fr] gap-6 sm:items-end">
+    <div>
+      <div class="lbl text-white/40 mb-1.5">Percentile national</div>
+      <div class="inline-flex items-center gap-2 pl-2.5 pr-3 py-1.5 rounded-lg bg-brand/15 border border-brand/30">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+        <span class="num font-800 text-xl text-brand-soft leading-none">top 0,19<span class="text-sm"> %</span></span>
+      </div>
+    </div>
+    <div>
+      <div class="flex items-baseline justify-between mb-1">
+        <span class="lbl text-white/40">Trajectoire — mois par mois</span>
+        <span class="text-[11px] text-white/45">1500<span class="lowercase">e</span> → <b class="text-brand-soft">52<span class="lowercase">e</span></b> → 300<span class="lowercase">e</span></span>
+      </div>
+      <div class="h-20"><canvas id="journey"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== KPI STRIP ===== -->
+<section class="mt-4 grid grid-cols-2 lg:grid-cols-5 gap-3">
+  <div class="card p-3.5"><div class="lbl">National</div><div class="num font-800 text-2xl mt-1">300<span class="text-sm text-muted font-600">e</span></div><div class="text-[11px] text-brand-dark font-600 mt-0.5">top 0,19 %</div></div>
+  <div class="card p-3.5"><div class="lbl">Meilleur</div><div class="num font-800 text-2xl mt-1">52<span class="text-sm text-muted font-600">e</span></div><div class="text-[11px] text-muted mt-0.5">mi-2025</div></div>
+  <div class="card p-3.5"><div class="lbl">Points</div><div class="num font-800 text-2xl mt-1">5 040</div><div class="text-[11px] text-muted mt-0.5">12 comptées</div></div>
+  <div class="card p-3.5"><div class="lbl">Meilleure place</div><div class="num font-800 text-2xl mt-1">5<span class="text-sm text-muted font-600">e</span></div><div class="text-[11px] text-muted mt-0.5">/ 72 paires</div></div>
+  <div class="card p-3.5"><div class="lbl">Top 8</div><div class="num font-800 text-2xl mt-1">9<span class="text-sm text-muted font-600">/24</span></div><div class="text-[11px] text-muted mt-0.5">38 % des tournois</div></div>
+</section>
+
+<!-- ===== PYRAMIDE + NIVEAUX ===== -->
+<section class="mt-4 grid lg:grid-cols-3 gap-4">
+  <div class="card p-5 lg:col-span-2">
+    <h2 class="font-700 text-base mb-3">Pyramide — rang par environnement</h2>
+    <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3" id="pyr"></div>
+  </div>
+  <div class="card p-5">
+    <h2 class="font-700 text-base mb-1">Niveau des tournois</h2>
+    <p class="text-[13px] text-muted mb-4">24 tournois joués.</p>
+    <div class="space-y-3" id="levels"></div>
+  </div>
+</section>
+
+<!-- ===== TROPHY SHELF ===== -->
+<section class="mt-4">
+  <div class="flex items-center gap-2 mb-3"><h2 class="font-700 text-base">Meilleures performances</h2><span class="text-xs text-muted">— comptées au classement</span></div>
+  <div class="grid sm:grid-cols-3 gap-3" id="shelf"></div>
+</section>
+
+<!-- ===== PARCOURS + PARTNERS ===== -->
+<section class="mt-4 grid lg:grid-cols-3 gap-4">
+  <div class="card p-5 lg:col-span-2">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-700 text-base">Parcours</h2>
+      <span class="text-xs text-muted flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand"></span>comptée dans les 12 meilleures</span>
+    </div>
+    <div class="overflow-hidden rounded-lg border border-line">
+      <table class="w-full text-sm">
+        <thead class="bg-paper text-muted text-[10.5px] uppercase tracking-wider">
+          <tr><th class="text-left font-600 px-3 py-2">Niveau</th><th class="text-left font-600 px-3 py-2">Tournoi</th><th class="text-left font-600 px-3 py-2 hidden sm:table-cell">Partenaire</th><th class="text-center font-600 px-3 py-2">Place</th><th class="text-right font-600 px-3 py-2">Pts</th></tr>
+        </thead>
+        <tbody id="parcours" class="divide-y divide-line"></tbody>
+      </table>
+    </div>
+    <button class="mt-3 text-xs text-muted hover:text-ink font-500">Voir les 24 tournois →</button>
+  </div>
+  <div class="card p-5">
+    <h2 class="font-700 text-base mb-1">Partenaires</h2>
+    <p class="text-[13px] text-muted mb-4">Par points marqués ensemble.</p>
+    <div class="space-y-2.5" id="partners"></div>
+    <button class="mt-4 w-full h-10 rounded-lg bg-ink text-white text-sm font-600 flex items-center justify-center gap-2 hover:bg-panel">
+      Graphe de jeu & degrés
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</section>
+
+</main>
+
+<script>
+const PLEVEL = {25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
+
+/* ranking journey */
+const hist=[['2021-12',1500],['2022-01',1500],['2022-02',1500],['2022-03',1500],['2022-04',1500],['2022-05',1500],['2022-06',1500],['2022-07',1500],['2022-08',1500],['2022-09',2166],['2022-10',1500],['2022-11',1500],['2022-12',1500],['2023-01',820],['2023-02',821],['2023-03',702],['2023-04',553],['2023-05',477],['2023-06',312],['2023-07',243],['2023-08',199],['2023-09',185],['2023-10',116],['2023-11',107],['2023-12',92],['2024-01',96],['2024-02',87],['2024-03',85],['2024-04',86],['2024-05',88],['2024-06',79],['2024-07',70],['2024-08',77],['2024-09',75],['2024-10',74],['2024-11',65],['2024-12',67],['2025-01',66],['2025-02',67],['2025-03',64],['2025-04',52],['2025-05',53],['2025-06',52],['2025-07',56],['2025-08',60],['2025-09',61],['2025-10',74],['2025-11',90],['2025-12',115],['2026-01',127],['2026-02',155],['2026-03',188],['2026-04',300],['2026-05',300],['2026-06',300]];
+new Chart(document.getElementById('journey'),{type:'line',
+  data:{labels:hist.map(h=>h[0]),datasets:[{data:hist.map(h=>h[1]),borderColor:'#13C2A6',borderWidth:2,
+    fill:true,backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,64);g.addColorStop(0,'#13C2A640');g.addColorStop(1,'#13C2A600');return g;},
+    tension:.3,pointRadius:1.8,pointBackgroundColor:'#13C2A6',pointBorderWidth:0,pointHoverRadius:4,pointHoverBackgroundColor:'#13C2A6',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{title:c=>c[0].label,label:c=>c.parsed.y+'e'}}},
+    scales:{y:{reverse:true,display:false},x:{display:false}}}});
+
+/* pyramide */
+const pyr=[['Club','Vauzelles A.S.A.',3,26],['Comité','Nièvre',3,92],['Ligue','Bourgogne-FC',5,3119],['National','France',300,126466]];
+document.getElementById('pyr').innerHTML=pyr.map(([env,sub,r,tot])=>{
+  const pct=100*r/tot; const top=pct<1?'top '+pct.toFixed(2)+'%':'top '+pct.toFixed(0)+'%';
+  const fill=Math.max(3,100-100*(r-1)/tot);
+  return `<div>
+    <div class="flex items-baseline justify-between mb-1">
+      <div><span class="font-600 text-sm">${env}</span> <span class="text-[11px] text-muted">${sub}</span></div>
+      <div class="num font-700 text-sm">${r}<span class="text-muted text-xs">e</span> <span class="text-muted font-400 text-xs">/ ${tot.toLocaleString('fr')}</span></div>
+    </div>
+    <div class="h-1.5 rounded-full bg-paper overflow-hidden"><div class="h-full rounded-full bg-brand" style="width:${fill}%"></div></div>
+    <div class="text-[10.5px] text-brand-dark font-600 mt-0.5">${top}</div>
+  </div>`;}).join('');
+
+/* niveaux des tournois */
+const levels=[['P1000',6,'bg-indigo-500'],['P500',18,'bg-brand']];
+const totL=24;
+document.getElementById('levels').innerHTML=levels.map(([lv,n,col])=>`
+  <div><div class="flex justify-between text-sm mb-1"><span class="font-500">${lv}</span><span class="num text-muted">${n} <span class="text-[11px]">(${Math.round(100*n/totL)}%)</span></span></div>
+  <div class="h-2 rounded-full bg-paper overflow-hidden"><div class="h-full rounded-full ${col}" style="width:${100*n/totL}%"></div></div></div>`).join('');
+
+/* trophy shelf */
+const shelf=[
+  {medal:'#C8972F',rank:'5e',field:'72 paires',name:'ACE Padel P1000',sub:'avec M. Dammak',pts:700,p:1000},
+  {medal:'#9AA3AE',rank:'7e',field:'64 paires',name:'P1000 La Bulle',sub:'avec P. Perez Le Tiec',pts:630,p:1000},
+  {medal:'#B07B4F',rank:'9e',field:'72 paires',name:'P1000 Casa Padel Uno',sub:'avec T. de Galbert',pts:580,p:1000},
+];
+document.getElementById('shelf').innerHTML=shelf.map(s=>`
+  <div class="card p-4 relative">
+    <span class="absolute right-3 top-3 num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[s.p]}">P${s.p}</span>
+    <div class="flex items-center gap-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${s.medal}" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"/></svg>
+      <span class="num font-800 text-lg">${s.rank}</span><span class="text-xs text-muted">/ ${s.field}</span>
+    </div>
+    <div class="font-600 text-sm mt-3 leading-tight">${s.name}</div>
+    <div class="text-xs text-muted">${s.sub}</div>
+    <div class="num font-700 text-brand-dark text-sm mt-2">+${s.pts} pts</div>
+  </div>`).join('');
+
+/* parcours */
+const parts=[[1000,'ACE Padel P1000','M. Dammak','5e',700,1],[1000,'P1000 La Bulle Padel','P. Perez Le Tiec','7e',630,1],[1000,'P1000 Casa Padel Uno','T. de Galbert','9e',580,1],[1000,'P1000','B. Fabre','15e',430,1],[1000,'4Padel Marville P1000','P. Perez Le Tiec','15e',430,1],[1000,'P1000 ASMantaise','A. Lescallier','15e',430,1],[500,'P500 Hommes','—','6e',325,1],[500,'RPadel P500','U. Silvera','6e',325,1],[500,'P500 Forest Hill','H. Ben Arfa','5e',300,1],[500,'P500 Lésigny','G. Dubourdieu','5e',300,1],[500,'FH La Marche P500','M. El Jamai','5e',300,1],[500,'FH La Marche P500','M. Miloudi','9e',290,1],[500,'4Padel Épinay P500','J. Khorsi','7e',250,0],[500,'P500 Hommes','H. Ben Arfa','13e',240,0],[500,'FH La Marche P500','M. El Jamai','17e',190,0],[500,'P500 Home Padel Meaux','F. Aouadi','17e',150,0]];
+document.getElementById('parcours').innerHTML=parts.map(([p,t,part,pos,pts,pec])=>`
+  <tr class="hover:bg-paper/60">
+    <td class="px-3 py-2"><span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[p]}">P${p}</span></td>
+    <td class="px-3 py-2 font-500">${t}</td>
+    <td class="px-3 py-2 text-muted hidden sm:table-cell">${part}</td>
+    <td class="px-3 py-2 text-center num font-600">${pos}</td>
+    <td class="px-3 py-2 text-right num font-700">${pec?`<span class="text-brand-dark">${pts}</span>`:`<span class="text-muted font-500">${pts}</span>`}</td>
+  </tr>`).join('');
+
+/* partners */
+const partners=[['Pierre Perez Le Tiec',2,1060],['Hatem Ben Arfa',3,735],['Mohamed Malek Dammak',1,700],['Thibault de Galbert',1,580],['Mohamed Rayane El Jamai',2,490],['Ugo Silvera',2,415]];
+const maxp=Math.max(...partners.map(p=>p[2]));
+document.getElementById('partners').innerHTML=partners.map(([n,nb,pts])=>{
+  const ini=n.split(' ').map(w=>w[0]).slice(0,2).join('');
+  return `<div class="flex items-center gap-3">
+    <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-xs font-700">${ini}</div>
+    <div class="min-w-0 flex-1">
+      <div class="flex justify-between items-baseline"><span class="text-sm font-500 truncate">${n}</span><span class="num text-xs font-700 text-brand-dark ml-2">${pts}</span></div>
+      <div class="h-1.5 rounded-full bg-paper mt-1 overflow-hidden"><div class="h-full rounded-full bg-brand/70" style="width:${100*pts/maxp}%"></div></div>
+    </div>
+    <span class="text-[11px] text-muted shrink-0">${nb}×</span>
+  </div>`;}).join('');
+</script>
+</body>
+</html>
