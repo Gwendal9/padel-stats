@@ -35,14 +35,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
-    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
-    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
-    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
-    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav active" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 
@@ -105,6 +113,24 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 </section>
 
 <section class="mt-4 grid grid-cols-2 lg:grid-cols-6 gap-3" data-kpi></section>
+<section class="mt-4 grid lg:grid-cols-3 gap-4" data-insights style="display:none">
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Forme</h2><span class="text-[11px] font-700 px-2 py-0.5 rounded-full" data-forme-badge></span></div>
+    <p class="text-[13px] text-muted mb-3">Évolution du classement sur 6 mois.</p>
+    <div class="flex items-end gap-3"><div class="shrink-0"><div class="pct-font font-800 text-3xl leading-none" data-forme-gain>—</div><div class="text-[11px] text-muted mt-1" data-forme-sub>places</div></div><div class="flex-1 h-14 min-w-0"><canvas data-forme-spark></canvas></div></div>
+  </div>
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Points à défendre</h2><span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#F59E0B1f;color:#F59E0B"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></div>
+    <p class="text-[13px] text-muted mb-3">Points comptés qui expirent bientôt.</p>
+    <div class="flex gap-5 mb-3"><div><div class="pct-font font-800 text-2xl text-amber-600" data-def3>—</div><div class="text-[11px] text-muted">≤ 3 mois</div></div><div><div class="pct-font font-800 text-2xl" data-def6>—</div><div class="text-[11px] text-muted">≤ 6 mois</div></div></div>
+    <div class="space-y-1.5" data-deflist></div>
+  </div>
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Perf vs difficulté</h2><span class="text-[11px] text-muted" data-perfratio></span></div>
+    <p class="text-[13px] text-muted mb-2" data-perfsub>Points gagnés selon la difficulté du plateau.</p>
+    <div class="h-40"><canvas data-perfscatter></canvas></div>
+  </div>
+</section>
 
 <section class="mt-4 grid lg:grid-cols-3 gap-4">
   <div class="card p-5 lg:col-span-2">
@@ -257,15 +283,48 @@ function render(p){
 
   const e='<span class="text-sm text-muted font-600">e</span>';
   const slash=n=>'<span class="text-sm text-muted font-600">/'+n+'</span>';
+  const KIC={trophy:'<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/>',up:'<path d="M3 17l6-6 4 4 8-8M21 8V4h-4"/>',coin:'<circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5"/>',flag:'<path d="M4 21V4M4 4h13l-2 4 2 4H4"/>',medal:'<circle cx="12" cy="14" r="6"/><path d="M9 8 7 3M15 8l2-5"/>',bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'};
   const kpi=[
-    ['National', (p.classement!=null?p.classement+e:'—'), p.percentile!=null?'top '+String(p.percentile).replace('.',',')+' %':'', true],
-    ['Meilleur', (p.meilleur_classement!=null?p.meilleur_classement+e:'—'), 'en carrière', false],
-    ['Points', fr(Math.round(p.points_officiels||0)), p.nb_comptees+' comptées', false],
-    ['Meilleure place', (p.meilleure_place!=null?p.meilleure_place+e:'—'), 'sur '+p.nb_tournois+' tournois', false],
-    ['Top 8', p.nb_top8+slash(p.nb_tournois), p.nb_tournois?Math.round(100*p.nb_top8/p.nb_tournois)+'% des tournois':'', false],
-    ['Perf pondérée', fr(p.points_ponderes||0), p.perf_ratio!=null?((p.perf_ratio>=1?'+':'')+Math.round((p.perf_ratio-1)*100)+'% vs brut'):'résultats × difficulté', p.perf_ratio>1],
+    ['National', (p.classement!=null?p.classement+e:'—'), p.percentile!=null?'top '+String(p.percentile).replace('.',',')+' %':'', true, '#FBBF24','trophy'],
+    ['Meilleur', (p.meilleur_classement!=null?p.meilleur_classement+e:'—'), 'en carrière', false, '#A78BFA','up'],
+    ['Points', fr(Math.round(p.points_officiels||0)), p.nb_comptees+' comptées', false, '#0EA5A0','coin'],
+    ['Meilleure place', (p.meilleure_place!=null?p.meilleure_place+e:'—'), 'sur '+p.nb_tournois+' tournois', false, '#60A5FA','flag'],
+    ['Top 8', p.nb_top8+slash(p.nb_tournois), p.nb_tournois?Math.round(100*p.nb_top8/p.nb_tournois)+'% des tournois':'', false, '#818CF8','medal'],
+    ['Perf pondérée', fr(p.points_ponderes||0), p.perf_ratio!=null?((p.perf_ratio>=1?'+':'')+Math.round((p.perf_ratio-1)*100)+'% vs brut'):'résultats × difficulté', p.perf_ratio>1, '#F472B6','bolt'],
   ];
-  $('[data-kpi]').innerHTML=kpi.map(([l,v,s,hot])=>`<div class="card p-3.5"><div class="lbl">${l}</div><div class="num font-800 text-2xl mt-1">${v}</div><div class="text-[11px] ${hot?'text-brand-dark font-600':'text-muted'} mt-0.5">${s}</div></div>`).join('');
+  $('[data-kpi]').innerHTML=kpi.map(([l,v,s,hot,col,ic])=>`<div class="card p-3.5 relative overflow-hidden"><div class="absolute left-0 top-0 bottom-0 w-1" style="background:${col}"></div><div class="flex items-center justify-between gap-2"><div class="lbl">${l}</div><span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:${col}1f;color:${col}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${KIC[ic]}</svg></span></div><div class="num font-800 text-2xl mt-1">${v}</div><div class="text-[11px] mt-0.5 ${hot?'font-600':'text-muted'}" ${hot?`style="color:${col}"`:''}>${s}</div></div>`).join('');
+
+  // ── Insights : forme, points à défendre, perf vs difficulté ──
+  const ins=$('[data-insights]');
+  if(ins){
+    let shown=false;
+    if(p.forme){ shown=true; const f=p.forme;
+      const flat=f.gain_6m===0, up=f.gain_6m>0, col=flat?'#697483':(up?'#0E9C86':'#e5484d');
+      const g=$('[data-forme-gain]'); g.textContent=(up?'+':'')+fr(f.gain_6m); g.style.color=col;
+      $('[data-forme-sub]').textContent=(up?'places gagnées':flat?'stable':'places perdues')+' · 6 mois';
+      const bd=$('[data-forme-badge]'); bd.textContent=f.label; bd.style.background=col+'1f'; bd.style.color=col;
+      const ser=(f.serie||[]).map(x=>x.classement);
+      new Chart(ins.querySelector('[data-forme-spark]'),{type:'line',data:{labels:ser.map(()=>''),datasets:[{data:ser,borderColor:col,backgroundColor:col+'22',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false,reverse:true}}}});
+    } else { const c=$('[data-forme-gain]'); if(c)c.closest('.card').style.display='none'; }
+    const d=p.points_a_defendre;
+    if(d && (d.d6>0 || (d.items&&d.items.length))){ shown=true;
+      $('[data-def3]').textContent=fr(d.d3||0); $('[data-def6]').textContent=fr(d.d6||0);
+      $('[data-deflist]').innerHTML=(d.items||[]).slice(0,4).map(it=>{ const soon=it.dans<=3;
+        return `<div class="flex items-center justify-between gap-2 text-[12px]"><span class="truncate">${tc(it.nom||'—')}</span><span class="shrink-0 flex items-center gap-2"><span class="num font-700">${it.points}</span><span class="text-[10px] px-1.5 py-0.5 rounded ${soon?'bg-amber-100 text-amber-800':'bg-paper text-muted'}">${it.dans<=0?'ce mois':'dans '+it.dans+'m'}</span></span></div>`;
+      }).join('')||'<div class="text-[12px] text-muted">Rien à court terme.</div>';
+    } else { const c=$('[data-def3]'); if(c)c.closest('.card').style.display='none'; }
+    const pv=p.perf_diff;
+    if(pv && pv.points && pv.points.length>=4){ shown=true;
+      if(pv.ratio!=null){ const pv2=Math.round((pv.ratio-1)*100); $('[data-perfratio]').textContent=(pv2>=0?'+':'')+pv2+'% vs brut'; }
+      if(pv.exploit){ $('[data-perfsub]').innerHTML='Meilleur exploit : <b>'+tc(pv.exploit.nom)+'</b> (plateau '+pv.exploit.indice+', +'+pv.exploit.points+' pts).'; }
+      const cptd=pv.points.filter(o=>o.comptee), autre=pv.points.filter(o=>!o.comptee);
+      new Chart(ins.querySelector('[data-perfscatter]'),{type:'scatter',data:{datasets:[
+        {label:'Comptée',data:cptd.map(o=>({x:o.x,y:o.y,nom:o.nom})),backgroundColor:'#0E9C86'},
+        {label:'Non comptée',data:autre.map(o=>({x:o.x,y:o.y,nom:o.nom})),backgroundColor:'#cbd0d6'}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,usePointStyle:true,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.raw.nom?tc(String(c.raw.nom)).slice(0,24):''} · ${Math.round(c.raw.y)} pts`}}},scales:{x:{title:{display:true,text:'Difficulté du plateau',font:{size:10}},grid:{color:'#eef0f2'}},y:{title:{display:true,text:'Points',font:{size:10}},beginAtZero:true,grid:{color:'#eef0f2'}}}}});
+    } else { const c=$('[data-perfscatter]'); if(c)c.closest('.card').style.display='none'; }
+    if(shown) ins.style.display='';
+  }
 
   const order=[['club','Club'],['comite','Comité'],['ligue','Ligue'],['national','National']];
   $('[data-pyr]').innerHTML=order.filter(([k])=>p.pyramide&&p.pyramide[k]).map(([k,lab])=>{

@@ -133,7 +133,7 @@ def get_player_profile(player_id: str) -> dict | None:
         f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
                p.date_tournoi, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi,
-               p.pris_en_compte, p.points_num, p.position_num,
+               p.pris_en_compte, p.points_num, p.position_num, p.expiration_date,
                ts.niveau_points, ts.classement_meilleur AS tableau_meilleur,
                ts.nb_joueurs AS tableau_nb_joueurs
         FROM participations p
@@ -401,6 +401,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "partenaire":     p["partenaire_nom"] or "",
             "partenaire_id":  p["partenaire_id"],
             "pris_en_compte": bool(p.get("pris_en_compte")),
+            "expiration":     p.get("expiration_date") or "",
             "tableau_nb_joueurs": p.get("tableau_nb_joueurs"),
             "tableau_meilleur":   p.get("tableau_meilleur"),
         }
@@ -457,6 +458,81 @@ def get_player_profile(player_id: str) -> dict | None:
     points_ponderes = sum(p["perf_ponderee"] for p in parcours_detail if p["pris_en_compte"])
     perf_ratio = round(points_ponderes / base_counted, 3) if base_counted else None
 
+    # ── Points à défendre : perfs comptées qui expirent bientôt ───────────
+    from datetime import date as _date
+    _now = _date.today()
+    _cur_m = _now.year * 12 + (_now.month - 1)
+
+    def _month_idx(ym):
+        try:
+            y, m = str(ym).split("-")[:2]
+            return int(y) * 12 + (int(m) - 1)
+        except Exception:
+            return None
+
+    _def = []
+    for p in parcours_detail:
+        if not p["pris_en_compte"]:
+            continue
+        pts = float(p.get("points") or 0)
+        mi = _month_idx(p.get("expiration") or "")
+        if pts <= 0 or mi is None:
+            continue
+        _def.append({"nom": p["tournoi_nom"], "date": p["date"], "niveau_points": p.get("niveau_points"),
+                     "expire": p["expiration"], "points": round(pts), "dans": mi - _cur_m})
+    _def = [i for i in _def if i["dans"] >= 0]
+    _def.sort(key=lambda x: x["dans"])
+    points_a_defendre = {
+        "total_comptes": round(sum(i["points"] for i in _def)),
+        "d3": round(sum(i["points"] for i in _def if i["dans"] <= 3)),
+        "d6": round(sum(i["points"] for i in _def if i["dans"] <= 6)),
+        "items": _def[:6],
+    }
+
+    # ── Forme (momentum) depuis l'historique mensuel du classement ────────
+    forme = None
+    try:
+        hrows = fetchall(
+            "SELECT mois, classement FROM classements_historique "
+            "WHERE id_joueur = ? AND classement IS NOT NULL ORDER BY mois DESC LIMIT 14",
+            (player_id,),
+        )
+        if hrows and len(hrows) >= 2:
+            serie = [{"mois": r["mois"], "classement": r["classement"]} for r in reversed(hrows)]
+            cur = hrows[0]["classement"]
+            g3 = (hrows[3]["classement"] if len(hrows) > 3 else hrows[-1]["classement"]) - cur
+            g6 = (hrows[6]["classement"] if len(hrows) > 6 else hrows[-1]["classement"]) - cur
+            if g6 >= 500:
+                lab = "En feu"
+            elif g6 > 0:
+                lab = "En progression"
+            elif g6 == 0:
+                lab = "Stable"
+            elif g6 > -500:
+                lab = "En repli"
+            else:
+                lab = "En baisse"
+            forme = {"gain_3m": g3, "gain_6m": g6, "label": lab, "serie": serie}
+    except Exception:
+        forme = None
+
+    # ── Perf vs difficulté : nuage (indice plateau × points) + exploit ────
+    _pd = []
+    for p in parcours_detail:
+        ind = p.get("indice_niveau")
+        if ind is None:
+            continue
+        _pd.append({"x": round(float(ind), 1), "y": float(p.get("points") or 0),
+                    "nom": p["tournoi_nom"], "comptee": p["pris_en_compte"]})
+    _cand = [p for p in parcours_detail if p.get("indice_niveau") is not None
+             and p["pris_en_compte"] and float(p.get("points") or 0) > 0]
+    exploit = None
+    if _cand:
+        e = max(_cand, key=lambda p: float(p["indice_niveau"]))
+        exploit = {"nom": e["tournoi_nom"], "indice": round(float(e["indice_niveau"]), 1),
+                   "points": round(float(e.get("points") or 0)), "date": e["date"]}
+    perf_diff = {"points": _pd, "exploit": exploit, "ratio": perf_ratio}
+
     # Top performances (comptées) triées par points — "trophy shelf" v2
     meilleures_perfs = sorted(
         [p for p in parcours_detail if p["pris_en_compte"] and p["points"]],
@@ -487,4 +563,7 @@ def get_player_profile(player_id: str) -> dict | None:
         "meilleures_perfs":  meilleures_perfs,
         "points_ponderes":   points_ponderes,
         "perf_ratio":        perf_ratio,
+        "points_a_defendre": points_a_defendre,
+        "forme":             forme,
+        "perf_diff":         perf_diff,
     }

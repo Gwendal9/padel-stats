@@ -68,7 +68,78 @@ def route_home_data():
             "SELECT id_fft, nom, prenom, classement, points, club_nom, comite "
             "FROM joueurs WHERE sexe=? AND classement IS NOT NULL "
             "ORDER BY classement ASC LIMIT 5", (sexe,))
-    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F")})
+    def _one(q):
+        try:
+            return fetchone(q)
+        except Exception:
+            return None
+    ex_j = _one("SELECT j.id_fft AS id_fft, j.nom AS nom, j.prenom AS prenom, j.classement AS classement, j.sexe AS sexe FROM joueurs j JOIN (SELECT id_joueur, COUNT(*) AS n FROM participations GROUP BY id_joueur HAVING COUNT(*)>=5) cnt ON cnt.id_joueur=j.id_fft WHERE j.classement IS NOT NULL AND j.classement<=20000 ORDER BY RANDOM() LIMIT 1")
+    ex_c = _one("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+    ex_t = _one("SELECT tr.id_tournoi, t.nom, tr.niveau_effectif AS niv, ROUND(tr.indice_niveau) AS ind, tr.sexe FROM tournois_rating tr JOIN tournois t ON t.id_tournoi=tr.id_tournoi WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
+    examples = {
+        "joueur": ({"id": ex_j["id_fft"], "nom_complet": f"{(ex_j.get('prenom') or '').strip()} {(ex_j.get('nom') or '').strip()}".strip(),
+                    "classement": ex_j["classement"], "sexe": ex_j["sexe"]} if ex_j else None),
+        "club": ({"nom": ex_c["club_nom"], "nb": int(ex_c["n"] or 0)} if ex_c else None),
+        "tournoi": ({"id": ex_t["id_tournoi"], "nom": ex_t["nom"], "niveau": ex_t["niv"],
+                     "indice": (int(ex_t["ind"]) if ex_t["ind"] is not None else None), "sexe": ex_t["sexe"]} if ex_t else None),
+    }
+    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F"), "examples": examples})
+
+
+@app.get("/api/example/<kind>")
+def route_example(kind):
+    """Un exemple aléatoire (joueur / club / tournoi) pour la vitrine de la home."""
+    from db import fetchone
+    try:
+        if kind == "joueur":
+            r = fetchone("SELECT j.id_fft AS id_fft, j.nom AS nom, j.prenom AS prenom, j.classement AS classement, j.sexe AS sexe FROM joueurs j JOIN (SELECT id_joueur, COUNT(*) AS n FROM participations GROUP BY id_joueur HAVING COUNT(*)>=5) cnt ON cnt.id_joueur=j.id_fft WHERE j.classement IS NOT NULL AND j.classement<=20000 ORDER BY RANDOM() LIMIT 1")
+            return jsonify({"id": r["id_fft"], "nom_complet": f"{(r.get('prenom') or '').strip()} {(r.get('nom') or '').strip()}".strip(), "classement": r["classement"], "sexe": r["sexe"]} if r else None)
+        if kind == "club":
+            r = fetchone("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+            return jsonify({"nom": r["club_nom"], "nb": int(r["n"] or 0)} if r else None)
+        if kind == "tournoi":
+            r = fetchone("SELECT tr.id_tournoi, t.nom, tr.niveau_effectif AS niv, ROUND(tr.indice_niveau) AS ind, tr.sexe FROM tournois_rating tr JOIN tournois t ON t.id_tournoi=tr.id_tournoi WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
+            return jsonify({"id": r["id_tournoi"], "nom": r["nom"], "niveau": r["niv"], "indice": (int(r["ind"]) if r["ind"] is not None else None), "sexe": r["sexe"]} if r else None)
+    except Exception:
+        pass
+    return jsonify(None)
+
+
+@app.get("/joueur/random")
+def route_random_joueur():
+    """Redirige vers une fiche joueur au hasard (avec de vrais matchs)."""
+    from flask import redirect
+    from db import fetchone
+    r = fetchone("SELECT j.id_fft AS id_fft FROM joueurs j JOIN (SELECT id_joueur, COUNT(*) AS n FROM participations GROUP BY id_joueur HAVING COUNT(*)>=5) cnt ON cnt.id_joueur=j.id_fft WHERE j.classement IS NOT NULL AND j.classement<=20000 ORDER BY RANDOM() LIMIT 1")
+    return redirect(f"/joueur/{r['id_fft']}" if r else "/classement")
+
+
+@app.get("/club/random")
+def route_random_club():
+    """Redirige vers une fiche club au hasard."""
+    from flask import redirect
+    from db import fetchone
+    from urllib.parse import quote
+    r = fetchone("SELECT club_nom FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+    return redirect(f"/club?nom={quote(r['club_nom'])}" if r else "/clubs")
+
+
+@app.get("/tournoi/random")
+def route_random_tournoi():
+    """Redirige vers une fiche tournoi au hasard."""
+    from flask import redirect
+    from db import fetchone
+    r = fetchone("SELECT tr.id_tournoi FROM tournois_rating tr WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
+    return redirect(f"/tournoi/{r['id_tournoi']}" if r else "/tournois")
+
+
+@app.get("/api/timeline")
+def route_timeline():
+    """Séries temporelles précalculées (licenciés/mois) pour la courbe 'explosion du padel'."""
+    p = os.path.join(os.path.dirname(__file__), "timeline.json")
+    if os.path.exists(p):
+        return send_file(p, mimetype="application/json")
+    return jsonify({"months": [], "licencies_h": [], "licencies_f": [], "total": []})
 
 
 @app.route("/")
@@ -2120,6 +2191,88 @@ def route_carte_page():
 def route_graphe_page():
     """Graphe de jeu + degres de separation."""
     return send_file(os.path.join(os.path.dirname(__file__), "graphe.html"))
+
+
+@app.get("/api/club_bump")
+def route_club_bump():
+    """Bump chart : evolution du rang (entre eux) des membres d'un club sur ~10 mois.
+    mode=niveau (top 30 par classement) ou actifs (30 plus actifs). H/F separes."""
+    from db import fetchall
+    import re as _re, unicodedata as _ud
+    nom = request.args.get("nom", "").strip()
+    if not nom:
+        return jsonify({"error": "nom requis"}), 400
+    sexe = request.args.get("sexe", "H").upper()
+    if sexe not in ("H", "F"):
+        sexe = "H"
+    mode = request.args.get("mode", "niveau")
+    if mode not in ("niveau", "actifs"):
+        mode = "niveau"
+
+    def _n(s):
+        s = _ud.normalize("NFKD", s or "").encode("ascii", "ignore").decode().upper()
+        return _re.sub(r"\s+", " ", _re.sub(r"[^A-Z0-9]", " ", s)).strip()
+    key = _n(nom)
+    like_op = "ILIKE" if USE_POSTGRES else "LIKE"
+    cand = fetchall(f"SELECT DISTINCT club_nom FROM joueurs WHERE UPPER(club_nom) {like_op} ?", (f"%{key}%",))
+    variants = [r["club_nom"] for r in cand if _n(r["club_nom"]) == key] or [nom]
+    if nom not in variants:
+        variants.append(nom)
+    ph = ",".join("?" * len(variants))
+    vt = tuple(variants)
+
+    if mode == "actifs":
+        members = fetchall(
+            f"""SELECT j.id_fft, j.nom, j.prenom, j.classement, COUNT(p.id) AS nbp
+                FROM joueurs j JOIN participations p ON p.id_joueur=j.id_fft
+                WHERE j.club_nom IN ({ph}) AND j.sexe=?
+                GROUP BY j.id_fft ORDER BY nbp DESC, j.classement ASC LIMIT 30""", vt + (sexe,))
+    else:
+        members = fetchall(
+            f"""SELECT j.id_fft, j.nom, j.prenom, j.classement
+                FROM joueurs j WHERE j.club_nom IN ({ph}) AND j.sexe=? AND j.classement IS NOT NULL
+                ORDER BY j.classement ASC LIMIT 20""", vt + (sexe,))
+    if not members:
+        return jsonify({"months": [], "players": [], "mode": mode, "sexe": sexe})
+    ids = [m["id_fft"] for m in members]
+
+    mrows = fetchall("SELECT DISTINCT mois FROM classements_historique ORDER BY mois DESC LIMIT 10")
+    months = sorted([r["mois"] for r in mrows])
+
+    iph = ",".join("?" * len(ids))
+    mph = ",".join("?" * len(months))
+    clt = {}
+    for r in fetchall(
+        f"SELECT id_joueur, mois, classement FROM classements_historique "
+        f"WHERE id_joueur IN ({iph}) AND mois IN ({mph}) AND classement IS NOT NULL",
+        tuple(ids) + tuple(months)):
+        clt[(str(r["id_joueur"]), r["mois"])] = int(r["classement"])
+
+    pos = {m: {} for m in months}
+    for m in months:
+        present = [(i, clt[(str(i), m)]) for i in ids if (str(i), m) in clt]
+        present.sort(key=lambda x: x[1])
+        for rank, (i, _c) in enumerate(present, 1):
+            pos[m][str(i)] = rank
+
+    def _full(r):
+        return f"{(r.get('prenom') or '').strip()} {(r.get('nom') or '').strip()}".strip()
+    players = []
+    for m0 in members:
+        i = str(m0["id_fft"])
+        players.append({
+            "id": m0["id_fft"], "nom": _full(m0), "classement": m0.get("classement"),
+            "pos": [pos[mo].get(i) for mo in months],
+            "clt": [clt.get((i, mo)) for mo in months],
+        })
+
+    def _lastpos(pl):
+        for v in reversed(pl["pos"]):
+            if v is not None:
+                return v
+        return 999
+    players.sort(key=_lastpos)
+    return jsonify({"months": months, "players": players, "mode": mode, "sexe": sexe})
 
 
 @app.get("/api/club_detail")

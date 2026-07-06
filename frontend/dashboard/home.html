@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script>
 tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
@@ -25,14 +26,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
   <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
   <nav class="flex flex-col gap-1 text-sm">
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
-    <a href="/" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
-    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
-    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
-    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav active" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 <div class="ml-14 lg:ml-60 min-w-0">
@@ -56,6 +65,43 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </section>
 
+    <section class="mt-5">
+      <div class="card p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#0E9C861f;color:#0E9C86"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 8V4h-4"/></svg></span>
+              <h2 class="font-800 text-lg">L'explosion du padel</h2>
+            </div>
+            <p class="text-sm text-muted mt-0.5">Joueurs classés à la FFT, chaque mois depuis 2018.</p>
+          </div>
+          <div class="text-right"><div class="pct-font font-800 text-2xl leading-none" id="growth-total">—</div><div class="text-[11px] text-muted mt-1" id="growth-x">—</div></div>
+        </div>
+        <div class="h-56 sm:h-64"><canvas id="growthChart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#FBBF241f;color:#FBBF24"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M7 20V10M12 20V4M17 20v-7"/></svg></span>
+        <h2 class="font-800 text-lg">Classements</h2>
+      </div>
+      <p class="text-sm text-muted mt-0.5 mb-3">Les trois palmarès — joueurs, clubs et tournois — chacun classé et filtrable.</p>
+      <div id="rankcards" class="grid gap-3 md:grid-cols-3"></div>
+    </section>
+
+    <section class="mt-6">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#F472B61f;color:#F472B6"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+          <h2 class="font-800 text-lg truncate">Fiches détaillées — au hasard</h2>
+        </div>
+        <button id="reshuffle" class="text-[12px] font-600 text-brand-dark hover:underline flex items-center gap-1 shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>Autres exemples</button>
+      </div>
+      <p class="text-sm text-muted mt-0.5 mb-3">Tombe sur un joueur, un club ou un tournoi au hasard — l'aperçu te montre ce que tu vas voir avant d'y aller.</p>
+      <div id="links" class="grid gap-3 md:grid-cols-3"></div>
+    </section>
+
     <section class="mt-5 grid lg:grid-cols-2 gap-4">
       <div class="card p-5">
         <div class="flex items-center justify-between mb-3"><h2 class="font-700 text-base">Top Messieurs</h2><a href="/classement" class="text-xs text-brand-dark font-600 hover:underline">Tout le classement →</a></div>
@@ -67,10 +113,6 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </section>
 
-    <section class="mt-5">
-      <div class="lbl mb-3">Explorer</div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="links"></div>
-    </section>
   </main>
 </div>
 <script>
@@ -94,32 +136,94 @@ sb.addEventListener('input',debounce(async e=>{
 }));
 document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.classList.add('hidden'); });
 
+const MEDAL=['#F5B301','#AEB6C2','#CD8B52'];
+const rankBadge=i=>i<3?`<span class="w-6 h-6 shrink-0 rounded-full grid place-items-center text-[11px] font-800 text-white shadow-sm" style="background:${MEDAL[i]}">${i+1}</span>`:`<span class="num font-700 text-muted w-6 text-center">${i+1}</span>`;
 function rowJoueur(p,i){
   return `<a href="/joueur/${p.id_fft}" class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-paper">
-    <span class="num font-700 text-muted w-5 text-center">${i+1}</span>
+    ${rankBadge(i)}
     <span class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini((p.prenom||'')+' '+(p.nom||''))}</span>
     <span class="min-w-0 flex-1"><span class="text-sm font-500 block truncate">${tc((p.prenom||'')+' '+(p.nom||''))}</span><span class="text-[11px] text-muted truncate block">${p.club_nom?tc(p.club_nom):(p.comite?tc(p.comite):'')}</span></span>
     <span class="num text-sm font-700">${p.classement}<span class="text-muted text-xs">e</span></span></a>`;
 }
 
-const LINKS=[
-  ['Classement','/classement','Tous les joueurs H/F, filtres région, club…','M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3'],
-  ['Tournois','/tournois','Les tournois les plus relevés, par niveau','M4 6h16M4 12h16M4 18h10'],
-  ['Carte','/carte','Répartition par département et commune','M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10ZM12 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z'],
-  ['Graphe','/graphe','Réseau de partenaires & degrés de séparation','M6 6m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M18 7m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M12 18m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0'],
+const RANKS=[
+  ['Joueurs','/classement','Tous les licenciés classés — filtre par région, département, club','<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/>','#FBBF24'],
+  ['Clubs','/clubs','Clubs classés par difficulté moyenne des tournois organisés','<path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/>','#34D399'],
+  ['Tournois','/tournois','Tournois classés par difficulté réelle du plateau','<path d="M4 6h16M4 12h16M4 18h10"/>','#818CF8'],
 ];
-$('links').innerHTML=LINKS.map(([t,href,d,p])=>`<a href="${href}" class="card p-4 hover:border-brand transition-colors">
-  <div class="w-9 h-9 rounded-lg bg-brand-soft text-brand-dark grid place-items-center mb-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${p}"/></svg></div>
-  <div class="font-600 text-sm">${t}</div><div class="text-[12px] text-muted mt-0.5 leading-snug">${d}</div></a>`).join('');
+$('rankcards').innerHTML=RANKS.map(([t,href,d,ic,acc])=>`<a href="${href}" class="card group p-4 flex items-start gap-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-10px_rgba(0,0,0,.22)]"><div class="w-11 h-11 shrink-0 rounded-xl grid place-items-center" style="background:${acc}1f;color:${acc}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg></div><div class="min-w-0 flex-1"><div class="flex items-center gap-1"><h3 class="font-800 text-[15px]">${t}</h3><svg class="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${acc}" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div><p class="text-[12px] text-muted mt-0.5 leading-snug">${d}</p></div></a>`).join('');
+
+const LINKS=[
+  ['Joueur','/joueur/random','Trajectoire, percentile, parcours pondéré par la difficulté, partenaires suggérés','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>','joueur','#6366F1'],
+  ['Club','/club/random','Maîtres locaux, binômes, renouvellement, tournois organisés, comparaison au département','<path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/>','club','#0EA5A0'],
+  ['Tournoi','/tournoi/random','Difficulté réelle du plateau : niveau des paires, classement d\'époque, par catégorie','<path d="M4 6h16M4 12h16M4 18h10"/>','tournoi','#E0AE45'],
+];
+$('links').innerHTML=LINKS.map(([t,href,d,p,k,acc])=>`<div ${k?`data-exkey="${k}"`:''} class="card group p-4 relative block transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-10px_rgba(0,0,0,.22)]" style="--acc:${acc}">
+  <a href="${href}" class="flex items-start gap-3">
+    <div class="w-11 h-11 shrink-0 rounded-xl grid place-items-center" style="background:${acc}1f;color:${acc}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p}</svg></div>
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-1"><h3 class="font-800 text-[15px]">${t}</h3><svg class="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${acc}" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <p class="text-[12px] text-muted mt-0.5 leading-snug">${d}</p>
+    </div>
+  </a>
+  ${k?`<button type="button" data-reroll="${k}" class="absolute top-3.5 right-3.5 w-7 h-7 rounded-lg bg-white border border-line grid place-items-center text-muted hover:text-ink hover:border-ink/40 transition" title="Autre exemple au hasard"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg></button>
+  <a class="pvlink mt-3 rounded-xl border border-line bg-paper/70 p-2.5 block hover:bg-white transition" href="${href}" title="Voir cet exemple"><div class="text-[9px] uppercase tracking-widest font-700 mb-1.5 flex items-center gap-1" style="color:${acc}">Aperçu au hasard →</div><div class="preview flex items-center gap-2 text-[13px] font-600 text-ink min-h-[28px]"><span class="text-muted text-xs">…</span></div></a>`:''}
+</div>`).join('');
+document.querySelectorAll('[data-reroll]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();reroll(b.dataset.reroll);}));
+
+const diffCol=v=>{ if(v==null)return '#9aa3af'; if(v>=65)return '#E0AE45'; if(v>=50)return '#8b87f5'; if(v>=35)return '#13C2A6'; if(v>=22)return '#5BB8F0'; return '#cbd0d6'; };
+let CNT={};
+const pctTxt=(clt,sx)=>{ const pool=sx==='F'?CNT.nb_f:CNT.nb_h; return (clt&&pool)?'top '+(Math.max(0.1,Math.round(1000*clt/pool)/10))+'%':''; };
+function setPreview(key,href,html){ const root=document.querySelector(`[data-exkey="${key}"]`); if(!root)return; const lnk=root.querySelector('.pvlink'); if(href&&lnk)lnk.href=href; const pv=root.querySelector('.preview'); if(pv)pv.innerHTML=html; }
+function fillOne(key,ex){
+  if(!ex){ setPreview(key,null,'<span class="text-muted text-xs">indisponible</span>'); return; }
+  if(key==='joueur'){ const pc=pctTxt(ex.classement,ex.sexe);
+    setPreview('joueur','/joueur/'+ex.id,`<span class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(ex.nom_complet)}</span><span class="truncate">${tc(ex.nom_complet)}</span><span class="ml-auto num text-muted shrink-0">#${fr(ex.classement)}</span>${pc?`<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 shrink-0">${pc}</span>`:''}`); }
+  else if(key==='club'){
+    setPreview('club','/club?nom='+encodeURIComponent(ex.nom),`<span class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg></span><span class="truncate">${tc(ex.nom)}</span><span class="ml-auto text-[11px] text-muted shrink-0">${fr(ex.nb)} licenciés</span>`); }
+  else if(key==='tournoi'){
+    setPreview('tournoi','/tournoi/'+ex.id,`<span class="num font-700 text-[10px] px-1.5 py-0.5 rounded bg-brand-soft text-brand-dark shrink-0">P${ex.niveau}</span><span class="truncate">${tc(ex.nom)}</span>${ex.indice!=null?`<span class="ml-auto pct-font font-800 shrink-0" style="color:${diffCol(ex.indice)}">${ex.indice}<span class="text-muted text-[10px]">/100</span></span>`:''}`); }
+}
+function fillExamples(ex){ ex=ex||{}; fillOne('joueur',ex.joueur); fillOne('club',ex.club); fillOne('tournoi',ex.tournoi); }
+function animateCounts(){ document.querySelectorAll('.countup').forEach(el=>{ const to=+el.dataset.to||0,dur=1000,t0=performance.now(); const step=t=>{ const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3); el.textContent=fr(Math.round(to*e)); if(p<1)requestAnimationFrame(step); }; requestAnimationFrame(step); }); }
+async function reroll(key){
+  const a=document.querySelector(`[data-exkey="${key}"]`); const pv=a&&a.querySelector('.preview'); if(pv)pv.innerHTML='<span class="text-muted text-xs">…</span>';
+  let ex=null; try{ ex=await fetch('/api/example/'+key).then(r=>r.json()); }catch(_){}
+  fillOne(key,ex);
+}
+const rsh=document.getElementById('reshuffle');
+if(rsh) rsh.addEventListener('click',async()=>{ ['joueur','club','tournoi'].forEach(k=>reroll(k)); });
 
 async function load(){
   let d={}; try{ d=await fetch('/api/home').then(r=>r.json()); }catch(_){}
-  const c=d.counts||{};
-  const kpi=[['Joueurs classés (H)',fr(c.nb_h)],['Joueuses classées (F)',fr(c.nb_f)],['Clubs',fr(c.nb_clubs)],['Tournois',fr(c.nb_tournois)]];
-  $('kpi').innerHTML=kpi.map(([l,v])=>`<div class="rounded-xl bg-white/10 px-4 py-3"><div class="pct-font font-800 text-2xl">${v}</div><div class="text-[11px] text-white/70 mt-0.5">${l}</div></div>`).join('');
+  const c=d.counts||{}; CNT=c;
+  const kpi=[['Joueurs classés (H)',c.nb_h],['Joueuses classées (F)',c.nb_f],['Clubs',c.nb_clubs],['Tournois',c.nb_tournois]];
+  $('kpi').innerHTML=kpi.map(([l,v])=>`<div class="rounded-xl bg-white/10 px-4 py-3"><div class="pct-font font-800 text-2xl countup" data-to="${v||0}">0</div><div class="text-[11px] text-white/70 mt-0.5">${l}</div></div>`).join('');
+  animateCounts();
   $('top-h').innerHTML=(d.top_h||[]).map(rowJoueur).join('')||'<div class="text-sm text-muted px-2 py-3">—</div>';
   $('top-f').innerHTML=(d.top_f||[]).map(rowJoueur).join('')||'<div class="text-sm text-muted px-2 py-3">—</div>';
+  fillExamples(d.examples);
 }
+const MOISFR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const frMonth=m=>{ if(!m)return''; const a=m.split('-'); return MOISFR[+a[1]-1]+' '+a[0]; };
+async function loadGrowth(){
+  let d=null; try{ d=await fetch('/api/timeline').then(r=>r.json()); }catch(_){}
+  const el=$('growthChart'); if(!el||!d||!d.months||!d.months.length||typeof Chart==='undefined') return;
+  const tot=d.total, last=tot[tot.length-1]; let fi=0; while(fi<tot.length&&!tot[fi])fi++;
+  const first=tot[fi]||1;
+  $('growth-total').textContent=fr(last);
+  $('growth-x').textContent='×'+Math.round(last/first)+' depuis '+frMonth(d.months[fi]);
+  const lab=d.months.map(frMonth);
+  new Chart(el,{type:'line',data:{labels:lab,datasets:[
+    {label:'Messieurs',data:d.licencies_h,borderColor:'#0E9C86',backgroundColor:'rgba(14,156,134,.14)',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'Dames',data:d.licencies_f,borderColor:'#E0AE45',backgroundColor:'rgba(224,174,69,.20)',fill:true,tension:.3,pointRadius:0,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    scales:{y:{stacked:true,beginAtZero:true,ticks:{callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'#eef0f2'}},
+      x:{stacked:true,ticks:{maxTicksLimit:8,autoSkip:true,maxRotation:0},grid:{display:false}}},
+    plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,font:{size:11}}},
+      tooltip:{callbacks:{footer:it=>'Total : '+fr(it.reduce((a,x)=>a+(x.raw||0),0))}}}}});
+}
+loadGrowth();
 load();
 </script>
 </body>

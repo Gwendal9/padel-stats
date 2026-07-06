@@ -1,0 +1,40 @@
+{
+  "captured": [
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/public/maintenance?environment=web_prod",
+      "authorization": "",
+      "status": 200,
+      "preview": "{\"maintenance\":false}"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/login",
+      "authorization": "",
+      "status": 200,
+      "preview": "https://login.fft.fr/realms/connect/protocol/openid-connect/auth?client_id=FED_MET&response_type=code&scope=openid&code_challenge=Rfm1F40-BCMjvgVExgKOxpIIRrlDWjLp_2xNRIwbVl8&code_challenge_method=S256&state=SVf1wRMJtUYkoooDE4w-jxlMf-vjqqzr"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/v1/personnes/7633273415/profil-joueur",
+      "authorization": "",
+      "status": 401,
+      "preview": ""
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/v1/personnes/7633273415/fiche-joueur",
+      "authorization": "",
+      "status": 401,
+      "preview": ""
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/public/v1/partenaires",
+      "authorization": "",
+      "status": 200,
+      "preview": ""
+    }
+  ],
+  "tokens": []
+}

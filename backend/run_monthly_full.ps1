@@ -65,6 +65,10 @@ Step "10/11" "build_geo + geocode_villes (carte)..."
 python build_geo.py
 python geocode_villes.py
 
+# 10b) Series temporelles (courbe "explosion du padel" sur le tableau de bord)
+Step "10b" "build_timeline (courbe licencies/mois)..."
+python build_timeline.py
+
 # 11) Verification finale
 Step "11/11" "Verification des donnees..."
 python validate_data.py

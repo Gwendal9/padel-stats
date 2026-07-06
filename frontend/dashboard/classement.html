@@ -39,14 +39,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
-    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
-    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
-    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
-    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav active" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 
@@ -66,7 +74,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   <main class="px-5 lg:px-8 pb-20">
     <div class="mt-6 flex items-center justify-between flex-wrap gap-3">
       <div>
-        <h1 class="font-800 text-2xl tracking-tight">Classement</h1>
+        <div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#FBBF241f;color:#FBBF24"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Classement</h1></div>
         <p class="text-sm text-muted mt-0.5" id="subtitle">—</p>
       </div>
       <div class="inline-flex p-1 rounded-xl bg-white border border-line">
@@ -152,7 +160,7 @@ function rowHtml(p,i){
   const pos=state.offset+(i||0)+1;
   return `<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/joueur/${p.id}'">
     <td class="rang-col px-4 py-3 num font-800 text-brand-dark">${fr(pos)}<span class="text-[11px] font-500">e</span></td>
-    <td class="px-4 py-3 num font-700 text-muted">${p.classement}</td>
+    <td class="px-4 py-3">${p.classement<=3?`<span class="inline-grid place-items-center w-6 h-6 rounded-full text-[11px] font-800 text-white shadow-sm" style="background:${['#F5B301','#AEB6C2','#CD8B52'][p.classement-1]}">${p.classement}</span>`:`<span class="num font-700 text-muted">${p.classement}</span>`}</td>
     <td class="px-4 py-3">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-[11px] font-700">${ini(p.nom_complet)}</div>

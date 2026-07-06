@@ -39,14 +39,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
-    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
-    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
-    <a href="/clubs" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
-    <a href="/graphe" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav active" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 
@@ -57,12 +65,12 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
     <div class="grid lg:grid-cols-2 gap-3 mt-4">
       <div class="card p-4">
-        <div class="lbl mb-2">Réseau d'un joueur</div>
+        <div class="flex items-center justify-between mb-2"><div class="lbl">Réseau d'un joueur</div><button id="randA" class="text-[11px] font-600 text-brand-dark hover:underline flex items-center gap-1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg>Au hasard</button></div>
         <div class="relative"><input id="sA" class="inp" placeholder="Chercher un joueur…" autocomplete="off"><div id="rA" class="res hidden"></div></div>
         <div id="pickA" class="text-xs text-muted mt-2">Aucun joueur sélectionné.</div>
       </div>
       <div class="card p-4">
-        <div class="lbl mb-2">Degrés de séparation</div>
+        <div class="flex items-center justify-between mb-2"><div class="lbl">Degrés de séparation</div><button id="randPair" class="text-[11px] font-600 text-brand-dark hover:underline flex items-center gap-1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg>Paire au hasard</button></div>
         <div class="grid grid-cols-2 gap-2">
           <div class="relative"><input id="sB1" class="inp" placeholder="Joueur A…" autocomplete="off"><div id="rB1" class="res hidden"></div></div>
           <div class="relative"><input id="sB2" class="inp" placeholder="Joueur B…" autocomplete="off"><div id="rB2" class="res hidden"></div></div>
@@ -71,13 +79,24 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </div>
 
+    <div id="netstats" class="hidden mt-3 card px-4 py-2.5 text-[12.5px] flex flex-wrap items-center gap-x-2 gap-y-1"></div>
     <div class="card mt-3 relative overflow-hidden">
       <div id="graph"></div>
+      <div id="nodepop" class="hidden absolute z-30 bg-white border border-line rounded-xl shadow-lg p-3 w-52"></div>
+      <div class="absolute bottom-3 right-3"><input id="gsearch" class="h-8 w-44 px-3 rounded-lg border border-line bg-white/95 text-[12px] shadow-sm outline-none focus:border-brand" placeholder="Chercher dans le réseau…" autocomplete="off"></div>
+      <div class="absolute bottom-3 left-3 inline-flex p-0.5 rounded-lg bg-white border border-line text-[11px] font-600 shadow-sm">
+        <button id="cm_com" class="px-2.5 py-1 rounded-md">Communautés</button>
+        <button id="cm_niv" class="px-2.5 py-1 rounded-md">Niveau</button>
+        <button id="cm_club" class="px-2.5 py-1 rounded-md">Club</button>
+      </div>
       <div id="ginfo" class="absolute top-3 left-3 text-xs text-muted card px-3 py-2">Cherche un joueur pour afficher son réseau.</div>
-      <div class="absolute top-3 right-3 flex gap-2 text-[11px] text-muted card px-3 py-2">
-        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#0E9C86;display:inline-block"></span>joueur</span>
-        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#6FCBB6;display:inline-block"></span>partenaire</span>
-        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B4B2A9;display:inline-block"></span>anonyme</span>
+      <div id="glegend" class="absolute top-3 right-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-muted card px-3 py-2 max-w-[300px]">
+        <span class="w-full text-[9.5px] uppercase tracking-wider font-600 text-muted/80">Niveau · taille &#8733; matchs</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#E0AE45;display:inline-block"></span>élite</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#0E9C86;display:inline-block"></span>fort</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#6FCBB6;display:inline-block"></span>moyen</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B7D8CE;display:inline-block"></span>éloigné</span>
+        <span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B4B2A9;display:inline-block"></span>anon.</span>
       </div>
     </div>
     <div id="suggests" class="mt-3"></div>
@@ -86,6 +105,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <script>
 const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
 const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
 let A=null,B1=null,B2=null;
 
@@ -97,14 +117,10 @@ function attachSearch(inp,res,onPick){
     if(!r.length){res.classList.add('hidden');return;}
     res.innerHTML=r.map(p=>`<a data-id="${p.id}" data-n="${(p.nom_complet||'').replace(/"/g,'')}"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
     res.classList.remove('hidden');
-    res.querySelectorAll('a').forEach(a=>a.addEventListener('click',ev=>{
-      ev.preventDefault();
-      onPick({id:a.dataset.id,name:a.dataset.n}); inp.value=tc(a.dataset.n); res.classList.add('hidden');
-    }));
+    res.querySelectorAll('a').forEach(a=>a.addEventListener('click',ev=>{ev.preventDefault();onPick({id:a.dataset.id,name:a.dataset.n});inp.value=tc(a.dataset.n);res.classList.add('hidden');}));
   }));
   document.addEventListener('click',e=>{ if(!res.parentElement.contains(e.target)) res.classList.add('hidden'); });
 }
-
 async function fetchJSON(url,tries=24){
   for(let i=0;i<tries;i++){
     const r=await fetch(url);
@@ -118,6 +134,27 @@ async function fetchJSON(url,tries=24){
 attachSearch(document.getElementById('sA'),document.getElementById('rA'),p=>{A=p;document.getElementById('pickA').innerHTML=`<b class="text-ink">${tc(p.name)}</b> — réseau chargé`;loadEgo(p.id);loadSuggests(p.id);});
 attachSearch(document.getElementById('sB1'),document.getElementById('rB1'),p=>{B1=p;tryPath();});
 attachSearch(document.getElementById('sB2'),document.getElementById('rB2'),p=>{B2=p;tryPath();});
+document.getElementById('randA').addEventListener('click',randomPlayer);
+document.getElementById('randPair').addEventListener('click',randomPair);
+
+async function randomPlayer(){
+  const pk=document.getElementById('pickA'); pk.textContent='Tirage…';
+  let ex=null; try{ ex=await fetch('/api/example/joueur').then(r=>r.json()); }catch(_){}
+  if(!ex||!ex.id){ pk.textContent='Réessaie.'; return; }
+  A={id:ex.id,name:ex.nom_complet}; document.getElementById('sA').value=tc(ex.nom_complet);
+  pk.innerHTML=`<b class="text-ink">${tc(ex.nom_complet)}</b> — réseau chargé`;
+  loadEgo(ex.id); loadSuggests(ex.id);
+}
+async function randomPair(){
+  const out=document.getElementById('pathOut'); out.textContent="Tirage d'une paire…";
+  try{
+    const [a,b]=await Promise.all([fetch('/api/example/joueur').then(r=>r.json()),fetch('/api/example/joueur').then(r=>r.json())]);
+    if(!a||!b||!a.id||!b.id){ out.textContent='Réessaie.'; return; }
+    B1={id:a.id,name:a.nom_complet}; B2={id:b.id,name:b.nom_complet};
+    document.getElementById('sB1').value=tc(a.nom_complet); document.getElementById('sB2').value=tc(b.nom_complet);
+    tryPath();
+  }catch(_){ out.textContent='Réessaie.'; }
+}
 
 async function tryPath(){
   const out=document.getElementById('pathOut');
@@ -128,6 +165,7 @@ async function tryPath(){
     if(d.error){ out.innerHTML='<span class="text-muted">Aucun chemin trouvé entre ces deux joueurs.</span>'; return; }
     const chain=d.path.map(n=>{const nm=tc(`${n.prenom||''} ${n.nom||''}`.trim()||n.id);return `<a href="/joueur/${n.id}" class="text-brand-dark font-600">${nm}</a>`;}).join(' <span class="text-muted">→</span> ');
     out.innerHTML=`<span class="inline-block px-2 py-0.5 rounded bg-brand-soft text-brand-dark font-700 num mr-2">${d.distance} degré${d.distance>1?'s':''}</span> ${chain}`;
+    drawPath(d.path);
   }catch(e){ out.innerHTML='<span class="text-muted">Graphe indisponible (réessaie dans un instant).</span>'; }
 }
 
@@ -140,47 +178,228 @@ async function loadSuggests(id){
     `</div></div>`;
 }
 
-let sim=null;
+/* ===== Moteur graphe (état persistant + dépliage) ===== */
+let sim=null,GNODES=[],GLINKS=[],BYID={},SVG=null,ROOT=null,ZOOM=null,LINKG=null,NODEG=null,LINK=null,NODE=null,WW=0,HH=0,wsum={},adj={},clickTimer=null,CENTERID=null,colorMode='com',LABELED=new Set();
+const levelColor=c=>{ if(c==null)return '#9fb8b0'; if(c<=300)return '#E0AE45'; if(c<=1000)return '#0E9C86'; if(c<=3000)return '#2FA98F'; if(c<=10000)return '#6FCBB6'; return '#B7D8CE'; };
+function lighten(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)&255,g=(n>>8)&255,b=n&255; r=Math.round(r+(255-r)*amt); g=Math.round(g+(255-g)*amt); b=Math.round(b+(255-b)*amt); return `rgb(${r},${g},${b})`; }
+const lk=l=>((l.source&&l.source.id)||l.source)+'~'+((l.target&&l.target.id)||l.target);
+const radOf=n=> n.is_center?15 : n.is_anonymous?4 : Math.max(5,Math.min(18,4+Math.sqrt(wsum[n.id]||1)*1.8));
+const COMMPAL=['#0E9C86','#6366F1','#E0AE45','#EC6C9C','#3B9EF0','#8B5CF6','#F0873E','#12B5A6','#A0B534','#E2604A'];
+const CLUBPAL=['#0E9C86','#6366F1','#E0AE45','#EC6C9C','#3B9EF0','#8B5CF6','#F0873E','#12B5A6','#A0B534','#E2604A','#0EA5A0','#D4573A'];
+let CLUBIDX={};
+function computeClubs(){ const f={}; GNODES.forEach(n=>{ if(!n.is_center&&!n.is_anonymous&&n.club) f[n.club]=(f[n.club]||0)+1; }); const o=Object.keys(f).sort((a,b)=>f[b]-f[a]); CLUBIDX={}; o.forEach((c,i)=>CLUBIDX[c]=i); }
+const fillOf=n=>{
+  if(n.is_center)return '#0A7766';
+  if(n.is_anonymous)return '#B4B2A9';
+  if(colorMode==='com'){ return (n._comm!=null&&n._comm>=0)?COMMPAL[n._comm%COMMPAL.length]:'#c9d1cc'; }
+  if(colorMode==='club'){ return (n.club&&CLUBIDX[n.club]!=null)?CLUBPAL[CLUBIDX[n.club]%CLUBPAL.length]:'#c9d1cc'; }
+  const base=levelColor(n.classement); return (n.gen>=2)?lighten(base,Math.min(0.6,0.34*(n.gen-1))):base;
+};
+function detectCommunities(){
+  const parent={}, find=x=>{while(parent[x]!==x)x=parent[x]=parent[parent[x]];return x;};
+  GNODES.forEach(n=>{ if(!n.is_center&&!n.is_anonymous) parent[n.id]=n.id; });
+  GLINKS.forEach(l=>{ const a=(l.source&&l.source.id)||l.source, b=(l.target&&l.target.id)||l.target; if(parent[a]!==undefined&&parent[b]!==undefined) parent[find(a)]=find(b); });
+  const size={}, root={};
+  GNODES.forEach(n=>{ if(parent[n.id]!==undefined){ const r=find(n.id); root[n.id]=r; size[r]=(size[r]||0)+1; } });
+  const order=Object.keys(size).sort((a,b)=>size[b]-size[a]); const idx={}; order.forEach((r,i)=>idx[r]=i);
+  GNODES.forEach(n=>{ n._comm=(root[n.id]!==undefined && size[root[n.id]]>1)?idx[root[n.id]]:-1; });
+}
+
+function buildIndex(){
+  BYID={}; wsum={}; adj={};
+  GNODES.forEach(n=>{BYID[n.id]=n; adj[n.id]=new Set([n.id]);});
+  GLINKS.forEach(l=>{ const a=(l.source&&l.source.id)||l.source, b=(l.target&&l.target.id)||l.target; wsum[a]=(wsum[a]||0)+(l.weight||1); wsum[b]=(wsum[b]||0)+(l.weight||1); if(adj[a])adj[a].add(b); if(adj[b])adj[b].add(a); });
+  detectCommunities();
+  computeClubs();
+}
+function initSvg(){
+  const el=document.getElementById('graph'); el.innerHTML='';
+  WW=el.clientWidth||900; HH=el.clientHeight||520;
+  SVG=d3.select(el).append('svg').attr('width','100%').attr('height',HH).attr('viewBox',`0 0 ${WW} ${HH}`);
+  const defs=SVG.append('defs');
+  defs.append('filter').attr('id','nsh').attr('x','-40%').attr('y','-40%').attr('width','180%').attr('height','180%')
+     .html('<feDropShadow dx="0" dy="1" stdDeviation="1.4" flood-color="#0f141b" flood-opacity="0.20"/>');
+  ROOT=SVG.append('g');
+  LINKG=ROOT.append('g'); NODEG=ROOT.append('g');
+  ZOOM=d3.zoom().scaleExtent([.15,4]).on('zoom',ev=>ROOT.attr('transform',ev.transform));
+  SVG.call(ZOOM).on('dblclick.zoom',null);
+}
+function ticked(){
+  if(LINK) LINK.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  if(NODE) NODE.attr('transform',d=>`translate(${d.x},${d.y})`);
+}
+function hoverOn(e,d){
+  const nb=adj[d.id]||new Set([d.id]);
+  NODE.style('opacity',n=>nb.has(n.id)?1:.12);
+  NODE.select('text').style('opacity',n=>nb.has(n.id)?1:(LABELED.has(n.id)?1:0));
+  LINK.style('stroke-opacity',l=>(l.source.id===d.id||l.target.id===d.id)?.95:.05)
+      .attr('stroke',l=>(l.source.id===d.id||l.target.id===d.id)?'#0E9C86':'#c3cad2');
+}
+function hoverOff(){
+  NODE.style('opacity',1);
+  NODE.select('circle').attr('r',radOf);
+  NODE.select('text').style('opacity',n=>LABELED.has(n.id)?1:0);
+  LINK.style('stroke-opacity',null).attr('stroke','#c3cad2');
+}
+function dstart(e,d){ if(!e.active)sim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; }
+function ddrag(e,d){ d.fx=e.x; d.fy=e.y; }
+function dend(e,d){ if(!e.active)sim.alphaTarget(0); d.fx=null; d.fy=null; }
+
+function render(fresh){
+  buildIndex();
+  { const bigs=GNODES.filter(n=>!n.is_center&&!n.is_anonymous).sort((a,b)=>(wsum[b.id]||0)-(wsum[a.id]||0)).slice(0,5).map(n=>n.id); LABELED=new Set(bigs); GNODES.forEach(n=>{ if(n.is_center)LABELED.add(n.id); }); }
+  LINK=LINKG.selectAll('line').data(GLINKS,lk).join(
+    en=>{ const l=en.append('line').attr('stroke','#c3cad2').attr('stroke-linecap','round'); l.append('title'); return l; }
+  ).attr('stroke-width',d=>0.8+Math.min(4.2,(d.weight||1)*0.7)).attr('stroke-opacity',d=>0.22+Math.min(0.5,(d.weight||1)*0.11));
+  LINK.select('title').text(d=>`${d.weight||1} match${(d.weight||1)>1?'s':''}`);
+  NODE=NODEG.selectAll('g.node').data(GNODES,d=>d.id).join(
+    en=>{ const g=en.append('g').attr('class','node').style('cursor','pointer');
+      g.append('circle').attr('stroke','#fff').attr('stroke-width',1.6).attr('filter','url(#nsh)').attr('r',6).attr('fill','#6FCBB6');
+      g.append('text').attr('y',4).attr('pointer-events','none').attr('fill','#15191F').attr('stroke','#fff').attr('stroke-width',3).attr('paint-order','stroke').style('stroke-linejoin','round');
+      g.append('title'); return g; }
+  );
+  NODE.select('circle').transition().duration(fresh?0:350).attr('r',radOf).attr('fill',fillOf);
+  NODE.select('text').text(d=>d.is_anonymous?'':d.label).attr('x',d=>radOf(d)+3)
+     .attr('font-size',d=>d.is_center?13:11).attr('font-weight',d=>d.is_center?700:500)
+     .style('opacity',d=>LABELED.has(d.id)?1:0);
+  NODE.select('title').text(d=>(d.label||'')+(d.classement?` · #${d.classement}`:'')+(wsum[d.id]?` · ${wsum[d.id]} matchs`:''));
+  NODE.on('mouseenter',hoverOn).on('mouseleave',hoverOff)
+    .on('click',(e,d)=>{ e.stopPropagation(); if(d.is_anonymous){hidePop();return;} showPop(e,d); })
+    .call(d3.drag().on('start',dstart).on('drag',ddrag).on('end',dend));
+  if(!sim){
+    sim=d3.forceSimulation(GNODES)
+      .force('link',d3.forceLink(GLINKS).id(d=>d.id).distance(d=>(d.source.is_center||d.target.is_center)?72:40).strength(d=>(d.source.is_center||d.target.is_center)?0.05:0.5))
+      .force('charge',d3.forceManyBody().strength(-200))
+      .force('center',d3.forceCenter(WW/2,HH/2))
+      .force('collide',d3.forceCollide().radius(d=>radOf(d)+5).strength(.9))
+      .velocityDecay(.30).alphaDecay(.018).on('tick',ticked);
+  } else {
+    sim.nodes(GNODES); sim.force('link').links(GLINKS);
+    sim.force('collide').radius(d=>radOf(d)+5);
+    sim.alpha(.7).restart();
+  }
+}
+
 async function loadEgo(id){
   const info=document.getElementById('ginfo'); info.textContent='Chargement du réseau…';
   let g; try{ g=await fetchJSON('/api/ego/'+id+'?depth=2'); }catch(e){ info.textContent='Graphe indisponible (réessaie).'; return; }
   if(!g.nodes||!g.nodes.length){ info.textContent='Aucun partenaire pour ce joueur.'; return; }
-  info.innerHTML=`<b class="text-ink">${g.nodes.length}</b> joueurs · <b class="text-ink">${g.links.length}</b> liens`;
-  drawGraph(g);
+  if(sim){ sim.stop(); sim=null; }
+  CENTERID=id;
+  GNODES=g.nodes.map(n=>({...n, gen:n.is_center?0:1}));
+  GLINKS=g.links.map(l=>({source:l.source,target:l.target,weight:l.weight}));
+  initSvg(); render(true); showStats(); updateLegend();
+  info.innerHTML=`<b class="text-ink">${GNODES.length}</b> joueurs · <b class="text-ink">${GLINKS.length}</b> liens · <span class="text-muted">clique un nœud pour l'explorer</span>`;
 }
 
-function drawGraph(g){
-  const el=document.getElementById('graph'); el.innerHTML='';
-  const W=el.clientWidth||900, H=el.clientHeight||520;
+async function expandNode(node){
+  if(node._expanded) return;
+  const info=document.getElementById('ginfo');
+  info.textContent='Partenaires de '+tc(node.label||'')+'…';
+  let g; try{ g=await fetchJSON('/api/ego/'+node.id+'?depth=1'); }catch(e){ info.textContent='Impossible de déplier.'; return; }
+  node._expanded=true;
+  const gen=(node.gen||0)+1; let added=0;
+  (g.nodes||[]).forEach(nn=>{
+    if(nn.id===node.id||nn.is_anonymous||BYID[nn.id]) return;
+    const o={...nn, is_center:false, gen, _parent:node.id, x:node.x+(Math.random()-.5)*60, y:node.y+(Math.random()-.5)*60, vx:0, vy:0};
+    GNODES.push(o); BYID[nn.id]=o; added++;
+  });
+  const keys=new Set(GLINKS.map(lk));
+  (g.links||[]).forEach(l=>{
+    const s=(l.source&&l.source.id)||l.source, t=(l.target&&l.target.id)||l.target;
+    if(!BYID[s]||!BYID[t]) return;
+    if(keys.has(s+'~'+t)||keys.has(t+'~'+s)) return;
+    keys.add(s+'~'+t); GLINKS.push({source:s,target:t,weight:l.weight});
+  });
+  render(false); showStats();
+  info.innerHTML=`<b class="text-ink">${GNODES.length}</b> joueurs · <b class="text-ink">${GLINKS.length}</b> liens · +${added} via ${tc(node.label||'')}`;
+}
+
+function showPop(e,d){
+  const pop=document.getElementById('nodepop'), gr=document.getElementById('graph').getBoundingClientRect();
+  const px=e.clientX-gr.left, py=e.clientY-gr.top, canExp=!d.is_center, exp=!!d._expanded;
+  pop.innerHTML=`<div class="font-700 leading-tight">${tc(d.label||'')}</div><div class="text-[12px] text-muted mb-2">${d.classement?('#'+fr(d.classement)):'—'}${d.club?(' · '+tc(d.club)):''}</div><div class="flex gap-1.5">${canExp?`<button data-act="exp" class="flex-1 h-8 rounded-lg text-[12px] font-600 ${exp?'bg-paper text-ink border border-line':'bg-brand text-white'}">${exp?'Replier':'Déplier'}</button>`:''}<button data-act="fiche" class="flex-1 h-8 rounded-lg text-[12px] font-600 border border-line hover:bg-paper">Fiche</button></div>`;
+  pop.style.left=Math.max(6,Math.min(px+8,gr.width-214))+'px'; pop.style.top=Math.max(6,Math.min(py+8,gr.height-92))+'px';
+  pop.classList.remove('hidden');
+  pop.querySelector('[data-act=fiche]').onclick=()=>location.href='/joueur/'+d.id;
+  const eb=pop.querySelector('[data-act=exp]'); if(eb) eb.onclick=()=>{ hidePop(); d._expanded?collapseNode(d):expandNode(d); };
+}
+function hidePop(){ const p=document.getElementById('nodepop'); if(p)p.classList.add('hidden'); }
+function collapseNode(node){
+  const rm=new Set(); let stack=[node.id];
+  while(stack.length){ const pid=stack.pop(); GNODES.forEach(n=>{ if(n._parent===pid&&!rm.has(n.id)){ rm.add(n.id); stack.push(n.id); } }); }
+  node._expanded=false;
+  if(rm.size){
+    GNODES=GNODES.filter(n=>!rm.has(n.id));
+    GLINKS=GLINKS.filter(l=>{ const a=(l.source&&l.source.id)||l.source,b=(l.target&&l.target.id)||l.target; return !rm.has(a)&&!rm.has(b); });
+  }
+  render(false); showStats();
+  document.getElementById('ginfo').innerHTML=`<b class="text-ink">${GNODES.length}</b> joueurs · <b class="text-ink">${GLINKS.length}</b> liens`;
+}
+function networkStats(){
+  const nbPart=GNODES.filter(n=>!n.is_center&&!n.is_anonymous&&n.degree===1).length;
+  let duo=null,duoW=0;
+  GLINKS.forEach(l=>{ const a=(l.source&&l.source.id)||l.source,b=(l.target&&l.target.id)||l.target; const o=a===CENTERID?b:(b===CENTERID?a:null); if(o&&BYID[o]&&!BYID[o].is_anonymous&&(l.weight||1)>duoW){ duoW=l.weight||1; duo=BYID[o]; } });
+  const portee=GNODES.filter(n=>!n.is_center&&!n.is_anonymous).length;
+  let best=null; GNODES.forEach(n=>{ if(!n.is_center&&!n.is_anonymous&&n.classement!=null&&(!best||n.classement<best.classement)) best=n; });
+  return {nbPart,duo,duoW,portee,best};
+}
+function showStats(){
+  const el=document.getElementById('netstats'); if(!el)return; const s=networkStats();
+  const chip=(l,v)=>`<span><span class="text-muted">${l}</span> <b class="text-ink">${v}</b></span>`;
+  const sep=' <span class="text-line">·</span> ';
+  el.innerHTML=[chip('Partenaires',s.nbPart), s.duo?chip('Duo phare',`${tc(s.duo.label)} · ${s.duoW} matchs`):'', chip('À 2 sauts',s.portee), s.best?chip('Mieux classé',`${tc(s.best.label)} #${fr(s.best.classement)}`):''].filter(Boolean).join(sep);
+  el.classList.remove('hidden');
+}
+function updateLegend(){
+  const el=document.getElementById('glegend'); if(!el)return;
+  if(colorMode==='club'){ el.innerHTML='<span class="w-full text-[9.5px] uppercase tracking-wider font-600 text-muted/80">Club · taille &#8733; matchs</span><span class="text-[11px] text-muted w-full leading-tight">Une couleur par club.</span><span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#c9d1cc;display:inline-block"></span>sans club</span><span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B4B2A9;display:inline-block"></span>anon.</span>'; return; }
+  if(colorMode==='com'){
+    el.innerHTML='<span class="w-full text-[9.5px] uppercase tracking-wider font-600 text-muted/80">Communautés · taille &#8733; matchs</span><span class="text-[11px] text-muted w-full leading-tight">Chaque couleur = un groupe qui joue ensemble.</span><span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#c9d1cc;display:inline-block"></span>isolé</span><span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:#B4B2A9;display:inline-block"></span>anon.</span>';
+  } else {
+    el.innerHTML='<span class="w-full text-[9.5px] uppercase tracking-wider font-600 text-muted/80">Niveau · taille &#8733; matchs</span>'+[['#E0AE45','élite'],['#0E9C86','fort'],['#6FCBB6','moyen'],['#B7D8CE','éloigné'],['#B4B2A9','anon.']].map(x=>`<span class="flex items-center gap-1"><span style="width:10px;height:10px;border-radius:50%;background:${x[0]};display:inline-block"></span>${x[1]}</span>`).join('');
+  }
+}
+function paintCM(){ ['com','niv','club'].forEach(m=>{ const el=document.getElementById('cm_'+m); if(el) el.className='px-2.5 py-1 rounded-md '+(colorMode===m?'bg-ink text-white':'text-muted'); }); }
+function recolor(){ if(NODE) NODE.select('circle').transition().duration(250).attr('fill',fillOf); updateLegend(); }
+document.getElementById('cm_com').addEventListener('click',()=>{colorMode='com';paintCM();recolor();});
+document.getElementById('cm_niv').addEventListener('click',()=>{colorMode='niv';paintCM();recolor();});
+document.getElementById('cm_club').addEventListener('click',()=>{colorMode='club';paintCM();recolor();});
+document.getElementById('gsearch').addEventListener('input',function(){
+  const q=this.value.trim().toLowerCase(); if(!NODE)return;
+  if(!q){ hoverOff(); return; }
+  const mt=n=>((n.label||'').toLowerCase().includes(q));
+  NODE.style('opacity',n=>mt(n)?1:.1);
+  NODE.select('circle').attr('r',n=>mt(n)?radOf(n)+4:radOf(n));
+  NODE.select('text').style('opacity',n=>mt(n)?1:(LABELED.has(n.id)?1:0));
+  LINK.style('stroke-opacity',.05);
+  const first=GNODES.find(mt);
+  if(first&&SVG&&ZOOM){ const k=(d3.zoomTransform(SVG.node()).k)||1; SVG.transition().duration(400).call(ZOOM.transform, d3.zoomIdentity.translate(WW/2-first.x*k,HH/2-first.y*k).scale(k)); }
+});
+document.addEventListener('click',e=>{ if(!e.target.closest('#nodepop')) hidePop(); });
+paintCM();
+
+function drawPath(nodes){
+  const el=document.getElementById('graph'); el.innerHTML=''; if(sim){sim.stop();sim=null;} SVG=null;
+  const W=el.clientWidth||900, H=el.clientHeight||520, n=nodes.length;
   const svg=d3.select(el).append('svg').attr('width','100%').attr('height',H).attr('viewBox',`0 0 ${W} ${H}`);
-  const root=svg.append('g');
-  svg.call(d3.zoom().scaleExtent([.2,4]).on('zoom',ev=>root.attr('transform',ev.transform)));
-  const color=n=>n.is_center?'#0E9C86':n.is_anonymous?'#B4B2A9':(n.degree===1?'#2FA98F':'#6FCBB6');
-  const rad=n=>n.is_center?12:n.is_anonymous?4:6;
-
-  const link=root.append('g').attr('stroke','#cfd3d8').attr('stroke-opacity',.7)
-    .selectAll('line').data(g.links).join('line').attr('stroke-width',d=>Math.min(3,1+(d.weight||1)*0.5));
-  const node=root.append('g').selectAll('g').data(g.nodes).join('g').style('cursor','pointer')
-    .on('click',(e,d)=>{ if(!d.is_anonymous) location.href='/joueur/'+d.id; });
-  node.append('circle').attr('r',rad).attr('fill',color).attr('stroke','#fff').attr('stroke-width',1.5);
-  node.filter(d=>d.is_center||d.degree<=1).append('text').text(d=>d.label).attr('x',d=>rad(d)+3).attr('y',4)
-    .attr('font-size',d=>d.is_center?13:11).attr('font-weight',d=>d.is_center?700:500).attr('fill','#15191F').attr('pointer-events','none');
-  node.append('title').text(d=>d.label+(d.classement?` · #${d.classement}`:'')+(d.club?` · ${tc(d.club)}`:''));
-
-  sim&&sim.stop();
-  sim=d3.forceSimulation(g.nodes)
-    .force('link',d3.forceLink(g.links).id(d=>d.id).distance(d=>50+(d.weight?0:10)).strength(.6))
-    .force('charge',d3.forceManyBody().strength(-130))
-    .force('center',d3.forceCenter(W/2,H/2))
-    .force('collide',d3.forceCollide().radius(d=>rad(d)+4))
-    .on('tick',()=>{
-      link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-      node.attr('transform',d=>`translate(${d.x},${d.y})`);
-    });
-  node.call(d3.drag()
-    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
-    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
-    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
+  const pad=80, step=(W-2*pad)/Math.max(1,n-1), yc=H/2;
+  const pts=nodes.map((d,i)=>({d,i,x:pad+step*i,y:yc+(i%2?30:-30)}));
+  document.getElementById('ginfo').innerHTML=`<b class="text-ink">Chemin le plus court</b> · ${n} joueurs`;
+  const lg=svg.append('g').attr('stroke','#0E9C86').attr('stroke-width',2.5).attr('stroke-opacity',.55).attr('stroke-linecap','round');
+  for(let i=0;i<n-1;i++){
+    lg.append('line').attr('x1',pts[i].x).attr('y1',pts[i].y).attr('x2',pts[i].x).attr('y2',pts[i].y)
+      .transition().delay(i*380+260).duration(360).attr('x2',pts[i+1].x).attr('y2',pts[i+1].y);
+  }
+  const g2=svg.append('g');
+  pts.forEach(p=>{
+    const d=p.d, endpoint=(p.i===0||p.i===n-1);
+    const grp=g2.append('g').attr('transform',`translate(${p.x},${p.y})`).style('cursor','pointer').style('opacity',0).on('click',()=>location.href='/joueur/'+d.id);
+    grp.append('circle').attr('r',endpoint?16:11).attr('fill',endpoint?'#0A7766':'#6FCBB6').attr('stroke','#fff').attr('stroke-width',2);
+    grp.append('text').text(p.i+1).attr('text-anchor','middle').attr('y',4).attr('font-size',11).attr('font-weight',700).attr('fill','#fff').attr('pointer-events','none');
+    grp.append('text').text(tc(`${d.prenom||''} ${d.nom||''}`.trim()||d.id)).attr('text-anchor','middle').attr('y',p.y>yc?34:-22).attr('font-size',11.5).attr('font-weight',600).attr('fill','#15191F').attr('pointer-events','none');
+    grp.transition().delay(p.i*380).duration(320).style('opacity',1);
+  });
 }
 </script>
 </body>

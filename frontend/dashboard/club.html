@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Club · Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script>
 tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
@@ -39,14 +40,22 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 text-white/30">Général</div>
-    <a href="/" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
-    <a href="/classement" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Classement</span></a>
-    <a href="/tournois" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Tournois</span></a>
-    <a href="/clubs" class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
-    <div class="side-lbl text-[10px] uppercase tracking-wider font-600 px-3 py-2 mt-3 text-white/30">Exploration</div>
-    <a href="/carte" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
-    <a href="/graphe" class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav active" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
   </nav>
 </aside>
 
@@ -135,6 +144,8 @@ function renderBoss(){
   document.getElementById('bg_f').className='tg '+(curBoss==='F'?'bg-ink text-white':'text-muted');
 }
 
+const MOISFR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const frMonth=m=>{ if(!m)return''; const a=String(m).split('-'); return MOISFR[+a[1]-1]+" "+a[0]; };
 async function load(){
   const nom=getNom();
   if(!nom){ document.getElementById('loading').textContent='Aucun club spécifié.'; return; }
@@ -165,7 +176,7 @@ function render(name,c,d){
   const statCols=statCards.length>=3?'md:grid-cols-3':(statCards.length===2?'sm:grid-cols-2':'');
   const PCOL={25:'#A7DED2',50:'#6FCBB6',100:'#2FA98F',250:'#0E9C86',500:'#0A7766',1000:'#0a5848',1500:'#083f34',2000:'#062b24'};
   const amx=Math.max(1,...act.map(a=>a.n));
-  const actCard = act.length?`<div class="card p-4"><div class="flex items-baseline justify-between mb-2"><h2 class="font-700 text-base">Activité mensuelle</h2><span class="text-[11px] text-muted">participations des membres</span></div><div class="flex items-end gap-1 h-16">${act.map(a=>`<div class="flex-1 rounded-t bg-brand barY" style="height:${Math.max(6,Math.round(100*a.n/amx))}%" title="${a.mois} · ${a.n}"></div>`).join('')}</div><div class="flex justify-between text-[9.5px] text-muted mt-1"><span>${act.length?act[0].mois:''}</span><span>${act.length?act[act.length-1].mois:''}</span></div></div>`:'';
+  const actCard = act.length?`<div class="card p-4"><div class="flex items-baseline justify-between mb-1"><h2 class="font-700 text-base">Activité mensuelle</h2><span class="text-[11px] text-muted">${fr(act.reduce((sm,a)=>sm+(a.n||0),0))} participations</span></div><p class="text-[12px] text-muted mb-2">Matchs joués par les membres, chaque mois.</p><div class="relative h-40"><canvas id="actchart"></canvas></div></div>`:'';
   const ts=d.tournois_stats;
   const orgaCard=(ts&&ts.total)?`<div class="card p-4"><div class="flex items-baseline justify-between gap-2"><h2 class="font-700 text-base">Tournois organisés</h2>${ts.indice_moy!=null?`<span class="text-[12px] text-muted">diff. moy <b class="pct-font text-ink">${ts.indice_moy}</b>/100</span>`:''}</div><div class="pct-font font-800 text-2xl mt-1">${fr(ts.total)}<span class="text-sm text-muted font-600"> tournois</span></div>${(ts.by_niveau||[]).length?`<div class="flex h-2.5 rounded-full overflow-hidden mt-3 barX">${ts.by_niveau.map(l=>`<div title="P${l.niv} · ${l.n}" style="flex:${l.n};background:${PCOL[l.niv]||'#cbd0d6'}"></div>`).join('')}</div><div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-2 text-[11px]">${ts.by_niveau.map(l=>`<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:${PCOL[l.niv]||'#cbd0d6'}"></span>P${l.niv} <b>${l.n}</b></span>`).join('')}</div>`:''}${(d.tournois_organises||[]).length?`<div class="lbl mt-3 mb-1">Les plus relevés</div><div class="space-y-0.5">${d.tournois_organises.slice(0,4).map(t=>`<a href="/tournoi/${t.id_tournoi}" class="flex items-center gap-2 px-1.5 py-1 rounded-lg hover:bg-paper">${t.niveau?`<span class="num font-700 text-[9.5px] px-1 py-0.5 rounded ${PLEVEL[t.niveau]||'bg-gray-100 text-gray-600'} shrink-0">P${t.niveau}</span>`:''}<span class="text-[13px] font-500 flex-1 truncate">${tc(t.nom)}</span>${t.indice!=null?`<span class="pct-font text-[12px] font-700 shrink-0" style="color:${diffColor(t.indice)}">${Math.round(t.indice)}</span>`:''}</a>`).join('')}</div>`:''}</div>`:'';
 
@@ -216,16 +227,83 @@ function render(name,c,d){
 
   ${(actCard||orgaCard)?`<section class="mt-4 grid gap-3 ${actCard&&orgaCard?'lg:grid-cols-2':''}">${actCard}${orgaCard}</section>`:''}
 
+  <section class="mt-4 card p-4">
+    <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
+      <h2 class="font-700 text-base flex items-center gap-1.5"><span class="w-7 h-7 rounded-lg grid place-items-center shrink-0" style="background:#6366F11f;color:#6366F1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l5 4 5-7 8 8"/><path d="M3 17l5-3 5 5 8-9"/></svg></span>Course au classement</h2>
+      <div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[12px] font-600"><button id="bmp_h" class="tg">H</button><button id="bmp_f" class="tg">F</button></div>
+    </div>
+    <p class="text-[12px] text-muted mb-3"><b>Classement national</b> des meilleurs membres du club, mois par mois. Survole un nom (ou une ligne) pour l'isoler, clique pour ouvrir la fiche.</p>
+    <div class="grid lg:grid-cols-[1fr_190px] gap-3">
+      <div class="relative" style="height:430px"><canvas id="bumpchart"></canvas></div>
+      <div id="bumplegend" class="text-[12px] space-y-0.5 lg:max-h-[430px] overflow-auto pr-1"></div>
+    </div>
+    <div id="bump_empty" class="hidden text-sm text-muted text-center py-10">Pas assez d'historique pour ce groupe.</div>
+  </section>
+
   <section id="sec_champ" class="mt-4 card p-4 hidden">
     <h2 class="font-700 text-base mb-2">Compétitions par équipes & championnats</h2>
     <div id="champ" class="space-y-0.5"></div>
   </section>`;
 
+  // Activité mensuelle (bar chart)
+  if(act.length && document.getElementById('actchart') && typeof Chart!=='undefined'){
+    new Chart(document.getElementById('actchart'),{
+      type:'bar',
+      data:{labels:act.map(a=>a.mois.slice(5)+'/'+a.mois.slice(2,4)),datasets:[{data:act.map(a=>a.n),backgroundColor:'#0E9C86',hoverBackgroundColor:'#0A7766',borderRadius:5,maxBarThickness:28}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>frMonth(act[it[0].dataIndex].mois),label:c=>fr(c.parsed.y)+' participations'}}},
+        scales:{y:{beginAtZero:true,ticks:{precision:0,maxTicksLimit:4},grid:{color:'#eef0f2'}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:10}}}}
+      }
+    });
+  }
   // Boss
   BOSS={H:(d.boss&&d.boss.h)||[],F:(d.boss&&d.boss.f)||[]};
   curBoss=(BOSS.H.length>=BOSS.F.length)?'H':'F'; renderBoss();
   document.getElementById('bg_h').addEventListener('click',()=>{curBoss='H';renderBoss();});
   document.getElementById('bg_f').addEventListener('click',()=>{curBoss='F';renderBoss();});
+
+  // ── Bump chart : course au classement des membres ──
+  let bmpSexe='H', bumpChart=null;
+  function paintBumpTg(){
+    document.getElementById('bmp_h').className='tg '+(bmpSexe==='H'?'bg-ink text-white':'text-muted');
+    document.getElementById('bmp_f').className='tg '+(bmpSexe==='F'?'bg-ink text-white':'text-muted');
+  }
+  function bumpHi(di){
+    if(!bumpChart) return;
+    bumpChart.data.datasets.forEach((sx,i)=>{ sx.borderWidth=(i===di)?3.5:(di<0?1.8:0.7); sx.pointRadius=(i===di)?4:0; });
+    bumpChart.update('none');
+    document.querySelectorAll('#bumplegend [data-i]').forEach(el=>{ el.style.opacity=(di<0||+el.dataset.i===di)?'1':'.35'; });
+  }
+  async function loadBump(){
+    paintBumpTg();
+    const cv=document.getElementById('bumpchart'), emp=document.getElementById('bump_empty'), leg=document.getElementById('bumplegend');
+    let d=null; try{ d=await fetch(`/api/club_bump?nom=${encodeURIComponent(name)}&sexe=${bmpSexe}&mode=niveau`).then(r=>r.json()); }catch(_){}
+    if(bumpChart){ bumpChart.destroy(); bumpChart=null; }
+    if(!d||!d.players||d.players.length<3||!d.months||d.months.length<2||typeof Chart==='undefined'){ cv.style.display='none'; leg.innerHTML=''; emp.classList.remove('hidden'); return; }
+    cv.style.display=''; emp.classList.add('hidden');
+    const lab=d.months.map(frMonth), N=d.players.length;
+    const col=i=>`hsl(${Math.round(158+150*i/Math.max(1,N-1))},58%,52%)`;
+    const ds=d.players.map((p,i)=>({label:tc(p.nom),data:p.clt,borderColor:col(i),backgroundColor:col(i),borderWidth:1.8,tension:.35,pointRadius:0,pointHoverRadius:5,spanGaps:true}));
+    const NICE=[1,2,3,5,10,20,30,50,100,200,300,500,1000,2000,3000,5000,10000,20000,50000];
+    bumpChart=new Chart(cv,{type:'line',data:{labels:lab,datasets:ds},options:{
+      responsive:true,maintainAspectRatio:false,
+      onClick:(e,els)=>{ if(els.length){ const p=d.players[els[0].datasetIndex]; if(p&&p.id) location.href='/joueur/'+p.id; } },
+      interaction:{mode:'nearest',intersect:false,axis:'x'},
+      plugins:{legend:{display:false},tooltip:{mode:'nearest',intersect:false,callbacks:{title:it=>it.length?ds[it[0].datasetIndex].label:'',label:c=>`#${fr(c.parsed.y)} national · ${c.label}`}}},
+      scales:{y:{type:'logarithmic',reverse:true,title:{display:true,text:'Classement national',font:{size:10}},grid:{color:'#eef0f2'},ticks:{font:{size:10},callback:v=>{const n=Number(v);return NICE.includes(n)?'#'+(n>=1000?(n/1000)+'k':n):'';}}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:10}}}},
+      onHover:(e,els)=>{ const di=els.length?els[0].datasetIndex:-1; e.native.target.style.cursor=di>=0?'pointer':'default'; if(bumpChart._hi===di) return; bumpChart._hi=di; bumpHi(di); }
+    }});
+    leg.innerHTML=d.players.map((p,i)=>`<button data-i="${i}" class="flex items-center gap-2 w-full text-left px-1.5 py-1 rounded hover:bg-paper transition"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${col(i)}"></span><span class="flex-1 truncate">${tc(p.nom)}</span><span class="num text-[11px] text-muted shrink-0">#${fr(p.classement)}</span></button>`).join('');
+    leg.querySelectorAll('[data-i]').forEach(el=>{ const i=+el.dataset.i;
+      el.addEventListener('mouseenter',()=>{ bumpChart._hi=i; bumpHi(i); });
+      el.addEventListener('mouseleave',()=>{ bumpChart._hi=-1; bumpHi(-1); });
+      el.addEventListener('click',()=>{ const p=d.players[i]; if(p&&p.id) location.href='/joueur/'+p.id; });
+    });
+  }
+  document.getElementById('bmp_h').addEventListener('click',()=>{bmpSexe='H';loadBump();});
+  document.getElementById('bmp_f').addEventListener('click',()=>{bmpSexe='F';loadBump();});
+  loadBump();
 
   // Meilleurs joueurs (licenciés / ont joué ici)
   TOP_LIC={H:(c.top_h||[]),F:(c.top_f||[])};
