@@ -3,8 +3,9 @@ validate_data.py — Contrôle qualité des données scrapées (API JSON).
 Lance : python validate_data.py
 """
 import sqlite3
+from datetime import datetime
 c = sqlite3.connect('tenup.db')
-MOIS = '2026-06'
+MOIS = datetime.now().strftime('%Y-%m')
 
 def q1(sql, *a): return c.execute(sql, a).fetchone()[0]
 

@@ -83,7 +83,18 @@ def route_home_data():
         "tournoi": ({"id": ex_t["id_tournoi"], "nom": ex_t["nom"], "niveau": ex_t["niv"],
                      "indice": (int(ex_t["ind"]) if ex_t["ind"] is not None else None), "sexe": ex_t["sexe"]} if ex_t else None),
     }
-    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F"), "examples": examples})
+    deltas = {}
+    try:
+        import json as _json
+        _tp = os.path.join(os.path.dirname(__file__), "timeline.json")
+        if os.path.exists(_tp):
+            _tl = _json.load(open(_tp, encoding="utf-8"))
+            _h, _f, _mo = _tl.get("licencies_h") or [], _tl.get("licencies_f") or [], _tl.get("months") or []
+            if len(_h) >= 2 and len(_f) >= 2:
+                deltas = {"h": _h[-1] - _h[-2], "f": _f[-1] - _f[-2], "mois": (_mo[-2] if len(_mo) >= 2 else "")}
+    except Exception:
+        deltas = {}
+    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F"), "examples": examples, "deltas": deltas})
 
 
 @app.get("/api/example/<kind>")
@@ -140,6 +151,15 @@ def route_timeline():
     if os.path.exists(p):
         return send_file(p, mimetype="application/json")
     return jsonify({"months": [], "licencies_h": [], "licencies_f": [], "total": []})
+
+
+@app.get("/api/evolution")
+def route_evolution():
+    """Nouveaux classés du mois (total + par département), précalculé."""
+    p = os.path.join(os.path.dirname(__file__), "evolution.json")
+    if os.path.exists(p):
+        return send_file(p, mimetype="application/json")
+    return jsonify({"total": 0, "by_dept": {}})
 
 
 @app.route("/")

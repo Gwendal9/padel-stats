@@ -81,6 +81,23 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </section>
 
+    <section class="mt-5">
+      <div class="card p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#6366F11f;color:#6366F1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M19 8h4M21 6v4"/></svg></span>
+              <h2 class="font-800 text-lg">Nouveaux classés</h2>
+            </div>
+            <p class="text-sm text-muted mt-0.5" id="evo-sub">Joueurs classés pour la première fois ce mois.</p>
+          </div>
+          <div class="text-right"><div class="pct-font font-800 text-2xl leading-none" id="evo-total">—</div><div class="text-[11px] text-muted mt-1" id="evo-hf">—</div></div>
+        </div>
+        <div class="h-56"><canvas id="evoChart"></canvas></div>
+        <p class="text-[11px] text-muted mt-2">Top départements par nombre de nouveaux joueurs.</p>
+      </div>
+    </section>
+
     <section class="mt-6">
       <div class="flex items-center gap-2">
         <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#FBBF241f;color:#FBBF24"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M7 20V10M12 20V4M17 20v-7"/></svg></span>
@@ -197,8 +214,11 @@ if(rsh) rsh.addEventListener('click',async()=>{ ['joueur','club','tournoi'].forE
 async function load(){
   let d={}; try{ d=await fetch('/api/home').then(r=>r.json()); }catch(_){}
   const c=d.counts||{}; CNT=c;
-  const kpi=[['Joueurs classés (H)',c.nb_h],['Joueuses classées (F)',c.nb_f],['Clubs',c.nb_clubs],['Tournois',c.nb_tournois]];
-  $('kpi').innerHTML=kpi.map(([l,v])=>`<div class="rounded-xl bg-white/10 px-4 py-3"><div class="pct-font font-800 text-2xl countup" data-to="${v||0}">0</div><div class="text-[11px] text-white/70 mt-0.5">${l}</div></div>`).join('');
+  const dl=d.deltas||{};
+  const prevLbl=dl.mois?('vs '+frMonth(dl.mois).replace(/ \d+$/,'')):'sur le mois';
+  const dchip=v=>{ if(v==null||v===0)return ''; const up=v>0; return `<div class="mt-1 text-[11px] font-600 ${up?'text-emerald-200':'text-rose-200'}">${up?'▲':'▼'} ${fr(Math.abs(v))} <span class="text-white/50 font-500">${prevLbl}</span></div>`; };
+  const kpi=[['Joueurs classés (H)',c.nb_h,dchip(dl.h)],['Joueuses classées (F)',c.nb_f,dchip(dl.f)],['Clubs',c.nb_clubs,''],['Tournois',c.nb_tournois,'']];
+  $('kpi').innerHTML=kpi.map(([l,v,dc])=>`<div class="rounded-xl bg-white/10 px-4 py-3"><div class="pct-font font-800 text-2xl countup" data-to="${v||0}">0</div><div class="text-[11px] text-white/70 mt-0.5">${l}</div>${dc}</div>`).join('');
   animateCounts();
   $('top-h').innerHTML=(d.top_h||[]).map(rowJoueur).join('')||'<div class="text-sm text-muted px-2 py-3">—</div>';
   $('top-f').innerHTML=(d.top_f||[]).map(rowJoueur).join('')||'<div class="text-sm text-muted px-2 py-3">—</div>';
@@ -223,7 +243,19 @@ async function loadGrowth(){
     plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,font:{size:11}}},
       tooltip:{callbacks:{footer:it=>'Total : '+fr(it.reduce((a,x)=>a+(x.raw||0),0))}}}}});
 }
+async function loadEvolution(){
+  let e=null; try{ e=await fetch('/api/evolution').then(r=>r.json()); }catch(_){}
+  if(!e||!e.total){ return; }
+  $('evo-total').textContent=fr(e.total);
+  $('evo-hf').textContent=fr(e.h)+' H · '+fr(e.f)+' F';
+  $('evo-sub').textContent='Joueurs classés pour la première fois en '+(e.mois?frMonth(e.mois):'ce mois')+'.';
+  const el=$('evoChart'); if(!el||typeof Chart==='undefined')return;
+  const nm=e.dept_names||{};
+  const top=Object.entries(e.by_dept||{}).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  new Chart(el,{type:'bar',data:{labels:top.map(x=>tc(nm[x[0]]||('Dep. '+x[0]))),datasets:[{data:top.map(x=>x[1]),backgroundColor:'#6366F1',hoverBackgroundColor:'#4f46e5',borderRadius:5,maxBarThickness:20}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fr(c.parsed.x)+' nouveaux'}}},scales:{x:{beginAtZero:true,ticks:{precision:0},grid:{color:'#eef0f2'}},y:{grid:{display:false},ticks:{font:{size:11},autoSkip:false}}}}});
+}
 loadGrowth();
+loadEvolution();
 load();
 </script>
 </body>
