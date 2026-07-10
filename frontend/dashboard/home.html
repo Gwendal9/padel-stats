@@ -61,8 +61,17 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       <div class="p-7 sm:p-8">
         <h1 class="font-800 text-3xl sm:text-4xl tracking-tight">Padel Stats</h1>
         <p class="text-white/80 mt-1 text-sm">Statistiques du padel français (FFT) — classements, tournois, clubs, graphe de jeu.</p>
+        <button onclick="var s=document.getElementById('searchbox');s.focus();s.scrollIntoView({block:'center'});" class="mt-3 inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-white text-brand-dark font-700 text-sm hover:bg-white/90 transition"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Cherche ton nom, ton club, un tournoi…</button>
         <div class="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3" id="kpi"></div>
       </div>
+    </section>
+
+    <section id="fav-sec" class="mt-5 hidden">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#FBBF241f;color:#FBBF24"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg></span>
+        <h2 class="font-800 text-lg">Mes favoris</h2>
+      </div>
+      <div id="fav-list" class="flex flex-wrap gap-2"></div>
     </section>
 
     <section class="mt-5">
@@ -130,6 +139,10 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </section>
 
+    <footer class="mt-10 pt-5 border-t border-line text-[12px] text-muted flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span>Données FFT publiques · projet indépendant, non officiel.</span>
+      <a href="/mentions" class="hover:text-ink underline">Mentions légales</a>
+    </footer>
   </main>
 </div>
 <script>
@@ -138,6 +151,9 @@ const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
 const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const debounce=(fn,d=280)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d)}};
 const $=id=>document.getElementById(id);
+const FAV_KEY='padel_favoris';
+const getFavs=()=>{ try{return JSON.parse(localStorage.getItem(FAV_KEY)||'[]');}catch(_){return[];} };
+const setFavs=a=>{ try{localStorage.setItem(FAV_KEY,JSON.stringify(a));}catch(_){} };
 
 const sb=$('searchbox'),sr=$('searchres');
 sb.addEventListener('input',debounce(async e=>{
@@ -254,8 +270,20 @@ async function loadEvolution(){
   const top=Object.entries(e.by_dept||{}).sort((a,b)=>b[1]-a[1]).slice(0,12);
   new Chart(el,{type:'bar',data:{labels:top.map(x=>tc(nm[x[0]]||('Dep. '+x[0]))),datasets:[{data:top.map(x=>x[1]),backgroundColor:'#6366F1',hoverBackgroundColor:'#4f46e5',borderRadius:5,maxBarThickness:20}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fr(c.parsed.x)+' nouveaux'}}},scales:{x:{beginAtZero:true,ticks:{precision:0},grid:{color:'#eef0f2'}},y:{grid:{display:false},ticks:{font:{size:11},autoSkip:false}}}}});
 }
+function loadFavs(){
+  const favs=getFavs(), sec=$('fav-sec'), box=$('fav-list');
+  if(!sec||!box) return;
+  if(!favs.length){ sec.classList.add('hidden'); return; }
+  sec.classList.remove('hidden');
+  box.innerHTML=favs.map(p=>`<div class="flex items-center gap-2 pl-1 pr-1.5 py-1 rounded-lg border border-line bg-white">
+    <a href="/joueur/${p.id}" class="flex items-center gap-2 min-w-0"><span class="w-7 h-7 shrink-0 rounded-md bg-brand-soft text-brand-dark grid place-items-center text-[10px] font-700">${ini(p.nom||'')}</span><span class="text-sm font-500 truncate max-w-[160px]">${tc(p.nom||'')}</span><span class="num text-[11px] text-muted">#${fr(p.clt)}</span></a>
+    <button data-rm="${p.id}" class="w-6 h-6 rounded grid place-items-center text-muted hover:text-rose-500" title="Retirer">\u2715</button>
+  </div>`).join('');
+  box.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{ setFavs(getFavs().filter(x=>String(x.id)!==String(b.dataset.rm))); loadFavs(); }));
+}
 loadGrowth();
 loadEvolution();
+loadFavs();
 load();
 </script>
 </body>

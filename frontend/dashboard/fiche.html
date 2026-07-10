@@ -87,6 +87,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
         <div class="flex items-center gap-2 flex-wrap mb-1.5" data-badges></div>
         <div class="flex items-center gap-3 flex-wrap">
           <h1 class="font-800 text-4xl sm:text-5xl leading-none tracking-tight" data-name2></h1>
+          <button data-favbtn class="shrink-0 w-9 h-9 rounded-lg bg-white/12 border border-white/25 grid place-items-center hover:bg-white/20 transition" title="Ajouter aux favoris" aria-label="Favori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg></button>
           <span data-perc-wrap class="pct-font inline-flex flex-col items-start gap-0.5 px-3 py-1.5 rounded-xl bg-amber-300 text-amber-900">
             <span class="flex items-center gap-1.5 text-[15px] font-800 leading-none"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg><span data-perc></span></span>
             <span class="text-[10.5px] font-600 leading-none text-amber-800/90" data-perc-sub></span>
@@ -186,6 +187,9 @@ const PLEVEL={25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250
 const diffChip=v=>{ if(v==null) return '<span class="text-muted text-xs">—</span>'; const x=Math.round(v); let c='bg-gray-100 text-gray-600'; if(v>=65)c='bg-amber-100 text-amber-800'; else if(v>=50)c='bg-indigo-50 text-indigo-700'; else if(v>=35)c='bg-brand-soft text-brand-dark'; else if(v>=22)c='bg-sky-50 text-sky-700'; return `<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${c}" title="Niveau du plateau /100">${x}</span>`; };
 const FLAG={FRA:'🇫🇷',ESP:'🇪🇸',ARG:'🇦🇷',BEL:'🇧🇪',ITA:'🇮🇹',POR:'🇵🇹',BRA:'🇧🇷',NED:'🇳🇱',SUI:'🇨🇭'};
 const tc=s=>(s||'').toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+const FAV_KEY='padel_favoris';
+const getFavs=()=>{ try{return JSON.parse(localStorage.getItem(FAV_KEY)||'[]');}catch(_){return[];} };
+const setFavs=a=>{ try{localStorage.setItem(FAV_KEY,JSON.stringify(a));}catch(_){} };
 const fr=n=>(n==null?'—':Number(n).toLocaleString('fr-FR'));
 const ini=s=>(s||'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const MOIS=['','janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
@@ -364,6 +368,14 @@ function render(p){
     <div class="min-w-0 flex-1"><div class="flex justify-between items-baseline"><span class="text-sm font-500 truncate">${tc(x.nom_complet)}</span><span class="num text-xs font-700 text-brand-dark ml-2">${fr(x.points)}</span></div>
     <div class="h-1.5 rounded-full bg-paper mt-1 overflow-hidden"><div class="h-full rounded-full bg-brand/70" style="width:${100*(x.points||0)/maxp}%"></div></div></div>
     <span class="text-[11px] text-muted shrink-0">${x.nb_tournois}×</span></div>`).join('');
+  const favB=$('[data-favbtn]');
+  if(favB){
+    const rec={id:p.id,nom:p.nom_complet,clt:p.classement,sexe:p.sexe};
+    const sv=favB.querySelector('svg');
+    const paintFav=()=>{ const on=getFavs().some(x=>String(x.id)===String(p.id)); sv.setAttribute('fill',on?'#FBBF24':'none'); sv.setAttribute('stroke',on?'#FBBF24':'currentColor'); favB.title=on?'Retirer des favoris':'Ajouter aux favoris'; };
+    paintFav();
+    favB.addEventListener('click',()=>{ let a=getFavs(); if(a.some(x=>String(x.id)===String(p.id))) a=a.filter(x=>String(x.id)!==String(p.id)); else { a.unshift(rec); a=a.slice(0,60); } setFavs(a); paintFav(); });
+  }
   loadSuggest(p.id);
 }
 async function loadSuggest(pid){

@@ -26,7 +26,7 @@ WORKDIR /app/frontend/dashboard
 EXPOSE 5000
 
 CMD ["gunicorn", "api:app", \
-     "--workers", "2", \
+     "--workers", "4", \
      "--timeout", "300", \
      "--bind", "0.0.0.0:5000", \
      "--access-logfile", "-"]

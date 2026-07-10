@@ -52,6 +52,22 @@ _ensure_indexes()
 # dans la table cache_responses (lue par _try_precomputed dans chaque route).
 
 
+@app.after_request
+def _add_cache_headers(resp):
+    """Cache court des réponses GET pour absorber les pics (Cloudflare/navigateur).
+    L'aléatoire et l'admin ne sont jamais mis en cache."""
+    try:
+        if request.method == "GET":
+            p = request.path or ""
+            if "/api/example" in p or p.endswith("/random") or "/api/admin" in p:
+                resp.headers["Cache-Control"] = "no-store"
+            elif resp.status_code == 200:
+                resp.headers.setdefault("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
+    except Exception:
+        pass
+    return resp
+
+
 @app.get("/api/home")
 def route_home_data():
     """Données légères pour la page d'accueil : compteurs + top 5 H/F."""
@@ -1639,7 +1655,9 @@ _precompute_status = {"running": False, "last_run": None, "last_result": None}
 def route_admin_debug():
     """Diagnostic temporaire — vérifie les tables PG et teste une query profil."""
     admin_key = os.environ.get("ADMIN_KEY", "")
-    if admin_key and request.args.get("key") != admin_key:
+    if not admin_key:
+        return jsonify({"error": "not found"}), 404
+    if request.args.get("key") != admin_key:
         return jsonify({"error": "clé invalide"}), 403
     from db import USE_POSTGRES, get_conn
     info = {"use_postgres": USE_POSTGRES, "tables": [], "classements_historique_cols": [], "substr_test": None, "profile_test": None}
@@ -2199,6 +2217,12 @@ def route_geo_villes(dept: str):
         "GROUP BY ville", (dept, sexe)
     )
     return jsonify({"dept": dept, "sexe": sexe, "villes": rows})
+
+
+@app.route("/mentions")
+def route_mentions_page():
+    """Mentions légales / RGPD."""
+    return send_file(os.path.join(os.path.dirname(__file__), "mentions.html"))
 
 
 @app.route("/carte")
