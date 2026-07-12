@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Club · Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,13 +31,29 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .barY{transform-origin:bottom;animation:growy .55s cubic-bezier(.2,.7,.3,1) both}
   .barX{transform-origin:left;animation:growx .55s cubic-bezier(.2,.7,.3,1) both}
   @media (prefers-reduced-motion:reduce){.card,.barY,.barX{animation:none}}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:9.5px;font-weight:700;font-style:normal;cursor:help;position:relative;margin-left:4px;vertical-align:middle;text-transform:none;letter-spacing:normal}
+  .info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:#0F141B;color:#fff;font-weight:400;font-size:11.5px;line-height:1.45;letter-spacing:normal;text-transform:none;padding:7px 9px;border-radius:8px;width:200px;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.22);white-space:normal}
+  .info:focus{outline:none}
+  .sk{background:linear-gradient(90deg,#eef0f2 25%,#e2e5e8 37%,#eef0f2 63%);background-size:400% 100%;animation:shim 1.3s ease infinite;border-radius:6px}
+  @keyframes shim{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .spin{width:24px;height:24px;border:3px solid #E7E9EC;border-top-color:#0E9C86;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .fade-in{animation:fi .35s ease both}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pdl{display:block;margin:0 auto 12px}
+  .pdl-e{stroke-dasharray:100;stroke-dashoffset:100;animation:pdle 2s ease-in-out infinite}
+  .pdl-h{stroke-dasharray:22;stroke-dashoffset:22;animation:pdlh 2s ease-in-out infinite}
+  .pdl-d{opacity:0;animation:pdld 2s ease-in-out infinite}
+  @keyframes pdle{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+  @keyframes pdlh{0%,20%{stroke-dashoffset:22}55%,100%{stroke-dashoffset:0}}
+  @keyframes pdld{0%,55%{opacity:0}75%,100%{opacity:1}}
 </style>
 </head>
 <body class="antialiased">
 
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
   <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
-    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32">
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
@@ -72,7 +89,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     </div>
   </header>
   <main class="px-5 lg:px-8 pb-20" id="root">
-    <div class="mt-8 text-center text-muted text-sm" id="loading">Chargement du club…</div>
+    <div class="mt-10 text-center text-muted text-sm" id="loading"><svg class="pdl" width="40" height="52" viewBox="0 0 48 62" aria-label="Chargement"><ellipse class="pdl-e" cx="24" cy="20" rx="15" ry="16" fill="none" stroke="#0E9C86" stroke-width="3"/><line class="pdl-h" x1="24" y1="35" x2="24" y2="56" stroke="#0E9C86" stroke-width="4" stroke-linecap="round"/><g class="pdl-d" fill="#0E9C86"><circle cx="18" cy="16" r="1.5"/><circle cx="24" cy="13" r="1.5"/><circle cx="30" cy="16" r="1.5"/><circle cx="18" cy="23" r="1.5"/><circle cx="24" cy="20" r="1.5"/><circle cx="30" cy="23" r="1.5"/></g></svg>Chargement du club…</div>
   </main>
 </div>
 
@@ -209,7 +226,7 @@ function render(name,c,d){
   <section class="mt-4 grid gap-3 ${bn.length?'sm:grid-cols-2 lg:grid-cols-3':'sm:grid-cols-2'}">
     <div class="card p-4">
       <div class="flex items-center justify-between mb-2 gap-2">
-        <h2 class="font-700 text-base flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A7766" stroke-width="2"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17.3 6.5 21 8 13.5 3 9l6.5-.5z"/></svg>Maîtres locaux</h2>
+        <h2 class="font-700 text-base flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A7766" stroke-width="2"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17.3 6.5 21 8 13.5 3 9l6.5-.5z"/></svg>Maîtres locaux<span class="info" tabindex="0" data-tip="Les joueurs qui ont gagné le plus de points dans les tournois organisés par ce club.">i</span></h2>
         <div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[12px] font-600"><button id="bg_h" class="tg">H</button><button id="bg_f" class="tg">F</button></div>
       </div>
       <div id="bosslist" class="space-y-0.5"></div>
@@ -222,7 +239,7 @@ function render(name,c,d){
       <div id="srcwrap" class="hidden mb-2"><div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[11px] font-600"><button id="src_lic" class="tg">Licenciés</button><button id="src_play" class="tg">Ont joué ici</button></div></div>
       <div id="toplist" class="space-y-0.5 max-h-[440px] overflow-auto pr-1"></div>
     </div>
-    ${bn.length?`<div class="card p-4"><h2 class="font-700 text-base mb-2">Binômes du club</h2><div id="binomes" class="space-y-0.5"></div><div class="text-[11px] text-muted mt-2">Duos les plus présents dans les tournois organisés par le club.</div></div>`:''}
+    ${bn.length?`<div class="card p-4"><h2 class="font-700 text-base mb-2">Binômes du club<span class="info" tabindex="0" data-tip="Les duos les plus présents dans les tournois organisés par le club.">i</span></h2><div id="binomes" class="space-y-0.5"></div><div class="text-[11px] text-muted mt-2">Duos les plus présents dans les tournois organisés par le club.</div></div>`:''}
   </section>
 
   ${(actCard||orgaCard)?`<section class="mt-4 grid gap-3 ${actCard&&orgaCard?'lg:grid-cols-2':''}">${actCard}${orgaCard}</section>`:''}
@@ -245,6 +262,7 @@ function render(name,c,d){
     <div id="champ" class="space-y-0.5"></div>
   </section>`;
 
+  root.classList.add('fade-in');
   // Activité mensuelle (bar chart)
   if(act.length && document.getElementById('actchart') && typeof Chart!=='undefined'){
     new Chart(document.getElementById('actchart'),{

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Classement · Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,13 +30,25 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .inp:focus,.sel:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
   .rang-col{display:none}
   table.show-rang .rang-col{display:table-cell}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:9.5px;font-weight:700;cursor:help;position:relative;margin-left:4px;vertical-align:middle;text-transform:none;letter-spacing:normal}
+  .info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:#0F141B;color:#fff;font-weight:400;font-size:11.5px;line-height:1.45;letter-spacing:normal;text-transform:none;padding:7px 9px;border-radius:8px;width:200px;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.22);white-space:normal}
+  .info:focus{outline:none}
+  .sk{background:linear-gradient(90deg,#eef0f2 25%,#e2e5e8 37%,#eef0f2 63%);background-size:400% 100%;animation:shim 1.3s ease infinite;border-radius:6px}
+  @keyframes shim{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .pdl{display:block;margin:0 auto 12px}
+  .pdl-e{stroke-dasharray:100;stroke-dashoffset:100;animation:pdle 2s ease-in-out infinite}
+  .pdl-h{stroke-dasharray:22;stroke-dashoffset:22;animation:pdlh 2s ease-in-out infinite}
+  .pdl-d{opacity:0;animation:pdld 2s ease-in-out infinite}
+  @keyframes pdle{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+  @keyframes pdlh{0%,20%{stroke-dashoffset:22}55%,100%{stroke-dashoffset:0}}
+  @keyframes pdld{0%,55%{opacity:0}75%,100%{opacity:1}}
 </style>
 </head>
 <body class="antialiased">
 
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
   <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
-    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32">
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
@@ -95,12 +108,12 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
         <thead class="text-muted text-[10.5px] uppercase tracking-wider border-b border-line">
           <tr>
             <th class="rang-col text-left font-600 px-4 py-3 w-16">Rang</th><th class="text-left font-600 px-4 py-3 w-14">#</th>
-            <th class="text-left font-600 px-4 py-3 hidden sm:table-cell">Évol.</th>
+            <th class="text-left font-600 px-4 py-3 hidden sm:table-cell">Évol.<span class="info" tabindex="0" data-tip="Places gagnées (▲) ou perdues (▼) au classement sur le dernier mois.">i</span></th>
             <th class="text-left font-600 px-4 py-3">Joueur</th>
             <th class="text-left font-600 px-4 py-3 hidden md:table-cell">Département</th>
             <th class="text-left font-600 px-4 py-3 hidden lg:table-cell">Club</th>
-            <th class="text-right font-600 px-4 py-3">Points</th>
-            <th class="text-right font-600 px-4 py-3 hidden sm:table-cell">Meilleur</th>
+            <th class="text-right font-600 px-4 py-3">Points<span class="info" tabindex="0" data-tip="Points de classement FFT : la somme de tes meilleures performances de l'année (les 12 meilleurs tournois comptent).">i</span></th>
+            <th class="text-right font-600 px-4 py-3 hidden sm:table-cell">Meilleur<span class="info" tabindex="0" data-tip="Le meilleur classement que ce joueur a atteint dans sa carrière.">i</span></th>
             <th class="text-right font-600 px-4 py-3 hidden sm:table-cell">Tournois</th>
           </tr>
         </thead>
@@ -178,10 +191,22 @@ function rowHtml(p,i){
   </tr>`;
 }
 
+function skelRows(n){ let r=''; for(let i=0;i<n;i++) r+=`<tr class="border-b border-line">
+  <td class="rang-col px-4 py-3"><div class="sk h-4 w-10"></div></td>
+  <td class="px-4 py-3"><div class="sk h-4 w-6"></div></td>
+  <td class="px-4 py-3 hidden sm:table-cell"><div class="sk h-4 w-12"></div></td>
+  <td class="px-4 py-3"><div class="flex items-center gap-3"><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4 w-40"></div></div></td>
+  <td class="px-4 py-3 hidden md:table-cell"><div class="sk h-4 w-24"></div></td>
+  <td class="px-4 py-3 hidden lg:table-cell"><div class="sk h-4 w-32"></div></td>
+  <td class="px-4 py-3 text-right"><div class="sk h-4 w-10 ml-auto"></div></td>
+  <td class="px-4 py-3 text-right hidden sm:table-cell"><div class="sk h-4 w-10 ml-auto"></div></td>
+  <td class="px-4 py-3 text-right hidden sm:table-cell"><div class="sk h-4 w-8 ml-auto"></div></td>
+</tr>`; return r; }
 function pool(){return state.sexe==='F'?'Dames':'Messieurs';}
 function filtersActive(){return state.ligue||state.dept||state.club||state.q||state.ville;}
 
 async function fetchPage(append){
+  if(!append){ const _tb=$('rows'); if(_tb) _tb.innerHTML=skelRows(12); }
   const qs=new URLSearchParams({sexe:state.sexe,offset:state.offset,limit:state.limit});
   if(state.ligue)qs.set('ligue',state.ligue);
   if(state.dept)qs.set('dept',state.dept);

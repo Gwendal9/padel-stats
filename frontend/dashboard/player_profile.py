@@ -129,6 +129,13 @@ def get_player_profile(player_id: str) -> dict | None:
     # Tri chronologique : DD/MM/YYYY → YYYYMMDD via SUBSTR, safe sur PG et SQLite.
     # TO_DATE() est évité car il crashe sur les dates vides/malformées en PG.
     _date_order = "SUBSTR(p.date_tournoi,7,4)||SUBSTR(p.date_tournoi,4,2)||SUBSTR(p.date_tournoi,1,2)"
+    # Anti-doublons : masquer une participation de l'ancien système (id 6 ch.) si le MÊME
+    # tournoi (par nom) existe aussi en nouveau chez ce joueur. On garde les vieilles perfs
+    # dont le tournoi n'est plus au bilan actuel (données historiques).
+    _dated_filter = ("AND NOT (length(p.id_tournoi) < 8 AND EXISTS("
+                     "SELECT 1 FROM participations d2 JOIN tournois t2 ON t2.id_tournoi=d2.id_tournoi "
+                     "WHERE d2.id_joueur=p.id_joueur AND length(d2.id_tournoi) >= 8 AND t2.nom=t.nom "
+                     "AND d2.points_num IS p.points_num AND d2.position_num IS p.position_num))")
     parts = fetchall(
         f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
@@ -139,7 +146,7 @@ def get_player_profile(player_id: str) -> dict | None:
         FROM participations p
         JOIN tournois t ON p.id_tournoi = t.id_tournoi
         LEFT JOIN tournois_stats ts ON ts.id_tournoi = p.id_tournoi
-        WHERE p.id_joueur = ?
+        WHERE p.id_joueur = ? {_dated_filter}
         ORDER BY {_date_order} DESC
         """,
         (player_id,),
@@ -311,7 +318,7 @@ def get_player_profile(player_id: str) -> dict | None:
     try:
         hist_rows = fetchall(
             """
-            SELECT mois, classement, variation
+            SELECT mois, classement, variation, points
             FROM classements_historique
             WHERE id_joueur = ?
             ORDER BY mois ASC
@@ -325,6 +332,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "mois":       r["mois"],
             "classement": r["classement"],
             "variation":  r["variation"],
+            "points":     r["points"],
             "meilleur":   None,
         }
         for r in hist_rows
@@ -386,10 +394,25 @@ def get_player_profile(player_id: str) -> dict | None:
         if dernier is not None and cible["classement"] is not None:
             evolution_12m = dernier - cible["classement"]
 
+    # Un tournoi est "hors bilan" quand ses points ont expiré (date d'expiration passée)
+    # ou qu'il vient de l'ancien scraper (id court) — c'est de la donnée que la FFT ne
+    # montre plus mais qu'on conserve (avantage unique, on en accumule mois après mois).
+    _cur_m = datetime.date.today().year * 12 + datetime.date.today().month
+    def _hors_bilan(pp):
+        exp = pp.get("expiration_date")
+        if exp:
+            try:
+                _y, _mo = str(exp).split("-")[:2]
+                return int(_y) * 12 + int(_mo) < _cur_m
+            except Exception:
+                pass
+        return bool(pp.get("id_tournoi") and len(str(pp["id_tournoi"])) < 8)
+
     # Parcours détaillé (récent → ancien) avec niveau P et flag "comptée"
     parcours_detail = [
         {
             "id_tournoi":     p["id_tournoi"],
+            "hors_bilan":     _hors_bilan(p),
             "tournoi_nom":    p["tournoi_nom"] or "",
             "categorie":      p["categorie"],
             "niveau_points":  p.get("niveau_points"),
@@ -522,8 +545,10 @@ def get_player_profile(player_id: str) -> dict | None:
         ind = p.get("indice_niveau")
         if ind is None:
             continue
-        _pd.append({"x": round(float(ind), 1), "y": float(p.get("points") or 0),
-                    "nom": p["tournoi_nom"], "comptee": p["pris_en_compte"]})
+        _pd.append({"indice": round(float(ind), 1), "points": float(p.get("points") or 0),
+                    "date": p.get("date") or "", "id": p.get("id_tournoi"),
+                    "nom": p["tournoi_nom"], "comptee": p["pris_en_compte"],
+                    "hors_bilan": p.get("hors_bilan")})
     _cand = [p for p in parcours_detail if p.get("indice_niveau") is not None
              and p["pris_en_compte"] and float(p.get("points") or 0) > 0]
     exploit = None

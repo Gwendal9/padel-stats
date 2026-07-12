@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,11 +21,27 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .nav:hover{background:rgba(255,255,255,.05);color:#fff}.nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
   .nav svg{width:18px;height:18px;flex-shrink:0}
   @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:9.5px;font-weight:700;font-style:normal;cursor:help;position:relative;margin-left:4px;vertical-align:middle;text-transform:none;letter-spacing:normal}
+  .info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:#0F141B;color:#fff;font-weight:400;font-size:11.5px;line-height:1.45;letter-spacing:normal;text-transform:none;padding:7px 9px;border-radius:8px;width:200px;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.22);white-space:normal}
+  .info:focus{outline:none}
+  .sk{background:linear-gradient(90deg,#eef0f2 25%,#e2e5e8 37%,#eef0f2 63%);background-size:400% 100%;animation:shim 1.3s ease infinite;border-radius:6px}
+  @keyframes shim{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .spin{width:24px;height:24px;border:3px solid #E7E9EC;border-top-color:#0E9C86;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .fade-in{animation:fi .35s ease both}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pdl{display:block;margin:0 auto 12px}
+  .pdl-e{stroke-dasharray:100;stroke-dashoffset:100;animation:pdle 2s ease-in-out infinite}
+  .pdl-h{stroke-dasharray:22;stroke-dashoffset:22;animation:pdlh 2s ease-in-out infinite}
+  .pdl-d{opacity:0;animation:pdld 2s ease-in-out infinite}
+  @keyframes pdle{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+  @keyframes pdlh{0%,20%{stroke-dashoffset:22}55%,100%{stroke-dashoffset:0}}
+  @keyframes pdld{0%,55%{opacity:0}75%,100%{opacity:1}}
 </style>
 </head>
 <body class="antialiased">
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
-  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32"><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
   <nav class="flex flex-col gap-1 text-sm">
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
     <a href="/" class="nav active" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
@@ -45,23 +62,18 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   </nav>
 </aside>
 <div class="ml-14 lg:ml-60 min-w-0">
-  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
-    <div class="px-5 lg:px-8 h-14 flex items-center gap-3">
-      <div id="searchwrap" class="relative w-full max-w-md">
-        <div class="flex items-center gap-2 h-9 px-3 rounded-lg border border-line bg-white">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
-          <input id="searchbox" class="flex-1 text-sm outline-none bg-transparent" placeholder="Rechercher un joueur…" autocomplete="off">
-        </div>
-        <div id="searchres" class="hidden absolute mt-1 w-full bg-white border border-line rounded-lg overflow-hidden z-30 shadow-sm"></div>
-      </div>
-    </div>
-  </header>
   <main class="px-5 lg:px-8 py-6">
     <section class="rounded-2xl overflow-hidden text-white" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
       <div class="p-7 sm:p-8">
         <h1 class="font-800 text-3xl sm:text-4xl tracking-tight">Padel Stats</h1>
-        <p class="text-white/80 mt-1 text-sm">Statistiques du padel français (FFT) — classements, tournois, clubs, graphe de jeu.</p>
-        <button onclick="var s=document.getElementById('searchbox');s.focus();s.scrollIntoView({block:'center'});" class="mt-3 inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-white text-brand-dark font-700 text-sm hover:bg-white/90 transition"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Cherche ton nom, ton club, un tournoi…</button>
+        <p class="text-white/80 mt-1 text-sm">Statistiques du padel français (FFT) : classements, tournois, clubs, graphe de jeu.</p>
+        <div id="searchwrap" class="relative mt-4 max-w-xl">
+          <div class="flex items-center gap-2.5 h-12 px-4 rounded-xl bg-white shadow-md">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+            <input id="searchbox" class="flex-1 text-[15px] outline-none bg-transparent text-ink" placeholder="Cherche ton nom, ton club, un tournoi…" autocomplete="off">
+          </div>
+          <div id="searchres" class="hidden absolute mt-1.5 w-full bg-white border border-line rounded-xl overflow-hidden z-30 shadow-lg"></div>
+        </div>
         <div class="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3" id="kpi"></div>
       </div>
     </section>
@@ -131,11 +143,11 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <section class="mt-5 grid lg:grid-cols-2 gap-4">
       <div class="card p-5">
         <div class="flex items-center justify-between mb-3"><h2 class="font-700 text-base">Top Messieurs</h2><a href="/classement" class="text-xs text-brand-dark font-600 hover:underline">Tout le classement →</a></div>
-        <div class="space-y-1" id="top-h"></div>
+        <div class="space-y-1" id="top-h"><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div></div>
       </div>
       <div class="card p-5">
         <div class="flex items-center justify-between mb-3"><h2 class="font-700 text-base">Top Dames</h2><a href="/classement" class="text-xs text-brand-dark font-600 hover:underline">Tout le classement →</a></div>
-        <div class="space-y-1" id="top-f"></div>
+        <div class="space-y-1" id="top-f"><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div><div class="flex items-center gap-3 px-2 py-1.5"><div class="sk h-4 w-5"></div><div class="sk h-8 w-8" style="border-radius:8px"></div><div class="sk h-4" style="flex:1"></div><div class="sk h-4 w-8"></div></div></div>
       </div>
     </section>
 

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Carte · Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -32,11 +33,38 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   #side{max-height:72vh;overflow:auto}
   .leaflet-tooltip.club-lbl{background:rgba(255,255,255,.93);border:1px solid #E7E9EC;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.12);font-size:11px;font-weight:600;color:#15191F;padding:1px 6px}
   .leaflet-tooltip.club-lbl::before{display:none}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:9.5px;font-weight:700;font-style:normal;cursor:help;position:relative;margin-left:4px;vertical-align:middle;text-transform:none;letter-spacing:normal}
+  .info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:#0F141B;color:#fff;font-weight:400;font-size:11.5px;line-height:1.45;letter-spacing:normal;text-transform:none;padding:7px 9px;border-radius:8px;width:200px;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.22);white-space:normal}
+  .info:focus{outline:none}
+  .sk{background:linear-gradient(90deg,#eef0f2 25%,#e2e5e8 37%,#eef0f2 63%);background-size:400% 100%;animation:shim 1.3s ease infinite;border-radius:6px}
+  @keyframes shim{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .spin{width:24px;height:24px;border:3px solid #E7E9EC;border-top-color:#0E9C86;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .fade-in{animation:fi .35s ease both}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pdl{display:block;margin:0 auto 12px}
+  .pdl-e{stroke-dasharray:100;stroke-dashoffset:100;animation:pdle 2s ease-in-out infinite}
+  .pdl-h{stroke-dasharray:22;stroke-dashoffset:22;animation:pdlh 2s ease-in-out infinite}
+  .pdl-d{opacity:0;animation:pdld 2s ease-in-out infinite}
+  @keyframes pdle{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+  @keyframes pdlh{0%,20%{stroke-dashoffset:22}55%,100%{stroke-dashoffset:0}}
+  @keyframes pdld{0%,55%{opacity:0}75%,100%{opacity:1}}
+  /* Loader carte : l'Hexagone qui se colore */
+  #maploader{position:absolute;inset:0;z-index:500;display:grid;place-items:center;border-radius:14px;background:rgba(248,250,251,.94);backdrop-filter:blur(2px);transition:opacity .55s ease}
+  #maploader.hide{opacity:0;pointer-events:none}
+  #maploader .band{opacity:0;animation:bandin 2.6s ease-in-out infinite}
+  #maploader .b1{animation-delay:0s}#maploader .b2{animation-delay:.13s}#maploader .b3{animation-delay:.26s}
+  #maploader .b4{animation-delay:.39s}#maploader .b5{animation-delay:.52s}#maploader .b6{animation-delay:.65s}
+  @keyframes bandin{0%,8%{opacity:0}42%,88%{opacity:.96}100%{opacity:0}}
+  #maploader .mlball{animation:mlbounce 1.05s cubic-bezier(.45,0,.55,1) infinite}
+  @keyframes mlbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(92px)}}
+  #maploader .mlhex{stroke-dasharray:360;stroke-dashoffset:360;animation:mlhex 2.6s ease-in-out infinite}
+  @keyframes mlhex{0%{stroke-dashoffset:360}45%,100%{stroke-dashoffset:0}}
 </style>
 </head>
 <body class="antialiased">
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
-  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32"><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
   <nav class="flex flex-col gap-1 text-sm">
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
     <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
@@ -70,7 +98,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   </header>
   <main class="px-5 lg:px-8 py-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <div><div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#60A5FA1f;color:#60A5FA"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Carte de France</h1></div><p class="text-sm text-muted mt-0.5" id="subtitle">Répartition par département · clique sur un département pour voir ses clubs par commune.</p></div>
+      <div><div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#60A5FA1f;color:#60A5FA"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Carte de France<span class="info" tabindex="0" data-tip="Chaque commune est colorée selon le niveau moyen de ses joueurs classés.">i</span></h1></div><p class="text-sm text-muted mt-0.5" id="subtitle">Répartition par département · clique sur un département pour voir ses clubs par commune.</p></div>
       <div class="flex items-center gap-2 flex-wrap">
         <div class="inline-flex p-1 rounded-xl bg-white border border-line"><button data-sexe="H" class="seg">Messieurs</button><button data-sexe="F" class="seg">Dames</button></div>
         <select id="metric" class="h-9 px-3 rounded-lg border border-line bg-white text-sm font-500"><option value="nb">Nombre de joueurs</option><option value="classement_moyen">Classement moyen</option><option value="nb_clubs">Nombre de clubs</option></select>
@@ -81,6 +109,25 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
         <div id="map"></div>
         <div id="legend" class="card p-3 absolute bottom-4 left-4 z-[400] text-xs" style="min-width:140px"></div>
         <div id="hint" class="absolute top-4 right-4 z-[400] card px-3 py-2 text-xs text-muted">Chargement…</div>
+        <div id="maploader">
+          <div class="text-center select-none">
+            <svg width="120" height="130" viewBox="0 0 120 130" aria-hidden="true">
+              <defs><clipPath id="hexclip"><polygon points="60,8 112,37 112,93 60,122 8,93 8,37"/></clipPath></defs>
+              <g clip-path="url(#hexclip)">
+                <rect class="band b1" x="0" y="8"   width="120" height="20" fill="#E6F4F1"/>
+                <rect class="band b2" x="0" y="27"  width="120" height="20" fill="#A7DED2"/>
+                <rect class="band b3" x="0" y="46"  width="120" height="20" fill="#6FCBB6"/>
+                <rect class="band b4" x="0" y="65"  width="120" height="20" fill="#2FA98F"/>
+                <rect class="band b5" x="0" y="84"  width="120" height="20" fill="#0E7C66"/>
+                <rect class="band b6" x="0" y="103" width="120" height="22" fill="#0A5848"/>
+              </g>
+              <polygon class="mlhex" points="60,8 112,37 112,93 60,122 8,93 8,37" fill="none" stroke="#0F141B" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle class="mlball" cx="60" cy="18" r="6" fill="#E0AE45" stroke="#fff" stroke-width="1.6"/>
+            </svg>
+            <div class="mt-3 text-sm font-700 text-ink" id="mlmsg">Chargement de la carte…</div>
+            <div class="mt-1 text-xs text-muted">l'Hexagone se colore…</div>
+          </div>
+        </div>
       </div>
       <aside class="w-full lg:w-80 shrink-0"><div class="card p-3" id="side"></div></aside>
     </div>
@@ -100,7 +147,11 @@ let depData={}, geo=null, geojsonLayer=null, layerByCode={}, bounds=[1,1], curHi
 
 const map=L.map('map',{zoomControl:true}).setView([46.6,2.4],6);
 map.createPane('communes'); map.getPane('communes').style.zIndex=450;  // communes AU-DESSUS des départements (SVG)
-map.on('click',()=>{ if(document.getElementById('side').dataset.mode==='detail') backToFrance(); });  // clic sur le fond (hors dept/commune) -> retour région
+map.on('click',(e)=>{
+  let hit=null; if(geo){ const pt=[e.latlng.lng,e.latlng.lat]; for(const f of geo.features){ if(pipFeature(pt,f)){ hit=f; break; } } }
+  if(hit){ if(hit.properties.code!==curDept) openDept(hit.properties.code, hit.properties.nom); }  // clic sur un département -> on l'ouvre / on bascule
+  else if(document.getElementById('side').dataset.mode==='detail') backToFrance();               // clic sur le fond en mode détail -> retour France
+});
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
 
 function paintSeg(){document.querySelectorAll('.seg').forEach(b=>{const on=b.dataset.sexe===state.sexe;b.className='seg '+(on?'bg-ink text-white':'text-muted hover:bg-paper');});}
@@ -128,9 +179,8 @@ function renderChoropleth(){
   geojsonLayer=L.geoJSON(geo,{style:styleDep,onEachFeature:(f,l)=>{
     layerByCode[f.properties.code]=l;
     l.bindTooltip(()=>tooltip(f),{sticky:true});
-    l.on('mouseover',()=>{ if(document.getElementById('side').dataset.mode!=='detail') setHi(f.properties.code); });
+    l.on('mouseover',()=>{ prefetchCommunes(f.properties.code); if(document.getElementById('side').dataset.mode!=='detail') setHi(f.properties.code); });
     l.on('mouseout',()=>{ if(document.getElementById('side').dataset.mode!=='detail') clearHi(); });
-    l.on('click',(e)=>{ L.DomEvent.stopPropagation(e); openDept(f.properties.code, f.properties.nom); });
   }}).addTo(map);
   drawLegend();
   if(document.getElementById('side').dataset.mode!=='detail') showList();
@@ -214,44 +264,51 @@ function buildCommuneLayer(gj,mx){
   const outline=L.geoJSON(gj,{renderer:communeRenderer,interactive:false,
     style:{fill:false,color:'#0F141B',weight:3.5,opacity:1,lineJoin:'round',lineCap:'round'}});
   const fills=L.geoJSON(gj,{renderer:communeRenderer,
-    style:f=>({fillColor:ccolor(f.properties._clubs.length),fillOpacity:1,color:'#fff',weight:.7}),
+    style:f=>({fillColor:ccolor(f.properties._clubs.length),fillOpacity:1,color:'#586573',weight:.9,opacity:.5}),
     onEachFeature:(f,l)=>{ const cls=f.properties._clubs, n=cls.length;
       const liste = n ? cls.slice(0,10).map(tc).join('<br>')+(n>10?`<br>+${n-10} autres`:'') : '<span style="color:#697483">aucun club</span>';
       l.bindTooltip(`<b>${f.properties.nom}</b> · ${n} club${n>1?'s':''}<br>${liste}`,{sticky:true});
-      l.on('click',e=>L.DomEvent.stopPropagation(e));
     }
   });
   return L.layerGroup([outline,fills]);
 }
+const communeInflight={};
+async function ensureCommunes(code){
+  if(communeCache[code]) return communeCache[code];
+  if(communeInflight[code]) return communeInflight[code];
+  const p=(async()=>{
+    let clubs=[], gj=null;
+    try{ [clubs,gj]=await Promise.all([
+      fetch('/api/geo/clubs?dept='+encodeURIComponent(code)).then(r=>r.json()),
+      fetch('https://geo.api.gouv.fr/departements/'+encodeURIComponent(code)+'/communes?format=geojson&geometry=contour&fields=nom').then(r=>r.json())
+    ]); }catch(_){}
+    if(!gj||!gj.features) return null;
+    gj.features.forEach(f=>{ f.properties._clubs=[]; });
+    const byName={}; gj.features.forEach(f=>{ byName[norm(f.properties.nom)]=f; });
+    clubs.forEach(cl=>{
+      let f = cl.ville ? byName[norm(cl.ville)] : null;
+      if(!f){ const pt=[Number(cl.lon),Number(cl.lat)]; for(const g of gj.features){ if(pipFeature(pt,g)){ f=g; break; } } }
+      if(f && norm(cl.nom)!==norm(f.properties.nom)) f.properties._clubs.push(cl.nom);
+    });
+    const vals=gj.features.map(f=>f.properties._clubs.length).filter(x=>x>0); const mx=vals.length?Math.max(...vals):1;
+    communeCache[code]={gj,mx,nbClubs:clubs.length};
+    return communeCache[code];
+  })();
+  communeInflight[code]=p;
+  try{ return await p; } finally{ delete communeInflight[code]; }
+}
+function prefetchCommunes(code){ if(code && !communeCache[code] && !communeInflight[code]) ensureCommunes(code).catch(()=>{}); }
 async function showDeptCommunes(code){
-  const hint=document.getElementById('hint'); hint.style.display='block'; hint.innerHTML='Chargement des communes…';
+  const hint=document.getElementById('hint'); hint.style.display='block';
   if(communeLayer){ map.removeLayer(communeLayer); communeLayer=null; }
-  const hit=communeCache[code];
-  if(hit){
-    communeLayer=buildCommuneLayer(hit.gj,hit.mx).addTo(map);
-    drawCommuneLegend(hit.mx);
-    hint.innerHTML=`${hit.gj.features.length} communes · ${hit.nbClubs} clubs localisés`;
-    return;
-  }
-  let clubs=[], gj=null;
-  try{ [clubs,gj]=await Promise.all([
-    fetch('/api/geo/clubs?dept='+encodeURIComponent(code)).then(r=>r.json()),
-    fetch('https://geo.api.gouv.fr/departements/'+encodeURIComponent(code)+'/communes?format=geojson&geometry=contour&fields=nom').then(r=>r.json())
-  ]); }catch(_){}
-  if(curDept!==code) return;
-  if(!gj||!gj.features){ hint.innerHTML='Communes indisponibles.'; return; }
-  gj.features.forEach(f=>{ f.properties._clubs=[]; });
-  const byName={}; gj.features.forEach(f=>{ byName[norm(f.properties.nom)]=f; });
-  clubs.forEach(cl=>{
-    let f = cl.ville ? byName[norm(cl.ville)] : null;                 // 1) ville déclarée du club (fiable)
-    if(!f){ const pt=[Number(cl.lon),Number(cl.lat)]; for(const g of gj.features){ if(pipFeature(pt,g)){ f=g; break; } } } // 2) repli : point-dans-polygone
-    if(f && norm(cl.nom)!==norm(f.properties.nom)) f.properties._clubs.push(cl.nom);
-  });
-  const vals=gj.features.map(f=>f.properties._clubs.length).filter(x=>x>0); const mx=vals.length?Math.max(...vals):1;
-  communeCache[code]={gj,mx,nbClubs:clubs.length};
-  communeLayer=buildCommuneLayer(gj,mx).addTo(map);
-  drawCommuneLegend(mx);
-  hint.innerHTML=`${gj.features.length} communes · ${clubs.length} clubs localisés`;
+  if(!communeCache[code]){ hint.innerHTML='Chargement des communes…'; showMapLoader('Chargement des communes…'); }
+  const hit=await ensureCommunes(code);
+  if(curDept!==code){ hideMapLoader(); return; }
+  if(!hit){ hint.innerHTML='Communes indisponibles.'; hideMapLoader(); return; }
+  communeLayer=buildCommuneLayer(hit.gj,hit.mx).addTo(map);
+  drawCommuneLegend(hit.mx);
+  hint.innerHTML=`${hit.gj.features.length} communes · ${hit.nbClubs} clubs localisés`;
+  hideMapLoader();
 }
 
 async function loadDepData(){
@@ -260,12 +317,20 @@ async function loadDepData(){
   if(geo) renderChoropleth();
 }
 async function loadGeo(){
-  try{ geo=await fetch('https://cdn.jsdelivr.net/gh/gregoiredavid/france-geojson@master/departements-version-simplifiee.geojson').then(r=>r.json()); document.getElementById('hint').style.display='none'; renderChoropleth(); }
-  catch(e){ document.getElementById('hint').innerHTML='Fond de carte indisponible.'; }
+  try{ geo=await fetch('https://cdn.jsdelivr.net/gh/gregoiredavid/france-geojson@master/departements-version-simplifiee.geojson').then(r=>r.json()); document.getElementById('hint').style.display='none'; renderChoropleth(); hideMapLoader(); }
+  catch(e){ document.getElementById('hint').innerHTML='Fond de carte indisponible.'; hideMapLoader(); }
 }
 
 document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{state.sexe=b.dataset.sexe;paintSeg();if(curDept){backToFrance();}document.getElementById('side').dataset.mode='list';loadDepData();}));
 document.getElementById('metric').addEventListener('change',e=>{state.metric=e.target.value;if(!curDept&&geo){renderChoropleth();}});
+const MLMSGS=['On déplie la carte de France…','On colore les 96 départements…','On rassemble les clubs…','Encore un instant…'];
+let _mlI=0,_mlTimer=null;
+function _mlStop(){ if(_mlTimer){clearInterval(_mlTimer);_mlTimer=null;} }
+function _mlRotate(){ _mlStop(); _mlI=0; _mlTimer=setInterval(()=>{const el=document.getElementById('mlmsg'); if(el){_mlI=(_mlI+1)%MLMSGS.length; el.textContent=MLMSGS[_mlI];}},1300); }
+function showMapLoader(msg){ const el=document.getElementById('maploader'); if(!el)return; const m=document.getElementById('mlmsg'); if(msg){ if(m)m.textContent=msg; _mlStop(); } else { if(m)m.textContent=MLMSGS[0]; _mlRotate(); } el.style.display=''; requestAnimationFrame(()=>el.classList.remove('hide')); }
+function hideMapLoader(){ const el=document.getElementById('maploader'); if(!el||el.classList.contains('hide'))return; el.classList.add('hide'); _mlStop(); setTimeout(()=>{el.style.display='none';},650); }
+_mlRotate();
+setTimeout(hideMapLoader, 15000); // sécurité : ne jamais bloquer l'utilisateur
 paintSeg(); loadDepData().then(loadGeo);
 </script>
 <script>

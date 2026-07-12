@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Fiche joueur · Padel Stats</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,13 +26,27 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
   .nav svg{width:18px;height:18px;flex-shrink:0}
   @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .info{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:10px;font-weight:700;font-style:normal;cursor:help;position:relative;margin-left:5px;vertical-align:middle;text-transform:none}
+  .info:hover::after,.info:focus::after{content:attr(data-tip);position:absolute;bottom:135%;left:50%;transform:translateX(-50%);background:#0F141B;color:#fff;font-weight:400;font-size:11.5px;line-height:1.45;letter-spacing:normal;text-transform:none;padding:7px 9px;border-radius:8px;width:210px;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.22);white-space:normal}
+  .info:focus{outline:none}
+  .spin{width:26px;height:26px;border:3px solid #E7E9EC;border-top-color:#0E9C86;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .fade-in{animation:fi .35s ease both}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pdl{display:block;margin:0 auto 12px}
+  .pdl-e{stroke-dasharray:100;stroke-dashoffset:100;animation:pdle 2s ease-in-out infinite}
+  .pdl-h{stroke-dasharray:22;stroke-dashoffset:22;animation:pdlh 2s ease-in-out infinite}
+  .pdl-d{opacity:0;animation:pdld 2s ease-in-out infinite}
+  @keyframes pdle{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+  @keyframes pdlh{0%,20%{stroke-dashoffset:22}55%,100%{stroke-dashoffset:0}}
+  @keyframes pdld{0%,55%{opacity:0}75%,100%{opacity:1}}
 </style>
 </head>
 <body class="antialiased">
 
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
   <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
-    <span class="w-8 h-8 rounded-lg bg-brand text-white grid place-items-center text-sm font-700 shrink-0">P</span>
+    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32">
     <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
@@ -68,7 +83,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   </header>
 
   <main class="px-5 lg:px-8 pb-20" id="root">
-    <div class="mt-8 text-center text-muted text-sm" id="loading">Chargement de la fiche…</div>
+    <div class="mt-10 text-center text-muted text-sm" id="loading"><svg class="pdl" width="40" height="52" viewBox="0 0 48 62" aria-label="Chargement"><ellipse class="pdl-e" cx="24" cy="20" rx="15" ry="16" fill="none" stroke="#0E9C86" stroke-width="3"/><line class="pdl-h" x1="24" y1="35" x2="24" y2="56" stroke="#0E9C86" stroke-width="4" stroke-linecap="round"/><g class="pdl-d" fill="#0E9C86"><circle cx="18" cy="16" r="1.5"/><circle cx="24" cy="13" r="1.5"/><circle cx="30" cy="16" r="1.5"/><circle cx="18" cy="23" r="1.5"/><circle cx="24" cy="20" r="1.5"/><circle cx="30" cy="23" r="1.5"/></g></svg>Chargement de la fiche…</div>
   </main>
 </div>
 
@@ -98,7 +113,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     </div>
     <div class="shrink-0 w-full xl:w-[460px]">
       <div class="flex items-baseline justify-between mb-1">
-        <span class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Trajectoire</span>
+        <span class="text-[10.5px] uppercase tracking-wider font-600 text-white/55">Trajectoire <span class="normal-case tracking-normal text-white/35">· survole la courbe</span></span>
         <span class="text-[11px] text-white/65" data-traj-sum></span>
       </div>
       <div class="h-20"><canvas id="journey"></canvas></div>
@@ -116,26 +131,26 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 <section class="mt-4 grid grid-cols-2 lg:grid-cols-6 gap-3" data-kpi></section>
 <section class="mt-4 grid lg:grid-cols-3 gap-4" data-insights style="display:none">
   <div class="card p-5">
-    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Forme</h2><span class="text-[11px] font-700 px-2 py-0.5 rounded-full" data-forme-badge></span></div>
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Forme<span class="info" tabindex="0" data-tip="Évolution de ton classement sur les 6 derniers mois. Vert = tu montes, rouge = tu descends.">i</span></h2><span class="text-[11px] font-700 px-2 py-0.5 rounded-full" data-forme-badge></span></div>
     <p class="text-[13px] text-muted mb-3">Évolution du classement sur 6 mois.</p>
     <div class="flex items-end gap-3"><div class="shrink-0"><div class="pct-font font-800 text-3xl leading-none" data-forme-gain>—</div><div class="text-[11px] text-muted mt-1" data-forme-sub>places</div></div><div class="flex-1 h-14 min-w-0"><canvas data-forme-spark></canvas></div></div>
   </div>
   <div class="card p-5">
-    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Points à défendre</h2><span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#F59E0B1f;color:#F59E0B"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></div>
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Points à défendre<span class="info" tabindex="0" data-tip="Points qui comptent aujourd'hui au classement mais expirent bientôt (12 mois après le tournoi). Si tu ne rejoues pas, tu les perds.">i</span></h2><span class="w-6 h-6 rounded-lg grid place-items-center shrink-0" style="background:#F59E0B1f;color:#F59E0B"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></div>
     <p class="text-[13px] text-muted mb-3">Points comptés qui expirent bientôt.</p>
     <div class="flex gap-5 mb-3"><div><div class="pct-font font-800 text-2xl text-amber-600" data-def3>—</div><div class="text-[11px] text-muted">≤ 3 mois</div></div><div><div class="pct-font font-800 text-2xl" data-def6>—</div><div class="text-[11px] text-muted">≤ 6 mois</div></div></div>
     <div class="space-y-1.5" data-deflist></div>
   </div>
   <div class="card p-5">
-    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Perf vs difficulté</h2><span class="text-[11px] text-muted" data-perfratio></span></div>
-    <p class="text-[13px] text-muted mb-2" data-perfsub>Points gagnés selon la difficulté du plateau.</p>
+    <div class="flex items-center justify-between mb-1"><h2 class="font-700 text-base">Perfs dans le temps<span class="info" tabindex="0" data-tip="Chaque bulle = un tournoi. Gauche→droite = dans le temps, hauteur = difficulté du plateau, taille = points gagnés. Vert = comptée au classement.">i</span></h2><div class="flex items-center gap-1.5"><span class="text-[11px] text-muted" data-perfratio></span><button data-perfexpand class="w-6 h-6 rounded-lg grid place-items-center text-muted hover:bg-paper hover:text-ink" title="Agrandir" aria-label="Agrandir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button></div></div>
+    <p class="text-[13px] text-muted mb-2" data-perfsub>Difficulté des plateaux joués et points gagnés, au fil du temps.</p>
     <div class="h-40"><canvas data-perfscatter></canvas></div>
   </div>
 </section>
 
 <section class="mt-4 grid lg:grid-cols-3 gap-4">
   <div class="card p-5 lg:col-span-2">
-    <h2 class="font-700 text-base mb-3">Pyramide — rang par environnement</h2>
+    <h2 class="font-700 text-base mb-3">Pyramide — rang par environnement<span class="info" tabindex="0" data-tip="Ton rang parmi les joueurs de ton club, ton département, ta région et la France entière.">i</span></h2>
     <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3" data-pyr></div>
   </div>
   <div class="card p-5">
@@ -159,7 +174,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     <div class="overflow-hidden rounded-lg border border-line">
       <table class="w-full text-sm">
         <thead class="bg-paper text-muted text-[10.5px] uppercase tracking-wider">
-          <tr><th class="text-left font-600 px-3 py-2">Niveau</th><th class="text-left font-600 px-3 py-2">Tournoi</th><th class="text-left font-600 px-3 py-2 hidden sm:table-cell">Partenaire</th><th class="text-center font-600 px-3 py-2 hidden md:table-cell">Difficulté</th><th class="text-center font-600 px-3 py-2">Place</th><th class="text-right font-600 px-3 py-2">Pts</th></tr>
+          <tr><th class="text-left font-600 px-3 py-2">Niveau</th><th class="text-left font-600 px-3 py-2">Tournoi</th><th class="text-left font-600 px-3 py-2 hidden sm:table-cell">Partenaire</th><th class="text-center font-600 px-3 py-2 hidden md:table-cell">Difficulté<span class="info" tabindex="0" data-tip="Niveau réel du plateau (0–100), calculé d'après le classement des paires présentes au tournoi.">i</span></th><th class="text-center font-600 px-3 py-2">Place</th><th class="text-right font-600 px-3 py-2">Pts</th></tr>
         </thead>
         <tbody data-parcours class="divide-y divide-line"></tbody>
       </table>
@@ -172,6 +187,19 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   </div>
 </section>
 
+<section class="mt-4 card p-5" data-hist-wrap style="display:none">
+  <button type="button" class="flex items-center justify-between w-full text-left" data-hist-toggle>
+    <h2 class="font-700 text-base flex items-center gap-2 flex-wrap"><span class="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-700">HORS BILAN</span>Historique <span class="text-[11px] font-500 text-muted">— <span data-hist-count>0</span> tournois expirés (+12 mois), que la FFT ne montre plus</span></h2>
+    <svg data-hist-chev width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2" class="transition-transform shrink-0"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <div data-hist-body class="hidden mt-3 overflow-hidden rounded-lg border border-line">
+    <table class="w-full text-sm">
+      <thead class="bg-paper text-muted text-[10.5px] uppercase tracking-wider"><tr><th class="text-left font-600 px-3 py-2">Date</th><th class="text-left font-600 px-3 py-2">Niveau</th><th class="text-left font-600 px-3 py-2">Tournoi</th><th class="text-center font-600 px-3 py-2">Place</th><th class="text-right font-600 px-3 py-2">Pts</th></tr></thead>
+      <tbody data-hist class="divide-y divide-line"></tbody>
+    </table>
+  </div>
+</section>
+
 <section class="mt-4 card p-5" data-suggest-wrap style="display:none">
   <div class="flex items-center justify-between gap-2 mb-1">
     <h2 class="font-700 text-base">Partenaires suggérés</h2>
@@ -181,6 +209,14 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2" data-suggest></div>
 </section>
 </template>
+
+<div id="perfModal" class="fixed inset-0 z-50 bg-black/50 items-center justify-center p-4" style="display:none">
+  <div class="bg-white rounded-2xl w-full max-w-5xl p-5 relative">
+    <div class="flex items-center justify-between mb-1"><h3 class="font-800 text-lg">Perfs dans le temps</h3><button id="perfModalClose" class="w-8 h-8 rounded-lg grid place-items-center text-muted hover:bg-paper" aria-label="Fermer">✕</button></div>
+    <p class="text-[12.5px] text-muted mb-3">Hauteur = difficulté du plateau · taille = points gagnés · vert = comptée. Clique une bulle pour ouvrir le tournoi.</p>
+    <div style="height:440px"><canvas id="perfModalChart"></canvas></div>
+  </div>
+</div>
 
 <script>
 const PLEVEL={25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
@@ -219,10 +255,32 @@ async function load(){
   render(prof);
 }
 
+let LAST_PV=null, modalChart=null;
+function perfData(pv,big){
+  const pd=s=>{const a=(s||'').split('/');return a.length===3?new Date(+a[2],+a[1]-1,+a[0]).getTime():null;};
+  const mk=o=>{const x=pd(o.date); if(x==null||o.indice==null)return null; const pts=Math.round(o.points||0); const r=Math.max(3,Math.min(big?26:15,Math.sqrt(pts||1)*(big?1.5:0.95))); return {x,y:o.indice,r,nom:o.nom,id:o.id,date:o.date,points:pts,comptee:o.comptee,hb:o.hors_bilan};};
+  const c=[],a=[],hb=[]; (pv.points||[]).forEach(o=>{const m=mk(o); if(!m)return; if(o.hors_bilan) hb.push(m); else if(o.comptee) c.push(m); else a.push(m);}); return {c,a,hb};
+}
+function makePerfChart(el,pv,big){
+  const d=perfData(pv,big);
+  const ds=[{label:'Comptée au classement',data:d.c,backgroundColor:'rgba(14,156,134,.72)',borderColor:'#0E9C86',borderWidth:1}];
+  if(d.a.length) ds.push({label:'Non comptée (hors 12 meilleures)',data:d.a,backgroundColor:'rgba(255,255,255,.8)',borderColor:'#9aa3af',borderWidth:1.5});
+  if(d.hb.length) ds.push({label:'Hors bilan (+12 mois)',data:d.hb,backgroundColor:'rgba(224,174,69,.78)',borderColor:'#a9791b',borderWidth:1.5});
+  return new Chart(el,{type:'bubble',data:{datasets:ds},options:{responsive:true,maintainAspectRatio:false,
+    onClick:(e,els,ch)=>{ if(els.length){ const it=ch.data.datasets[els[0].datasetIndex].data[els[0].index]; if(it&&it.id) location.href='/tournoi/'+it.id; } },
+    onHover:(e,els)=>{ if(e.native&&e.native.target) e.native.target.style.cursor=els.length?'pointer':'default'; },
+    plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,usePointStyle:true,font:{size:big?12:10}}},
+      tooltip:{callbacks:{title:c=>c.length?c[0].raw.date:'',label:c=>{const r=c.raw;return `${tc(String(r.nom||'')).slice(0,30)} · plateau ${r.y} · ${r.points} pts · ${r.hb?'hors bilan':(r.comptee?'comptée':'non comptée')}`;}}}},
+    scales:{x:{type:'linear',title:{display:true,text:'Date du tournoi',font:{size:10}},grid:{color:'#eef0f2'},ticks:{font:{size:10},maxTicksLimit:big?10:6,callback:v=>{const t=new Date(v);return ('0'+(t.getMonth()+1)).slice(-2)+'/'+String(t.getFullYear()).slice(2);}}},
+      y:{title:{display:true,text:'Difficulté',font:{size:10}},beginAtZero:true,grid:{color:'#eef0f2'}}}}});
+}
+function openPerfModal(){ const m=document.getElementById('perfModal'); if(!m||!LAST_PV)return; m.style.display='flex'; if(modalChart)modalChart.destroy(); modalChart=makePerfChart(document.getElementById('perfModalChart'),LAST_PV,true); }
+(function(){ const m=document.getElementById('perfModal'); if(!m)return; const cb=document.getElementById('perfModalClose'); const cl=()=>{ m.style.display='none'; if(modalChart){modalChart.destroy();modalChart=null;} }; if(cb)cb.addEventListener('click',cl); m.addEventListener('click',e=>{ if(e.target===m) cl(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape') cl(); }); })();
 function render(p){
   document.getElementById('loading').remove();
   const root=document.getElementById('root');
   root.appendChild(document.getElementById('tpl').content.cloneNode(true));
+  root.classList.add('fade-in');
   const $=s=>root.querySelector(s);
   const pool = p.sexe==='F'?'Dames':'Messieurs';
   const name = tc(p.nom_complet);
@@ -278,9 +336,9 @@ function render(p){
     new Chart(root.querySelector('#journey'),{type:'line',plugins:[yearLines],
       data:{labels:hist.map(h=>h.mois),datasets:[{data:hist.map(h=>h.classement),borderColor:'#ffffff',borderWidth:2,
         fill:true,backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,80);g.addColorStop(0,'rgba(255,255,255,.22)');g.addColorStop(1,'rgba(255,255,255,0)');return g;},
-        tension:.3,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#fff',pointHoverBorderColor:'#0e7c66',pointHoverBorderWidth:2}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{top:2}},
-        plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{title:c=>frMois(c[0].label),label:c=>'Classement '+c.parsed.y+'e'}}},
+        tension:.3,pointRadius:2,pointBackgroundColor:'rgba(255,255,255,.85)',pointBorderWidth:0,pointHoverRadius:5,pointHoverBackgroundColor:'#fff',pointHoverBorderColor:'#0e7c66',pointHoverBorderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{top:2}},interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{title:c=>frMois(c[0].label),label:c=>{const h=hist[c.dataIndex]; let s='Classement '+c.parsed.y+'e'; if(h&&h.points!=null) s+=' · '+fr(Math.round(h.points))+' pts'; return s;}}}},
         scales:{y:{reverse:true,display:false},
           x:{grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,0.65)',font:{size:10},maxRotation:0,autoSkip:false,callback:function(val,idx){const L=this.chart.data.labels;const cur=(L[idx]||'').slice(0,4);const prev=idx>0?(L[idx-1]||'').slice(0,4):'';return cur&&cur!==prev?cur:'';}}}}}});
   }
@@ -321,11 +379,8 @@ function render(p){
     if(pv && pv.points && pv.points.length>=4){ shown=true;
       if(pv.ratio!=null){ const pv2=Math.round((pv.ratio-1)*100); $('[data-perfratio]').textContent=(pv2>=0?'+':'')+pv2+'% vs brut'; }
       if(pv.exploit){ $('[data-perfsub]').innerHTML='Meilleur exploit : <b>'+tc(pv.exploit.nom)+'</b> (plateau '+pv.exploit.indice+', +'+pv.exploit.points+' pts).'; }
-      const cptd=pv.points.filter(o=>o.comptee), autre=pv.points.filter(o=>!o.comptee);
-      new Chart(ins.querySelector('[data-perfscatter]'),{type:'scatter',data:{datasets:[
-        {label:'Comptée',data:cptd.map(o=>({x:o.x,y:o.y,nom:o.nom})),backgroundColor:'#0E9C86'},
-        {label:'Non comptée',data:autre.map(o=>({x:o.x,y:o.y,nom:o.nom})),backgroundColor:'#cbd0d6'}
-      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,usePointStyle:true,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.raw.nom?tc(String(c.raw.nom)).slice(0,24):''} · ${Math.round(c.raw.y)} pts`}}},scales:{x:{title:{display:true,text:'Difficulté du plateau',font:{size:10}},grid:{color:'#eef0f2'}},y:{title:{display:true,text:'Points',font:{size:10}},beginAtZero:true,grid:{color:'#eef0f2'}}}}});
+      LAST_PV=pv; makePerfChart(ins.querySelector('[data-perfscatter]'),pv,false);
+      const _eb=$('[data-perfexpand]'); if(_eb) _eb.onclick=openPerfModal;
     } else { const c=$('[data-perfscatter]'); if(c)c.closest('.card').style.display='none'; }
     if(shown) ins.style.display='';
   }
@@ -353,15 +408,25 @@ function render(p){
     <div class="text-xs text-muted">${m.partenaire&&m.partenaire!=='None None'?'avec '+tc(m.partenaire):''}</div>
     <div class="flex items-center justify-between mt-2"><span class="num font-700 text-brand-dark text-sm">+${Math.round(m.points)} pts</span>${m.indice_niveau!=null?`<span class="text-[10.5px] text-muted flex items-center gap-1">plateau ${diffChip(m.indice_niveau)}</span>`:''}</div></div>`).join('');
 
-  const pc=(p.parcours_detail||[]).slice(0,16);
-  $('[data-parcours]').innerHTML=pc.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'">
+  const _allpc=(p.parcours_detail||[]); const _hist=_allpc.filter(r=>r.hors_bilan);
+  const pc=_allpc.filter(r=>!r.hors_bilan).slice(0,16);
+  $('[data-parcours]').innerHTML=pc.map(r=>{ const hist=r.id_tournoi&&String(r.id_tournoi).length<8; return `<tr class="hover:bg-paper cursor-pointer${hist?' opacity-60':''}" onclick="location.href='/tournoi/${r.id_tournoi}'">
     <td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td>
-    <td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td>
+    <td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${hist?' <span class="text-[9px] uppercase tracking-wide px-1 py-0.5 rounded bg-gray-100 text-gray-500 align-middle" title="Ancien tournoi, plus compté au classement actuel">hors bilan</span>':''}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td>
     <td class="px-3 py-2 text-muted hidden sm:table-cell">${r.partenaire&&r.partenaire!=='None None'?tc(r.partenaire):'—'}</td>
     <td class="px-3 py-2 text-center hidden md:table-cell">${diffChip(r.indice_niveau)}</td>
     <td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td>
-    <td class="px-3 py-2 text-right"><div class="num font-700 ${r.pris_en_compte?'text-brand-dark':'text-muted'}">${Math.round(r.points||0)}</div>${(r.perf_ponderee!=null&&r.perf_ponderee!==Math.round(r.points||0))?`<div class="num text-[10px] ${r.perf_ponderee>(r.points||0)?'text-emerald-600':'text-muted'}" title="perf pondérée par la difficulté">→ ${r.perf_ponderee}</div>`:''}</td></tr>`).join('');
+    <td class="px-3 py-2 text-right"><div class="num font-700 ${r.pris_en_compte?'text-brand-dark':'text-muted'}">${Math.round(r.points||0)}</div>${(r.perf_ponderee!=null&&r.perf_ponderee!==Math.round(r.points||0))?`<div class="num text-[10px] ${r.perf_ponderee>(r.points||0)?'text-emerald-600':'text-muted'}" title="perf pondérée par la difficulté">→ ${r.perf_ponderee}</div>`:''}</td></tr>`; }).join('');
 
+  const _hw=$('[data-hist-wrap]');
+  if(_hw){
+    if(_hist.length){
+      $('[data-hist-count]').textContent=_hist.length;
+      $('[data-hist]').innerHTML=_hist.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'"><td class="px-3 py-2 text-[12px] text-muted num">${r.date?r.date.slice(3):'—'}</td><td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td><td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td><td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td><td class="px-3 py-2 text-right num font-700 text-muted">${Math.round(r.points||0)}</td></tr>`).join('');
+      _hw.style.display='';
+      const _ht=$('[data-hist-toggle]'); if(_ht) _ht.onclick=()=>{ const b=$('[data-hist-body]'), cv=$('[data-hist-chev]'); const hid=b.classList.toggle('hidden'); if(cv) cv.style.transform=hid?'':'rotate(180deg)'; };
+    } else _hw.style.display='none';
+  }
   const prt=(p.top_partners||[]).slice(0,6); const maxp=Math.max(1,...prt.map(x=>x.points||0));
   $('[data-partners]').innerHTML=prt.map(x=>`<div class="flex items-center gap-3">
     <div class="w-8 h-8 shrink-0 rounded-lg bg-brand-soft text-brand-dark grid place-items-center text-xs font-700">${ini(x.nom_complet)}</div>

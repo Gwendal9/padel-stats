@@ -2035,29 +2035,94 @@ def route_tournoi_api(tid: str):
 
     def _sig(nm):
         return re.sub(r"[^a-z0-9]", "", (nm or "").lower())
-    seen, pairs = set(), []
+    # ── Reconstitution robuste des paires ──────────────────────────────────
+    # Chaque paire occupe 2 lignes (une par joueur), reliees par le champ
+    # "partenaire". Ce lien est parfois asymetrique ou absent (surtout sur les
+    # tournois hors bilan). Strategie :
+    #   - union-find : si UN cote reference l autre, on les regroupe ;
+    #   - solos restants d une meme position apparies 2 par 2 (meme position
+    #     en padel = meme paire).
+    def _find(par, x):
+        par.setdefault(x, x)
+        root = x
+        while par[root] != root:
+            root = par[root]
+        while par[x] != root:
+            par[x], x = root, par[x]
+        return root
+    def _union(par, a, b):
+        ra, rb = _find(par, a), _find(par, b)
+        if ra != rb:
+            par[rb] = ra
+
+    def _mem_player(r):
+        return {"id": r["id_joueur"], "nom": _nom(r["prenom"], r["nom"]),
+                "classement": _clt(r["id_joueur"], r["classement"]), "club": r["club"], "sexe": r["sexe"]}
+    def _mem_partner(r):
+        nomp = _nom(r["pprenom"], r["pnom"]) or (r["partenaire_nom"] or "")
+        if r["partenaire_id"]:
+            return "i:" + str(r["partenaire_id"]), {"id": r["partenaire_id"],
+                "nom": (nomp if nomp and nomp != "None None" else "Partenaire inconnu"),
+                "classement": _clt(r["partenaire_id"], r["pclt"]), "club": r["pclub"], "sexe": r["psexe"]}
+        if r["partenaire_nom"] and r["partenaire_nom"] != "None None":
+            return "n:" + _sig(r["partenaire_nom"]), {"id": None, "nom": r["partenaire_nom"],
+                "classement": None, "club": None, "sexe": None}
+        return None, None
+
+    by_pos = {}
     for r in rows:
-        pid = r["partenaire_id"]
-        membres = [{"id": r["id_joueur"], "nom": _nom(r["prenom"], r["nom"]),
-                    "classement": _clt(r["id_joueur"], r["classement"]), "club": r["club"], "sexe": r["sexe"]}]
-        if pid:
-            nomp = _nom(r["pprenom"], r["pnom"]) or (r["partenaire_nom"] or "")
-            membres.append({"id": pid, "nom": (nomp if nomp and nomp != "None None" else "Partenaire inconnu"),
-                            "classement": _clt(pid, r["pclt"]), "club": r["pclub"], "sexe": r["psexe"]})
-        elif r["partenaire_nom"] and r["partenaire_nom"] != "None None":
-            membres.append({"id": None, "nom": r["partenaire_nom"], "classement": None, "club": None, "sexe": None})
-        # Dedup ROBUSTE par ensemble de noms (gere les doublons de fiche FFT pour une meme personne)
-        sig = frozenset(_sig(m["nom"]) for m in membres if m.get("nom")) or frozenset({str(r["id_joueur"])})
-        keyp = (r["position_num"], sig)
-        if keyp in seen:
-            continue
-        seen.add(keyp)
-        _sx = {m["sexe"] for m in membres if m.get("sexe")}
-        psexe = "H" if _sx == {"H"} else ("F" if _sx == {"F"} else "X")
-        pairs.append({
-            "position": r["position"], "position_num": r["position_num"],
-            "points": r["points_num"], "type": r["type"], "membres": membres, "sexe": psexe,
-        })
+        by_pos.setdefault(r["position_num"], []).append(r)
+
+    pairs = []
+    for posnum, grp in by_pos.items():
+        parent, info_node, node_row = {}, {}, {}
+        # index nom -> vrai joueur present a cette position (pour rattacher un
+        # partenaire cite seulement par son nom, ex. quand l autre est anonyme)
+        sig2real = {}
+        for r in grp:
+            sg = _sig(_nom(r["prenom"], r["nom"]))
+            if sg:
+                sig2real.setdefault(sg, "i:" + str(r["id_joueur"]))
+        for r in grp:
+            pn = "i:" + str(r["id_joueur"])
+            info_node[pn] = _mem_player(r)
+            node_row[pn] = r
+            _find(parent, pn)
+            qn, qmem = _mem_partner(r)
+            if qn:
+                if qn.startswith("n:"):
+                    real = sig2real.get(qn[2:])
+                    if real and real != pn:
+                        qn = real
+                if qn not in info_node:
+                    info_node[qn] = qmem
+                _union(parent, pn, qn)
+        groups = {}
+        for node in info_node:
+            groups.setdefault(_find(parent, node), []).append(node)
+        blocks = list(groups.values())
+        singles = [b for b in blocks if len(b) == 1]
+        multis  = [b for b in blocks if len(b) != 1]
+        merged = []
+        for i in range(0, len(singles) - 1, 2):
+            merged.append(singles[i] + singles[i + 1])
+        if len(singles) % 2:
+            merged.append(singles[-1])
+        for b in multis + merged:
+            seenm, membres = set(), []
+            for n in b:
+                m = info_node[n]
+                k = _sig(m["nom"]) or ("id:" + str(m.get("id")))
+                if k in seenm:
+                    continue
+                seenm.add(k); membres.append(m)
+            rep = next((node_row[n] for n in b if n in node_row), grp[0])
+            _sx = {m["sexe"] for m in membres if m.get("sexe")}
+            psexe = "H" if _sx == {"H"} else ("F" if _sx == {"F"} else "X")
+            pairs.append({
+                "position": rep["position"], "position_num": rep["position_num"],
+                "points": rep["points_num"], "type": rep["type"], "membres": membres, "sexe": psexe,
+            })
     pairs.sort(key=lambda x: (x["position_num"] is None, x["position_num"] or 99999))
     return jsonify({"info": dict(info), "date": date, "mois": tmonth, "nb_paires_reelles": len(pairs), "pairs": pairs})
 
@@ -2217,6 +2282,16 @@ def route_geo_villes(dept: str):
         "GROUP BY ville", (dept, sexe)
     )
     return jsonify({"dept": dept, "sexe": sexe, "villes": rows})
+
+
+@app.route("/favicon.svg")
+def route_favicon():
+    return send_file(os.path.join(os.path.dirname(__file__), "favicon.svg"), mimetype="image/svg+xml")
+
+
+@app.route("/favicon.ico")
+def route_favicon_ico():
+    return ("", 204)
 
 
 @app.route("/mentions")

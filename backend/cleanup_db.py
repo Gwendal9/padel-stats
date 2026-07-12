@@ -45,7 +45,17 @@ print(f"2) Vieilles participations non rafraîchies (joueurs {MOIS}) : {stale:,}
 nonenone = n("SELECT COUNT(*) FROM participations WHERE partenaire_nom IN ('None None','None','none none')")
 print(f"3) partenaire_nom = 'None None' (anonymes, à vider) : {nonenone:,}")
 
-print(f"\nTotal à supprimer : {orphan + stale:,}")
+# 4) doublons de la transition ancien->nouveau scraper : participation ANCIENNE (id 6 ch.)
+#    dont le MÊME tournoi (par nom) existe aussi en NOUVEAU chez ce joueur.
+#    On GARDE les vieilles perfs dont le tournoi n'est plus au bilan (historique).
+dup = n("""SELECT COUNT(*) FROM participations p JOIN tournois tp ON tp.id_tournoi=p.id_tournoi
+           WHERE length(p.id_tournoi) < 8
+             AND EXISTS (SELECT 1 FROM participations d JOIN tournois td ON td.id_tournoi=d.id_tournoi
+                         WHERE d.id_joueur=p.id_joueur AND length(d.id_tournoi) >= 8 AND td.nom=tp.nom
+                           AND d.points_num IS p.points_num AND d.position_num IS p.position_num)""")
+print(f"4) Doublons ancien systeme (meme tournoi + resultat) : {dup:,}")
+
+print(f"\nTotal à supprimer : {orphan + stale + dup:,}")
 print(f"Participations avant : {n('SELECT COUNT(*) FROM participations'):,}")
 
 if not APPLY:
@@ -61,6 +71,16 @@ d2 = c.execute("""DELETE FROM participations
                                       WHERE dernier_mois_vu=? AND points IS NOT NULL)""", (MOIS,)).rowcount
 print(f"  orphelines supprimées : {d1:,}")
 print(f"  vieilles supprimées   : {d2:,}")
+c.execute("""CREATE TEMP TABLE _newkeys AS SELECT DISTINCT p.id_joueur AS jid, t.nom AS nom, p.points_num AS pts, p.position_num AS pos
+             FROM participations p JOIN tournois t ON t.id_tournoi=p.id_tournoi WHERE length(p.id_tournoi) >= 8""")
+c.execute("CREATE INDEX _idx_nk ON _newkeys(jid, nom)")
+d4 = c.execute("""DELETE FROM participations WHERE id IN (
+                    SELECT p.id FROM participations p JOIN tournois t ON t.id_tournoi=p.id_tournoi
+                    WHERE length(p.id_tournoi) < 8
+                      AND EXISTS(SELECT 1 FROM _newkeys n WHERE n.jid=p.id_joueur AND n.nom=t.nom
+                                 AND n.pts IS p.points_num AND n.pos IS p.position_num))""").rowcount
+c.execute("DROP TABLE _newkeys")
+print(f"  doublons ancien systeme (meme tournoi + resultat) supprimes : {d4:,}")
 print(f"Participations après    : {n('SELECT COUNT(*) FROM participations'):,}")
 
 # normalise les "None None" (partenaire anonyme) -> chaîne vide
