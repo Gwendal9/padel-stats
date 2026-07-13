@@ -1909,10 +1909,15 @@ def route_geo_filters():
         )
     except Exception:
         rows = []
-    departements = [
-        {"dept_num": r["dept_num"], "comite": r.get("comite") or "", "ligue": r.get("ligue") or ""}
-        for r in rows
-    ]
+    # Dedoublonne par departement : la table a parfois 2 lignes pour un meme
+    # dept_num (comites fantomes "(L0)" sur les DOM-TOM). On garde le vrai comite.
+    seen = {}
+    for r in rows:
+        d = r["dept_num"]; com = r.get("comite") or ""
+        prev = seen.get(d)
+        if prev is None or ("(L0)" in (prev["comite"] or "") and "(L0)" not in com):
+            seen[d] = {"dept_num": d, "comite": com, "ligue": r.get("ligue") or ""}
+    departements = list(seen.values())
     ligues = sorted({d["ligue"] for d in departements if d["ligue"]})
     return jsonify({"ligues": ligues, "departements": departements})
 
@@ -1930,7 +1935,10 @@ def route_geo_departements():
         )
     except Exception:
         rows = []
-    out = []
+    # Agrege par departement : certaines lignes sont dedoublees par des comites
+    # fantomes "(L0)" (DOM-TOM). On somme effectifs + clubs sur le meme dept_num
+    # et on garde le libelle du comite le plus represente.
+    agg = {}
     for r in rows:
         if sexe == "F":
             nb, clt = r.get("nb_f"), r.get("classement_moyen_f")
@@ -1938,11 +1946,26 @@ def route_geo_departements():
             nb, clt = r.get("nb_h"), r.get("classement_moyen_h")
         else:
             nb, clt = r.get("nb_total"), r.get("classement_moyen")
-        out.append({
-            "dept_num": r["dept_num"], "comite": r.get("comite") or "",
-            "ligue": r.get("ligue") or "", "nb": nb or 0,
-            "classement_moyen": clt, "nb_clubs": r.get("nb_clubs") or 0,
-        })
+        nb = nb or 0
+        d = r["dept_num"]
+        a = agg.get(d)
+        if a is None:
+            a = agg[d] = {"dept_num": d, "comite": r.get("comite") or "",
+                          "ligue": r.get("ligue") or "", "nb": 0, "nb_clubs": 0,
+                          "_cnum": 0.0, "_cden": 0, "_best": -1}
+        a["nb"] += nb
+        a["nb_clubs"] += r.get("nb_clubs") or 0
+        if clt is not None and nb:
+            a["_cnum"] += clt * nb
+            a["_cden"] += nb
+        if nb > a["_best"]:
+            a["_best"] = nb
+            if r.get("comite"): a["comite"] = r["comite"]
+            if r.get("ligue"):  a["ligue"]  = r["ligue"]
+    out = [{"dept_num": a["dept_num"], "comite": a["comite"], "ligue": a["ligue"],
+            "nb": a["nb"], "nb_clubs": a["nb_clubs"],
+            "classement_moyen": (round(a["_cnum"] / a["_cden"]) if a["_cden"] else None)}
+           for a in agg.values()]
     return jsonify(out)
 
 

@@ -66,10 +66,10 @@ def main():
         nm = norm(com.get('nom'))
         dep = com.get('codeDepartement')
         by_nd[(nm, dep)] = (lat, lon)
-        seen_name.setdefault(nm, set()).add((lat, lon))
+        seen_name.setdefault(nm, set()).add((lat, lon, dep))
     for nm, pts in seen_name.items():
         if len(pts) == 1:
-            by_name[nm] = next(iter(pts))
+            by_name[nm] = next(iter(pts))   # (lat, lon, dep)
     print(f"index : {len(by_nd):,} (nom+dept), {len(by_name):,} noms uniques")
 
     c = sqlite3.connect(DB, isolation_level=None)
@@ -79,12 +79,21 @@ def main():
 
     couples = c.execute("""SELECT DISTINCT ville, dept_num FROM joueurs
                            WHERE ville IS NOT NULL AND ville!=''""").fetchall()
-    ok = miss = 0
+    ok = miss = crossdept = 0
     rows = []
     ex_miss = []
     for ville, dep in couples:
         nm = norm(ville)
-        pt = by_nd.get((nm, dep)) or by_name.get(nm)
+        pt = by_nd.get((nm, dep))
+        if not pt:
+            cand = by_name.get(nm)  # (lat, lon, dep_commune) ou None
+            # Fallback "nom seul" UNIQUEMENT si meme departement (ou dept club inconnu).
+            # Sinon on refuse : evite qu'un homonyme d'un autre dept place le club au
+            # mauvais endroit (ex. LUYNES 13 -> Luynes 37, ou une ville mal saisie).
+            if cand and (not dep or cand[2] == dep):
+                pt = (cand[0], cand[1])
+            elif cand:
+                crossdept += 1
         if pt:
             rows.append((ville, dep, pt[0], pt[1])); ok += 1
         else:
@@ -97,6 +106,7 @@ def main():
     c.execute("COMMIT")
     tot = len(couples)
     print(f"\nVilles géocodées : {ok:,}/{tot:,} ({100*ok/max(tot,1):.1f}%)  | non trouvées : {miss:,}")
+    if crossdept: print(f"  (dont {crossdept:,} refusées : homonyme dans un autre département — évite les clubs mal placés)")
     if ex_miss: print(f"  ex. non trouvées : {ex_miss}")
 
     # lat/lon sur les clubs (via ville + dept)
