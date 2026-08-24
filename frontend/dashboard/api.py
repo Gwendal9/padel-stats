@@ -27,12 +27,18 @@ from flask_cors import CORS
 from graph_engine import engine
 from player_profile import search_players, get_player_profile
 from suggester import suggest_partners
-from db import USE_POSTGRES
+from db import USE_POSTGRES, fetchall, fetchone, get_conn
 from auth import create_magic_link, verify_token, get_user_from_session, invalidate_session
 from user_data import (
     link_player, unlink_player, update_display_name,
     get_favorites, add_favorite, remove_favorite, is_favorite,
 )
+
+# Charge les variables du fichier .env (dashboard/.env) s'il existe, en local uniquement --
+# en prod (Render) les variables sont deja dans l'environnement, ce fichier n'existe pas et
+# load_dotenv() ne fait alors rien.
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -40,6 +46,18 @@ CORS(app)
 # Créer les index manquants au démarrage (idempotent, ~5s si absent, ~0ms si déjà présent)
 from db import ensure_indexes as _ensure_indexes
 _ensure_indexes()
+
+
+def _startup_diag():
+    ok = "✅ configurée"
+    ko = "❌ non configurée (voir dashboard/.env.example)"
+    print("── Config suggestions ─────────────────────────")
+    print(f"  ADMIN_KEY          : {ok if os.environ.get('ADMIN_KEY') else ko}")
+    print(f"  DISCORD_WEBHOOK_URL: {ok if os.environ.get('DISCORD_WEBHOOK_URL') else ko}")
+    print("────────────────────────────────────────────────")
+
+
+_startup_diag()
 
 # Graphe chargé à la demande uniquement (lazy) — le preload au démarrage
 # dépasse le statement_timeout de 90s sur le free tier Render → crash systématique.
@@ -1897,6 +1915,241 @@ def route_me_fav_check(player_id: str):
     return jsonify({"favorited": is_favorite(user["user_id"], player_id)})
 
 
+# ============================================================================
+#  SUGGESTIONS -- Retours utilisateurs (ouvert a tous, pas de connexion requise)
+# ============================================================================
+
+SUGGESTION_CATEGORIES = {"idee", "bug", "autre"}
+
+
+def _sugg_exec(conn, sql: str, params: tuple = ()):
+    if USE_POSTGRES:
+        sql = sql.replace("?", "%s")
+        conn.cursor().execute(sql, params)
+    else:
+        conn.execute(sql, params)
+
+
+CAT_LABEL_FR = {"idee": "💡 Idee", "bug": "🐞 Bug", "autre": "💬 Autre"}
+
+
+def _notify_discord(message: str, category: str, name: str, email: str, page: str):
+    """Poste un message dans un salon Discord via DISCORD_WEBHOOK_URL, si defini.
+    Cree un webhook depuis Discord : Parametres du salon > Integrations > Webhooks."""
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
+    if not webhook_url:
+        return False
+    try:
+        import urllib.request
+        import json as _json
+        app_url = os.environ.get("APP_URL", "http://localhost:5000").rstrip("/")
+        cat_label = CAT_LABEL_FR.get(category, category)
+        contact = name or "Anonyme"
+        if email:
+            contact += f" ({email})"
+        lines = [
+            f"**Nouvelle suggestion** — {cat_label}",
+            f"> {message}",
+            f"De : {contact}" + (f" · depuis `{page}`" if page else ""),
+            f"A valider : {app_url}/admin/suggestions",
+        ]
+        content = "\n".join(lines)[:1900]
+        payload = _json.dumps({"content": content}).encode("utf-8")
+        req = urllib.request.Request(
+            webhook_url,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                # Discord (derriere Cloudflare) renvoie 403 sur le User-Agent par defaut
+                # de Python (Python-urllib/x.y) -- on met un User-Agent "normal".
+                "User-Agent": "Mozilla/5.0 (compatible; PadelStatsBot/1.0)",
+            },
+        )
+        urllib.request.urlopen(req, timeout=5)
+        print("[suggestions] notification Discord envoyée")
+        return True
+    except Exception as exc:
+        print(f"[suggestions] échec notification Discord : {exc}")
+        return False
+
+
+def _notify_email(message: str, category: str, name: str, email: str):
+    """Envoie un email a ADMIN_EMAIL quand une suggestion arrive, si SMTP est configure.
+    Ne fait rien (silencieusement) si SMTP_HOST/SMTP_USER ou ADMIN_EMAIL ne sont pas definis --
+    meme logique tolerante que create_magic_link() dans auth.py."""
+    smtp_host = os.environ.get("SMTP_HOST", "")
+    smtp_user = os.environ.get("SMTP_USER", "")
+    admin_email = os.environ.get("ADMIN_EMAIL", "") or os.environ.get("SMTP_FROM", "") or smtp_user
+    if not (smtp_host and smtp_user and admin_email):
+        return False
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        smtp_port = int(os.environ.get("SMTP_PORT", 587))
+        smtp_pass = os.environ.get("SMTP_PASS", "")
+        smtp_from = os.environ.get("SMTP_FROM", smtp_user)
+        cat_label = CAT_LABEL_FR.get(category, category)
+        body = (
+            f"Nouvelle suggestion ({cat_label}) sur Padel Stats :\n\n"
+            f"{message}\n\n"
+            f"De : {name or 'Anonyme'}"
+            + (f" ({email})" if email else "")
+            + "\n\nA valider : /admin/suggestions"
+        )
+        msg = MIMEText(body, "plain")
+        msg["Subject"] = f"[Padel Stats] Nouvelle suggestion ({cat_label})"
+        msg["From"] = smtp_from
+        msg["To"] = admin_email
+        with smtplib.SMTP(smtp_host, smtp_port) as srv:
+            srv.ehlo()
+            srv.starttls()
+            srv.login(smtp_user, smtp_pass)
+            srv.sendmail(smtp_from, admin_email, msg.as_string())
+        print("[suggestions] notification email envoyée")
+        return True
+    except Exception as exc:
+        print(f"[suggestions] échec notification email : {exc}")
+        return False
+
+
+def _notify_new_suggestion(message: str, category: str, name: str, email: str, page: str = None):
+    """Previent l'admin d'une nouvelle suggestion a valider : Discord (recommande) et/ou email,
+    selon ce qui est configure. N'echoue jamais (chaque canal est independant et silencieux
+    s'il n'est pas configure ou en erreur)."""
+    _notify_discord(message, category, name, email, page)
+    _notify_email(message, category, name, email)
+
+
+def _check_admin_key():
+    """Verifie ?key= contre ADMIN_KEY (meme convention que /api/admin/precompute)."""
+    admin_key = os.environ.get("ADMIN_KEY", "")
+    if not admin_key:
+        return jsonify({"error": "ADMIN_KEY non configuree cote serveur"}), 500
+    if request.args.get("key") != admin_key:
+        return jsonify({"error": "cle invalide"}), 403
+    return None
+
+
+@app.get("/api/suggestions")
+def route_suggestions_list():
+    """Liste des suggestions APPROUVEES (publiques), les plus votees en premier.
+    Les suggestions restent en statut 'nouveau' (non visibles) tant qu'elles ne
+    sont pas validees depuis /admin/suggestions."""
+    rows = fetchall(
+        "SELECT id, message, category, name, votes, status, created_at "
+        "FROM suggestions WHERE status = 'approuve' ORDER BY votes DESC, created_at DESC LIMIT 200"
+    )
+    return jsonify(rows)
+
+
+@app.post("/api/suggestions")
+def route_suggestions_create():
+    """Body JSON : {message, category?, name?, email?, page?, hp?}.
+    Ouvert a tous : pas besoin d'etre connecte pour envoyer une suggestion."""
+    data = request.get_json(silent=True) or {}
+
+    if (data.get("hp") or "").strip():
+        return jsonify({"ok": True})
+
+    message = (data.get("message") or "").strip()
+    if len(message) < 5:
+        return jsonify({"error": "Le message est trop court"}), 400
+    message = message[:2000]
+
+    category = (data.get("category") or "idee").strip().lower()
+    if category not in SUGGESTION_CATEGORIES:
+        category = "autre"
+
+    name  = (data.get("name") or "").strip()[:80] or None
+    email = (data.get("email") or "").strip()[:120] or None
+    page  = (data.get("page") or "").strip()[:200] or None
+
+    user = _get_session()
+    user_id = user["user_id"] if user else None
+    if user and not name:
+        name = user.get("display_name")
+    if user and not email:
+        email = user.get("email")
+
+    now = datetime.datetime.utcnow().isoformat()
+
+    with get_conn(readonly=False) as conn:
+        _sugg_exec(conn,
+            "INSERT INTO suggestions(message, category, name, email, page, user_id, votes, status, created_at) "
+            "VALUES(?,?,?,?,?,?,0,'nouveau',?)",
+            (message, category, name, email, page, user_id, now)
+        )
+        conn.commit()
+
+    _notify_new_suggestion(message, category, name, email, page)
+
+    return jsonify({"ok": True})
+
+
+@app.post("/api/suggestions/<int:suggestion_id>/vote")
+def route_suggestions_vote(suggestion_id: int):
+    """Incremente le compteur de votes. Uniquement sur les suggestions approuvees
+    (protection anti-doublon cote client en plus)."""
+    existing = fetchone("SELECT status FROM suggestions WHERE id = ?", (suggestion_id,))
+    if not existing or existing["status"] != "approuve":
+        return jsonify({"error": "introuvable"}), 404
+    with get_conn(readonly=False) as conn:
+        _sugg_exec(conn,
+            "UPDATE suggestions SET votes = votes + 1 WHERE id = ?",
+            (suggestion_id,)
+        )
+        conn.commit()
+    row = fetchone("SELECT votes FROM suggestions WHERE id = ?", (suggestion_id,))
+    if not row:
+        return jsonify({"error": "introuvable"}), 404
+    return jsonify({"ok": True, "votes": row["votes"]})
+
+
+# ── Moderation (admin) ─────────────────────────────────────────────────────
+
+@app.get("/api/admin/suggestions")
+def route_admin_suggestions_list():
+    """Toutes les suggestions (tous statuts), nouvelles d'abord. Protege par ADMIN_KEY."""
+    err = _check_admin_key()
+    if err:
+        return err
+    rows = fetchall(
+        "SELECT id, message, category, name, email, page, votes, status, created_at "
+        "FROM suggestions "
+        "ORDER BY CASE WHEN status = 'nouveau' THEN 0 ELSE 1 END, created_at DESC "
+        "LIMIT 500"
+    )
+    return jsonify(rows)
+
+
+@app.post("/api/admin/suggestions/<int:suggestion_id>/status")
+def route_admin_suggestions_status(suggestion_id: int):
+    """Body JSON : {"status": "approuve"|"rejete"|"nouveau"}. Protege par ADMIN_KEY."""
+    err = _check_admin_key()
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    status = (data.get("status") or "").strip().lower()
+    if status not in ("nouveau", "approuve", "rejete"):
+        return jsonify({"error": "status invalide"}), 400
+    with get_conn(readonly=False) as conn:
+        _sugg_exec(conn, "UPDATE suggestions SET status = ? WHERE id = ?", (status, suggestion_id))
+        conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/admin/suggestions/<int:suggestion_id>")
+def route_admin_suggestions_delete(suggestion_id: int):
+    """Supprime definitivement une suggestion. Protege par ADMIN_KEY."""
+    err = _check_admin_key()
+    if err:
+        return err
+    with get_conn(readonly=False) as conn:
+        _sugg_exec(conn, "DELETE FROM suggestions WHERE id = ?", (suggestion_id,))
+        conn.commit()
+    return jsonify({"ok": True})
+
+
 @app.get("/api/geo/filters")
 def route_geo_filters():
     """Listes pour les selecteurs du classement : ligues (regions) et departements.
@@ -2333,6 +2586,18 @@ def route_carte_page():
 def route_graphe_page():
     """Graphe de jeu + degres de separation."""
     return send_file(os.path.join(os.path.dirname(__file__), "graphe.html"))
+
+
+@app.route("/suggestions")
+def route_suggestions_page():
+    """Page Suggestions : formulaire de retour + liste des idees proposees."""
+    return send_file(os.path.join(os.path.dirname(__file__), "suggestions.html"))
+
+
+@app.route("/admin/suggestions")
+def route_admin_suggestions_page():
+    """Page de moderation des suggestions (non liee dans le menu, protegee par ADMIN_KEY cote API)."""
+    return send_file(os.path.join(os.path.dirname(__file__), "admin_suggestions.html"))
 
 
 @app.get("/api/club_bump")

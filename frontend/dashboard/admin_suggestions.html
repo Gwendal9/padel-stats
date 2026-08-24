@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Modération suggestions · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .inp{border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:9px 11px;font-size:13.5px}
+  .inp:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
+</style>
+</head>
+<body class="antialiased">
+<div class="max-w-3xl mx-auto px-5 py-8">
+  <div class="flex items-center gap-2.5 mb-1">
+    <a href="/" class="text-muted hover:text-ink text-sm">← Padel Stats</a>
+  </div>
+  <h1 class="font-800 text-2xl tracking-tight mt-2">Modération des suggestions</h1>
+  <p class="text-sm text-muted mt-1">Page privée — pas de lien dans le menu. Les suggestions envoyées via <a href="/suggestions" class="underline hover:text-ink">/suggestions</a> arrivent ici en attente ; rien n'apparaît publiquement tant que tu ne valides pas.</p>
+
+  <div id="keyGate" class="card p-4 mt-5">
+    <div class="lbl text-[10.5px] uppercase tracking-wider font-600 text-muted mb-1">Clé admin (ADMIN_KEY)</div>
+    <div class="flex gap-2">
+      <input id="keyInput" type="password" class="inp flex-1" placeholder="Colle ta clé admin ici">
+      <button id="keyGo" class="px-4 h-[38px] rounded-lg bg-ink text-white text-sm font-600">OK</button>
+    </div>
+    <p class="text-[11.5px] text-muted mt-2">C'est la même variable d'environnement <code>ADMIN_KEY</code> que celle déjà utilisée pour <code>/api/admin/precompute</code>. Elle reste enregistrée dans ce navigateur (localStorage), pas besoin de la retaper à chaque fois. Tu peux aussi ouvrir directement <code>/admin/suggestions?key=TA_CLE</code>.</p>
+    <p id="keyError" class="text-[12.5px] text-rose-600 mt-2 hidden"></p>
+  </div>
+
+  <div id="content" class="hidden">
+    <section class="mt-6">
+      <div class="flex items-center justify-between">
+        <h2 class="font-700 text-base">À valider</h2>
+        <span class="text-xs text-muted" id="pendingCount"></span>
+      </div>
+      <div id="pendingList" class="mt-3 space-y-2.5"></div>
+      <div id="pendingEmpty" class="hidden text-sm text-muted py-6 text-center">Rien en attente pour l'instant.</div>
+    </section>
+
+    <section class="mt-8">
+      <button id="histToggle" type="button" class="flex items-center gap-1.5 text-sm font-600 text-muted hover:text-ink">
+        <svg id="histChev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition-transform"><path d="m6 9 6 6 6-6"/></svg>
+        Historique (déjà traitées) <span id="histCount" class="text-muted"></span>
+      </button>
+      <div id="histList" class="hidden mt-3 space-y-2"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CAT_META={idee:{label:'💡 Idée'},bug:{label:'🐞 Bug'},autre:{label:'💬 Autre'}};
+const STATUS_LABEL={nouveau:'En attente',approuve:'Publiée',rejete:'Rejetée'};
+const KEY_STORAGE='padel_admin_key';
+
+function relDate(iso){
+  try{
+    const d=new Date(iso.endsWith('Z')?iso:iso+'Z');
+    const diff=(Date.now()-d.getTime())/1000;
+    if(diff<3600) return `il y a ${Math.max(1,Math.floor(diff/60))} min`;
+    if(diff<86400) return `il y a ${Math.floor(diff/3600)} h`;
+    if(diff<86400*30) return `il y a ${Math.floor(diff/86400)} j`;
+    return d.toLocaleDateString('fr-FR');
+  }catch(_){ return ''; }
+}
+
+function getKey(){
+  const qp=new URLSearchParams(location.search).get('key');
+  if(qp){ try{ localStorage.setItem(KEY_STORAGE, qp); }catch(_){} return qp; }
+  try{ return localStorage.getItem(KEY_STORAGE)||''; }catch(_){ return ''; }
+}
+function setKey(k){ try{ localStorage.setItem(KEY_STORAGE, k); }catch(_){} }
+
+let KEY = getKey();
+
+function itemCard(s, pending){
+  const meta = CAT_META[s.category] || {label: s.category};
+  const contact = [esc(s.name)||'Anonyme', s.email?esc(s.email):null].filter(Boolean).join(' · ');
+  const actions = pending
+    ? `<div class="flex gap-2 mt-2.5">
+        <button class="act-btn px-3 h-8 rounded-lg bg-brand text-white text-xs font-600 hover:bg-brand-dark" data-id="${s.id}" data-status="approuve">✓ Publier</button>
+        <button class="act-btn px-3 h-8 rounded-lg bg-white border border-line text-xs font-600 text-muted hover:bg-paper" data-id="${s.id}" data-status="rejete">✕ Rejeter</button>
+        <button class="del-btn px-3 h-8 rounded-lg bg-white border border-rose-200 text-xs font-600 text-rose-600 hover:bg-rose-50" data-id="${s.id}">🗑 Supprimer</button>
+      </div>`
+    : `<div class="flex items-center gap-2 mt-2 flex-wrap">
+        <span class="text-[11px] px-2 py-0.5 rounded-full ${s.status==='approuve'?'bg-brand-soft text-brand-dark':'bg-gray-100 text-gray-500'}">${STATUS_LABEL[s.status]||s.status}</span>
+        <span class="text-[11px] text-muted">${s.votes||0} vote${s.votes===1?'':'s'}</span>
+        ${s.status!=='approuve' ? `<button class="act-btn text-[11px] underline text-muted hover:text-ink" data-id="${s.id}" data-status="approuve">publier quand même</button>` : `<button class="act-btn text-[11px] underline text-muted hover:text-ink" data-id="${s.id}" data-status="rejete">dépublier</button>`}
+        <button class="del-btn text-[11px] underline text-rose-600 hover:text-rose-700" data-id="${s.id}">supprimer</button>
+      </div>`;
+  return `<div class="card p-3.5">
+    <div class="flex items-center gap-2 flex-wrap text-[11px] text-muted">
+      <span class="font-700">${meta.label}</span>
+      <span>·</span><span>${contact}</span>
+      <span>·</span><span>${relDate(s.created_at)}</span>
+      ${s.page?`<span>·</span><span>depuis ${esc(s.page)}</span>`:''}
+    </div>
+    <p class="text-sm mt-1.5 whitespace-pre-wrap break-words">${esc(s.message)}</p>
+    ${actions}
+  </div>`;
+}
+
+async function setStatus(id, status){
+  try{
+    const r=await fetch(`/api/admin/suggestions/${id}/status?key=${encodeURIComponent(KEY)}`,{
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status})
+    });
+    if(!r.ok) throw new Error();
+    await load();
+  }catch(_){ alert("Échec de la mise à jour — vérifie ta clé admin."); }
+}
+
+async function deleteSuggestion(id){
+  if(!confirm("Supprimer définitivement cette suggestion ? Cette action est irréversible.")) return;
+  try{
+    const r=await fetch(`/api/admin/suggestions/${id}?key=${encodeURIComponent(KEY)}`,{ method:'DELETE' });
+    if(!r.ok) throw new Error();
+    await load();
+  }catch(_){ alert("Échec de la suppression — vérifie ta clé admin."); }
+}
+
+async function load(){
+  let rows=[];
+  try{
+    const r=await fetch(`/api/admin/suggestions?key=${encodeURIComponent(KEY)}`);
+    if(!r.ok){
+      const d=await r.json().catch(()=>({}));
+      $('keyError').textContent = d.error || 'Clé refusée.';
+      $('keyError').classList.remove('hidden');
+      $('content').classList.add('hidden');
+      $('keyGate').classList.remove('hidden');
+      return;
+    }
+    rows = await r.json();
+  }catch(_){ return; }
+
+  $('keyGate').classList.add('hidden');
+  $('content').classList.remove('hidden');
+
+  const pending = rows.filter(s=>s.status==='nouveau');
+  const done = rows.filter(s=>s.status!=='nouveau');
+
+  $('pendingCount').textContent = pending.length ? `${pending.length} en attente` : '';
+  $('pendingList').innerHTML = pending.map(s=>itemCard(s,true)).join('');
+  $('pendingEmpty').classList.toggle('hidden', pending.length>0);
+
+  $('histCount').textContent = done.length ? `(${done.length})` : '';
+  $('histList').innerHTML = done.map(s=>itemCard(s,false)).join('');
+
+  document.querySelectorAll('.act-btn').forEach(b=>b.addEventListener('click', ()=>{
+    setStatus(Number(b.dataset.id), b.dataset.status);
+  }));
+  document.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click', ()=>{
+    deleteSuggestion(Number(b.dataset.id));
+  }));
+}
+
+$('keyGo').addEventListener('click', ()=>{
+  KEY = $('keyInput').value.trim();
+  setKey(KEY);
+  load();
+});
+$('keyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') $('keyGo').click(); });
+
+$('histToggle').addEventListener('click', ()=>{
+  const hid = $('histList').classList.toggle('hidden');
+  $('histChev').style.transform = hid ? '' : 'rotate(180deg)';
+});
+
+if(KEY){ $('keyInput').value=KEY; load(); }
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+/* mobile.css — ajustements responsive partages, Padel Stats
+   Charge sur toutes les pages, apres le CSS propre a chaque page. */
+
+/* Le rail de navigation peut devenir plus haut que l'ecran une fois tous les
+   liens ajoutes (ex: petits telephones en format court) : on le rend
+   scrollable plutot que de laisser les derniers liens inaccessibles. */
+aside.fixed.flex-col {
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  /* Evite le zoom automatique de Safari iOS quand on tape dans un champ */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 680px) {
+  /* Tables larges : on scrolle horizontalement plutot que d'ecraser
+     les colonnes ou de casser la mise en page. */
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Quelques largeurs fixes en pixels qui debordaient sur petit ecran */
+  .w-\[220px\], .w-\[460px\], .w-\[300px\], .w-\[160px\], .w-\[210px\] {
+    width: 100% !important;
+  }
+
+  /* Cible de touch un peu plus confortable pour les boutons segmentes */
+  .seg, .cat-btn {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Rail d'icones un peu plus etroit sur les tres petits telephones */
+  aside.w-14 {
+    width: 3.25rem;
+  }
+  .ml-14 {
+    margin-left: 3.25rem;
+  }
+}
+
+
+/* Bandeau "pense pour ordinateur" : cache par defaut, visible sous 1024px
+   (meme seuil que le rail de nav qui passe en icones seules), sauf si ferme
+   (classe .mn-dismissed ajoutee par mobile-notice.js). */
+#mobile-notice {
+  display: none;
+}
+@media (max-width: 1023px) {
+  #mobile-notice:not(.mn-dismissed) {
+    display: flex;
+  }
+}

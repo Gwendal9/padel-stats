@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/static/mobile.css">
+<script src="/static/mobile-notice.js" defer></script>
+<title>Suggestions · Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
+  brand:{DEFAULT:'#0E9C86',dark:'#0A7766',soft:'#E6F4F1'},
+  paper:'#F5F6F7',line:'#E7E9EC',muted:'#697483'}}}}
+</script>
+<style>
+  body{font-family:'Inter',sans-serif;background:#F5F6F7;color:#15191F}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .card{background:#fff;border:1px solid #E7E9EC;border-radius:14px}
+  .nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);font-weight:500}
+  .nav:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav.active{background:rgba(14,156,134,.16);color:#13C2A6}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
+  @media(max-width:1023px){.nav span,.side-lbl,.brand-txt{display:none}.nav{justify-content:center;padding:10px 0}}
+  .inp{border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:9px 11px;font-size:13.5px;color:#15191F}
+  .inp:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
+  textarea.inp{resize:vertical}
+  .cat-btn{transition:background .15s,color .15s,border-color .15s}
+</style>
+</head>
+<body class="antialiased">
+
+<aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
+    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32">
+    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+  </a>
+  <nav class="flex flex-col gap-1 text-sm">
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
+    <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
+    <a href="/clubs" class="nav" title="Classement · Clubs"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg><span>Clubs</span></a>
+    <a href="/tournois" class="nav" title="Classement · Tournois"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM5 4H3v3a3 3 0 0 0 3 3M19 4h2v3a3 3 0 0 1-3 3"/></svg><span>Tournois</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Au hasard <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;opacity:.7"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+    <a href="/joueur/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#6366F1"/><circle cx="15" cy="9" r="1.4" fill="#6366F1"/><circle cx="9" cy="15" r="1.4" fill="#6366F1"/><circle cx="15" cy="15" r="1.4" fill="#6366F1"/><circle cx="12" cy="12" r="1.4" fill="#6366F1"/></svg><span>Un joueur</span></a>
+    <a href="/club/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#34D399"/><circle cx="15" cy="9" r="1.4" fill="#34D399"/><circle cx="9" cy="15" r="1.4" fill="#34D399"/><circle cx="15" cy="15" r="1.4" fill="#34D399"/><circle cx="12" cy="12" r="1.4" fill="#34D399"/></svg><span>Un club</span></a>
+    <a href="/tournoi/random" class="nav" title="Fiche au hasard"><svg viewBox="0 0 24 24" fill="none" stroke="#E0AE45" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.4" fill="#E0AE45"/><circle cx="15" cy="9" r="1.4" fill="#E0AE45"/><circle cx="9" cy="15" r="1.4" fill="#E0AE45"/><circle cx="15" cy="15" r="1.4" fill="#E0AE45"/><circle cx="12" cy="12" r="1.4" fill="#E0AE45"/></svg><span>Un tournoi</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Exploration</div>
+    <a href="/carte" class="nav" title="Carte"><svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>Carte</span></a>
+    <a href="/graphe" class="nav" title="Graphe"><svg viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5 16 8M7.5 8l3.5 8M16.5 9l-3.5 7"/></svg><span>Graphe</span></a>
+    <div class="h-px bg-white/10 mx-2 my-2"></div>
+    <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Communauté</div>
+    <a href="/suggestions" class="nav active" title="Suggestions"><svg viewBox="0 0 24 24" fill="none" stroke="#F472B6" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Suggestions</span></a>
+  </nav>
+</aside>
+
+<div class="ml-14 lg:ml-60 min-w-0">
+<div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
+  <span>💻 Padel Stats est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
+</div>
+  <main class="px-5 lg:px-8 py-6 max-w-2xl">
+    <div class="flex items-center gap-2.5">
+      <span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#F472B61f;color:#F472B6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </span>
+      <h1 class="font-800 text-2xl tracking-tight">Suggestions</h1>
+    </div>
+    <p class="text-sm text-muted mt-1">Une idée, un bug repéré, un truc qui manque ? Dis-le nous — ça nous aide à améliorer le site. Pas besoin de compte. Chaque suggestion est relue avant de s'afficher ici, pour éviter les doublons et le n'importe quoi.</p>
+
+    <form id="sugForm" class="card p-4 sm:p-5 mt-5">
+      <div class="grid grid-cols-3 gap-2 mb-3" id="catButtons">
+        <button type="button" data-cat="idee" class="cat-btn h-10 rounded-lg text-sm font-600 border">💡 Idée</button>
+        <button type="button" data-cat="bug" class="cat-btn h-10 rounded-lg text-sm font-600 border">🐞 Bug</button>
+        <button type="button" data-cat="autre" class="cat-btn h-10 rounded-lg text-sm font-600 border">💬 Autre</button>
+      </div>
+      <textarea id="sugMessage" required minlength="5" maxlength="2000" rows="4" class="inp w-full" placeholder="Explique-nous ton idée ou le problème rencontré…"></textarea>
+      <div class="grid sm:grid-cols-2 gap-2 mt-3">
+        <input id="sugName" class="inp w-full" placeholder="Ton prénom (optionnel)">
+        <input id="sugEmail" type="email" class="inp w-full" placeholder="Email (optionnel, si tu veux une réponse)">
+      </div>
+      <div class="hidden">
+        <input type="text" id="sugHp" name="hp" tabindex="-1" autocomplete="off">
+      </div>
+      <div class="flex items-center justify-between gap-3 mt-3 flex-wrap">
+        <span id="sugMsg" class="text-sm"></span>
+        <button type="submit" id="sugSubmit" class="px-5 h-10 rounded-lg bg-ink text-white text-sm font-600 hover:bg-black/80 shrink-0">Envoyer</button>
+      </div>
+    </form>
+
+    <div class="mt-7">
+      <div class="flex items-center justify-between">
+        <h2 class="font-700 text-base">Ce que la communauté propose</h2>
+        <span class="text-xs text-muted" id="sugCount"></span>
+      </div>
+      <p class="text-xs text-muted mt-0.5">Suggestions déjà validées — les nouvelles apparaissent ici une fois relues.</p>
+    </div>
+    <div id="sugList" class="mt-3 space-y-2.5"></div>
+    <div id="sugEmpty" class="hidden text-sm text-muted py-8 text-center">Aucune suggestion publiée pour l'instant — la tienne sera peut-être la première une fois validée !</div>
+  </main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const CAT_META={
+  idee:{label:'💡 Idée', cls:'bg-brand-soft text-brand-dark'},
+  bug:{label:'🐞 Bug', cls:'bg-rose-50 text-rose-600'},
+  autre:{label:'💬 Autre', cls:'bg-slate-100 text-slate-600'},
+};
+
+let selectedCat='idee';
+function paintCat(){
+  document.querySelectorAll('.cat-btn').forEach(b=>{
+    const on=b.dataset.cat===selectedCat;
+    b.className='cat-btn h-10 rounded-lg text-sm font-600 border '+(on?'bg-ink text-white border-ink':'bg-white text-muted border-line hover:bg-paper');
+  });
+}
+document.querySelectorAll('.cat-btn').forEach(b=>b.addEventListener('click',()=>{selectedCat=b.dataset.cat;paintCat();}));
+paintCat();
+
+function relDate(iso){
+  try{
+    const d=new Date(iso.endsWith('Z')?iso:iso+'Z');
+    const diff=(Date.now()-d.getTime())/1000;
+    if(diff<60) return "à l'instant";
+    if(diff<3600) return `il y a ${Math.floor(diff/60)} min`;
+    if(diff<86400) return `il y a ${Math.floor(diff/3600)} h`;
+    if(diff<86400*30) return `il y a ${Math.floor(diff/86400)} j`;
+    return d.toLocaleDateString('fr-FR');
+  }catch(_){ return ''; }
+}
+
+function getVoted(){ try{return JSON.parse(localStorage.getItem('sug_voted')||'[]');}catch(_){return [];} }
+function setVoted(a){ try{localStorage.setItem('sug_voted',JSON.stringify(a));}catch(_){} }
+
+async function loadSuggestions(){
+  let rows=[];
+  try{ rows=await fetch('/api/suggestions').then(r=>r.json()); }catch(_){}
+  const list=$('sugList'), empty=$('sugEmpty'), count=$('sugCount');
+  if(!Array.isArray(rows)) rows=[];
+  count.textContent = rows.length ? `${rows.length} suggestion${rows.length>1?'s':''}` : '';
+  if(!rows.length){ list.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  const voted=getVoted();
+  list.innerHTML = rows.map(s=>{
+    const meta=CAT_META[s.category]||CAT_META.autre;
+    const already=voted.includes(s.id);
+    return `<div class="card p-3.5 flex items-start gap-3">
+      <button class="vote-btn shrink-0 w-11 h-11 rounded-lg border ${already?'border-brand bg-brand-soft text-brand-dark':'border-line hover:bg-paper text-muted'} flex flex-col items-center justify-center text-[11px] font-700" data-id="${s.id}" ${already?'disabled':''} aria-label="Voter pour cette suggestion">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <span class="num mt-0.5">${s.votes||0}</span>
+      </button>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] font-700 px-2 py-0.5 rounded-full ${meta.cls}">${meta.label}</span>
+          <span class="text-[11px] text-muted">${esc(s.name)||'Anonyme'} · ${relDate(s.created_at)}</span>
+        </div>
+        <p class="text-sm mt-1.5 break-words whitespace-pre-wrap">${esc(s.message)}</p>
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.vote-btn').forEach(b=>b.addEventListener('click', async ()=>{
+    const id=Number(b.dataset.id);
+    b.disabled=true;
+    try{
+      const r=await fetch(`/api/suggestions/${id}/vote`,{method:'POST'});
+      if(r.ok){ const v=getVoted(); v.push(id); setVoted(v); loadSuggestions(); }
+      else{ b.disabled=false; }
+    }catch(_){ b.disabled=false; }
+  }));
+}
+
+const form=$('sugForm');
+form.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const message=$('sugMessage').value.trim();
+  const msgEl=$('sugMsg');
+  if(message.length<5){
+    msgEl.textContent='Écris un peu plus de détails 🙂';
+    msgEl.className='text-sm text-rose-600';
+    return;
+  }
+  const btn=$('sugSubmit');
+  btn.disabled=true; btn.textContent='Envoi…';
+  msgEl.textContent=''; msgEl.className='text-sm';
+  try{
+    const r=await fetch('/api/suggestions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        message,
+        category:selectedCat,
+        name:$('sugName').value.trim(),
+        email:$('sugEmail').value.trim(),
+        page:location.pathname,
+        hp:$('sugHp').value,
+      }),
+    });
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(d.error||'Erreur');
+    msgEl.textContent="Merci, c'est envoyé ! On la relit avant qu'elle apparaisse ici. 🎉";
+    msgEl.className='text-sm text-emerald-600';
+    form.reset();
+    selectedCat='idee'; paintCat();
+    loadSuggestions();
+  }catch(err){
+    msgEl.textContent='Oups, réessaie dans un instant.';
+    msgEl.className='text-sm text-rose-600';
+  }finally{
+    btn.disabled=false; btn.textContent='Envoyer';
+  }
+});
+
+loadSuggestions();
+</script>
+</body>
+</html>

@@ -149,6 +149,21 @@ def ensure_indexes():
                 body        TEXT NOT NULL,
                 computed_at TIMESTAMP DEFAULT NOW()
             )""",
+            # Suggestions (retours utilisateurs)
+            """CREATE TABLE IF NOT EXISTS suggestions (
+                id          SERIAL PRIMARY KEY,
+                message     TEXT NOT NULL,
+                category    TEXT NOT NULL DEFAULT 'idee',
+                name        TEXT,
+                email       TEXT,
+                page        TEXT,
+                user_id     TEXT,
+                votes       INTEGER NOT NULL DEFAULT 0,
+                status      TEXT NOT NULL DEFAULT 'nouveau',
+                created_at  TIMESTAMPTZ DEFAULT NOW()
+            )""",
+            "CREATE INDEX IF NOT EXISTS idx_suggestions_votes ON suggestions(votes DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_suggestions_created ON suggestions(created_at DESC)",
         ]
         try:
             conn = psycopg2.connect(DATABASE_URL)
@@ -277,6 +292,28 @@ def ensure_indexes():
                 )
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_favorites_user ON user_favorites(user_id)"
+                )
+
+                # -- Table suggestions (retours utilisateurs) --
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS suggestions (
+                        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                        message     TEXT NOT NULL,
+                        category    TEXT NOT NULL DEFAULT 'idee',
+                        name        TEXT,
+                        email       TEXT,
+                        page        TEXT,
+                        user_id     TEXT,
+                        votes       INTEGER NOT NULL DEFAULT 0,
+                        status      TEXT NOT NULL DEFAULT 'nouveau',
+                        created_at  TEXT NOT NULL
+                    )
+                """)
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_suggestions_votes ON suggestions(votes DESC)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_suggestions_created ON suggestions(created_at DESC)"
                 )
                 conn.commit()
         except Exception:
