@@ -3,9 +3,6 @@
 Dashboard analytics pour le padel français, construit à partir des données publiques TenUp.
 Projet de portfolio Data Analyst.
 
-<<<<<<< Updated upstream
-🚀 **[Accéder au site → padel-stats.onrender.com](https://padel-stats-oava.onrender.com/)**
-=======
 🚀 **[Accéder au site → padel.gwendev.eu](https://padel.gwendev.eu)**
 >>>>>>> Stashed changes
 
