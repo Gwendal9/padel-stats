@@ -69,7 +69,8 @@ def build_stats_globales():
         ).fetchall()
         types = {r[0]: r[1] for r in types_raw}
 
-        scrape_date = "avril 2026"   # snapshot fixe, à mettre à jour après re-scraping
+        _r = conn.execute("SELECT MAX(mois) FROM classements_historique").fetchone()
+        scrape_date = (_r[0] if _r and _r[0] else "?")   # dernier mois scrapé (ex. 2026-08)
 
     save("stats_globales.json", {
         "nb_joueurs": nb_joueurs,
@@ -238,6 +239,7 @@ def build_tournois_distribution():
     classiques = []
     championnats = []
     for cat, nb_t, nb_p in rows:
+        cat = cat or "?"   # certains tournois ont une catégorie NULL
         entry = {"categorie": cat, "nb_tournois": nb_t, "nb_participations": nb_p}
         is_champ = any(c in cat for c in CHAMP_CATS)
         if is_champ:
@@ -281,6 +283,8 @@ def build_bareme_points():
         result[cat] = {}
         for pos in sorted(data[cat].keys()):
             vals = data[cat][pos]
+            if not vals:
+                continue
             result[cat][pos] = {
                 "median": int(median(vals)),
                 "max": max(vals),

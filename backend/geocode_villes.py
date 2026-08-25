@@ -3,8 +3,9 @@ geocode_villes.py — Coordonnées lat/lon des villes (pour marqueurs de carte).
 
 Source : API officielle gratuite geo.api.gouv.fr (toutes les communes FR + coords, sans clé).
 Le script télécharge une fois (cache local communes_geo.json), puis matche les villes de
-`joueurs`/`clubs` par NOM + DÉPARTEMENT (fiable contre les homonymes ; il existe plein de
-communes homonymes selon le département).
+`joueurs`/`clubs` :
+  - par NOM + DÉPARTEMENT (fiable contre les homonymes) ;
+  - par CODE POSTAL quand la ville est un code postal (ex. "01000").
 
 Produit :
   - table `villes_geo` (ville, dept_num, lat, lon)
@@ -20,7 +21,7 @@ import sqlite3, sys, os, json, unicodedata, urllib.request
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(BASE, 'tenup.db')
 CACHE = os.path.join(BASE, 'communes_geo.json')
-API = "https://geo.api.gouv.fr/communes?fields=nom,centre,codeDepartement&format=json"
+API = "https://geo.api.gouv.fr/communes?fields=nom,centre,codeDepartement,codesPostaux&format=json"
 REFRESH = '--refresh' in sys.argv
 
 
@@ -30,20 +31,21 @@ def norm(s):
     s = ''.join(c for c in s if not unicodedata.combining(c)).upper()
     for ch in "-'.": s = s.replace(ch, ' ')
     s = ' '.join(s.split())
-    # arrondissements des grandes villes
-    for v in ('PARIS', 'LYON', 'MARSEILLE'):
+    for v in ('PARIS', 'LYON', 'MARSEILLE'):          # arrondissements
         if s.startswith(v + ' ') and s[len(v)+1:].strip().isdigit():
             return v
-    # abréviations courantes
     s = ' '.join(('SAINT' if w == 'ST' else 'SAINTE' if w == 'STE' else w) for w in s.split())
     return s
 
 
 def load_communes():
     if os.path.exists(CACHE) and not REFRESH:
-        print(f"Communes : cache {CACHE}")
-        return json.load(open(CACHE, encoding='utf-8'))
-    print(f"Téléchargement des communes depuis geo.api.gouv.fr…")
+        data = json.load(open(CACHE, encoding='utf-8'))
+        if data and 'codesPostaux' in data[0]:        # cache complet
+            print(f"Communes : cache {CACHE}")
+            return data
+        print("Cache sans codes postaux -> re-téléchargement…")
+    print("Téléchargement des communes depuis geo.api.gouv.fr…")
     req = urllib.request.Request(API, headers={'User-Agent': 'tenup-geocode'})
     with urllib.request.urlopen(req, timeout=60) as r:
         data = json.load(r)
@@ -54,9 +56,7 @@ def load_communes():
 
 def main():
     communes = load_communes()
-    # index (nom_normalisé, dept) -> (lat,lon)  + index nom seul si unique
-    by_nd, by_name = {}, {}
-    seen_name = {}
+    by_nd, by_cp, seen_name = {}, {}, {}
     for com in communes:
         centre = com.get('centre') or {}
         coords = centre.get('coordinates')
@@ -67,33 +67,35 @@ def main():
         dep = com.get('codeDepartement')
         by_nd[(nm, dep)] = (lat, lon)
         seen_name.setdefault(nm, set()).add((lat, lon, dep))
-    for nm, pts in seen_name.items():
-        if len(pts) == 1:
-            by_name[nm] = next(iter(pts))   # (lat, lon, dep)
-    print(f"index : {len(by_nd):,} (nom+dept), {len(by_name):,} noms uniques")
+        for cp in (com.get('codesPostaux') or []):    # index code postal (1er gagne)
+            by_cp.setdefault(cp, (lat, lon))
+    by_name = {nm: next(iter(pts)) for nm, pts in seen_name.items() if len(pts) == 1}  # (lat,lon,dep)
+    print(f"index : {len(by_nd):,} (nom+dept), {len(by_name):,} noms uniques, {len(by_cp):,} codes postaux")
 
     c = sqlite3.connect(DB, isolation_level=None)
-    c.execute("PRAGMA busy_timeout=60000")  # attend si la base est verrouillée (autre script en cours)
+    c.execute("PRAGMA busy_timeout=60000")
     c.execute("""CREATE TABLE IF NOT EXISTS villes_geo (
         ville TEXT, dept_num TEXT, lat REAL, lon REAL, UNIQUE(ville, dept_num))""")
 
     couples = c.execute("""SELECT DISTINCT ville, dept_num FROM joueurs
                            WHERE ville IS NOT NULL AND ville!=''""").fetchall()
-    ok = miss = crossdept = 0
-    rows = []
-    ex_miss = []
+    ok = miss = crossdept = cp_ok = 0
+    rows, ex_miss = [], []
     for ville, dep in couples:
-        nm = norm(ville)
-        pt = by_nd.get((nm, dep))
-        if not pt:
-            cand = by_name.get(nm)  # (lat, lon, dep_commune) ou None
-            # Fallback "nom seul" UNIQUEMENT si meme departement (ou dept club inconnu).
-            # Sinon on refuse : evite qu'un homonyme d'un autre dept place le club au
-            # mauvais endroit (ex. LUYNES 13 -> Luynes 37, ou une ville mal saisie).
-            if cand and (not dep or cand[2] == dep):
-                pt = (cand[0], cand[1])
-            elif cand:
-                crossdept += 1
+        v = ville.strip()
+        pt = None
+        if v.isdigit():                               # ville = code postal
+            pt = by_cp.get(v.zfill(5))
+            if pt: cp_ok += 1
+        else:
+            nm = norm(ville)
+            pt = by_nd.get((nm, dep))
+            if not pt:
+                cand = by_name.get(nm)                # (lat, lon, dep_commune)
+                if cand and (not dep or cand[2] == dep):
+                    pt = (cand[0], cand[1])
+                elif cand:
+                    crossdept += 1
         if pt:
             rows.append((ville, dep, pt[0], pt[1])); ok += 1
         else:
@@ -106,10 +108,10 @@ def main():
     c.execute("COMMIT")
     tot = len(couples)
     print(f"\nVilles géocodées : {ok:,}/{tot:,} ({100*ok/max(tot,1):.1f}%)  | non trouvées : {miss:,}")
-    if crossdept: print(f"  (dont {crossdept:,} refusées : homonyme dans un autre département — évite les clubs mal placés)")
+    print(f"  dont par code postal : {cp_ok:,}")
+    if crossdept: print(f"  refusées (homonyme autre département) : {crossdept:,}")
     if ex_miss: print(f"  ex. non trouvées : {ex_miss}")
 
-    # lat/lon sur les clubs (via ville + dept)
     for mig in ["ALTER TABLE clubs ADD COLUMN lat REAL", "ALTER TABLE clubs ADD COLUMN lon REAL"]:
         try: c.execute(mig)
         except Exception: pass
@@ -118,9 +120,7 @@ def main():
         lon=(SELECT v.lon FROM villes_geo v WHERE v.ville=clubs.ville AND v.dept_num=clubs.dept_num)""")
     nclub = c.execute("SELECT COUNT(*) FROM clubs WHERE lat IS NOT NULL").fetchone()[0]
     print(f"Clubs avec coordonnées : {nclub:,}")
-
-    print("\n→ Pour la carte : marqueurs via clubs(lat,lon) ou villes_geo ; "
-          "choroplèthe départements via joueurs.dept_num + GeoJSON FR.")
+    print("\n→ Carte : marqueurs via clubs(lat,lon) ou villes_geo ; choroplèthe via joueurs.dept_num + GeoJSON FR.")
 
 
 if __name__ == '__main__':

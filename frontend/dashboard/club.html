@@ -251,6 +251,16 @@ function render(name,c,d){
     ${bn.length?`<div class="card p-4"><h2 class="font-700 text-base mb-2">Binômes du club<span class="info" tabindex="0" data-tip="Les duos les plus présents dans les tournois organisés par le club.">i</span></h2><div id="binomes" class="space-y-0.5"></div><div class="text-[11px] text-muted mt-2">Duos les plus présents dans les tournois organisés par le club.</div></div>`:''}
   </section>
 
+  <section class="mt-4 card p-4">
+    <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
+      <h2 class="font-700 text-base flex items-center gap-1.5"><span class="w-7 h-7 rounded-lg grid place-items-center shrink-0" style="background:#0E9C861f;color:#0E9C86"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="17" r="1.6"/><circle cx="13" cy="10" r="1.6"/><circle cx="19" cy="13" r="1.6"/><circle cx="10" cy="6" r="1.6"/></svg></span>Efficacité des membres<span class="info" tabindex="0" data-tip="Chaque point = un membre classé du club : ses points FFT face à son nombre de tournois disputés.">i</span></h2>
+      <div class="inline-flex p-0.5 rounded-lg bg-paper border border-line text-[12px] font-600"><button id="es_h" class="tg">H</button><button id="es_f" class="tg">F</button></div>
+    </div>
+    <p class="text-[12px] text-muted mb-2">Points FFT vs nombre de tournois disputés.</p>
+    <div class="relative" style="height:320px"><canvas id="scatterchart"></canvas></div>
+    <div id="scatter_empty" class="hidden text-sm text-muted text-center py-10">Pas assez de membres classés dans ce pool.</div>
+  </section>
+
   ${(actCard||orgaCard)?`<section class="mt-4 grid gap-3 ${actCard&&orgaCard?'lg:grid-cols-2':''}">${actCard}${orgaCard}</section>`:''}
 
   <section class="mt-4 card p-4">
@@ -331,6 +341,35 @@ function render(name,c,d){
   document.getElementById('bmp_h').addEventListener('click',()=>{bmpSexe='H';loadBump();});
   document.getElementById('bmp_f').addEventListener('click',()=>{bmpSexe='F';loadBump();});
   loadBump();
+
+  // ── Efficacité des membres : scatter points vs tournois, un seul sexe à la fois ──
+  let esSexe='H', esData=null, esChart=null;
+  function paintEsTg(){
+    document.getElementById('es_h').className='tg '+(esSexe==='H'?'bg-ink text-white':'text-muted');
+    document.getElementById('es_f').className='tg '+(esSexe==='F'?'bg-ink text-white':'text-muted');
+  }
+  function renderScatter(){
+    paintEsTg();
+    const cv=document.getElementById('scatterchart'), emp=document.getElementById('scatter_empty');
+    const pts=((esData&&esData.joueurs)||[]).filter(x=>x.sexe===esSexe);
+    if(esChart){ esChart.destroy(); esChart=null; }
+    if(pts.length<3||typeof Chart==='undefined'){ cv.style.display='none'; emp.classList.remove('hidden'); return; }
+    cv.style.display=''; emp.classList.add('hidden');
+    const col=esSexe==='H'?'#6366F1':'#E0AE45';
+    esChart=new Chart(cv,{type:'scatter',data:{datasets:[{label:esSexe==='H'?'Hommes':'Femmes',
+      data:pts.map(x=>({x:x.nt,y:x.points,nom:x.nom,id:x.id})),backgroundColor:col}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        onClick:(e,els)=>{ if(els.length){ const p=pts[els[0].index]; if(p&&p.id) location.href='/joueur/'+p.id; } },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw.nom} · ${fr(c.raw.y)} pts · ${fr(c.raw.x)} tournois`}}},
+        scales:{x:{title:{display:true,text:'nb de tournois',font:{size:10}}},y:{title:{display:true,text:'points',font:{size:10}}}}}});
+  }
+  async function loadScatter(){
+    if(!esData){ try{ esData=await fetch('/api/club_scatter?nom='+encodeURIComponent(name)).then(r=>r.json()); }catch(_){ esData={joueurs:[]}; } }
+    renderScatter();
+  }
+  document.getElementById('es_h').addEventListener('click',()=>{esSexe='H';renderScatter();});
+  document.getElementById('es_f').addEventListener('click',()=>{esSexe='F';renderScatter();});
+  loadScatter();
 
   // Meilleurs joueurs (licenciés / ont joué ici)
   TOP_LIC={H:(c.top_h||[]),F:(c.top_f||[])};

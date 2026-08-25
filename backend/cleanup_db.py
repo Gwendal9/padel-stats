@@ -88,6 +88,15 @@ d3 = c.execute("UPDATE participations SET partenaire_nom='' "
                "WHERE partenaire_nom IN ('None None','None','none none')").rowcount
 print(f"  partenaire 'None None' vidés : {d3:,}")
 
+# Casse le faux hub du graphe : vide les partenaire_id pointant vers le placeholder
+# "Joueur Anonyme" ou un joueur au nom masqué (nom NULL). Ce sont de fausses arêtes
+# (partenaire non identifiable). On ne touche PAS aux arêtes SORTANTES de ces joueurs
+# (leur propre bilan reste relié à leurs vrais partenaires).
+d5 = c.execute("""UPDATE participations SET partenaire_id=''
+                  WHERE partenaire_id IN (SELECT id_fft FROM joueurs
+                                          WHERE nom IS NULL OR (nom='Joueur' AND prenom='Anonyme'))""").rowcount
+print(f"  arêtes vers anonyme/placeholder vidées : {d5:,}")
+
 # tournois devenus inutiles (plus aucune participation)
 dt = c.execute("DELETE FROM tournois WHERE NOT EXISTS "
                "(SELECT 1 FROM participations p WHERE p.id_tournoi=tournois.id_tournoi)").rowcount

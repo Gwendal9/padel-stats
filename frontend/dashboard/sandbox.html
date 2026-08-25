@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sandbox — Visuels Padel Stats</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  body{background:#f5f7fa}
+  .card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .badge{background:#059669;color:#fff;font-weight:800;border-radius:8px;padding:2px 9px;font-size:12px}
+  .cvwrap{position:relative;height:320px}
+  #map{height:460px;border-radius:12px;z-index:0}
+</style>
+</head>
+<body class="text-slate-800">
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h1 class="text-3xl font-extrabold tracking-tight">🎾 Sandbox — visuels (v2, intégrés)</h1>
+    <p class="text-slate-500 mt-1">Tous les blocs ci-dessous sont maintenant en prod : #1 sur <a href="/clubs" class="underline">/clubs</a>, #2 sur <a href="/" class="underline">l'accueil</a> (à côté de « Nouveaux classés »), #5 sur les <a href="/club/random" class="underline">fiches club</a> (avec toggle H/F), #7 sur <a href="/graphe" class="underline">/graphe</a>. Cette page reste comme labo pour de futurs essais.</p>
+    <p id="status" class="text-sm text-emerald-700 mt-2">Chargement…</p>
+  </div>
+
+  <!-- 1 · Carte de tous les clubs (clustering + recherche) -->
+  <div class="card p-5 mb-6">
+    <div class="flex items-center gap-2 mb-1"><span class="badge">1</span><h2 class="font-bold text-lg">Carte de tous les clubs</h2></div>
+    <p class="text-slate-500 text-sm mb-3">Les <b id="nbclubs">…</b> clubs géocodés, regroupés en paquets pour rester lisible (zoome pour détailler). Complémentaire de la carte-choroplèthe existante.</p>
+    <div class="flex gap-2 mb-3">
+      <input id="search" type="text" placeholder="Chercher un club (ex. Les Lilas)…" class="flex-1 h-10 px-3 rounded-lg border border-slate-300 text-sm">
+      <button id="go" class="h-10 px-4 rounded-lg bg-emerald-600 text-white text-sm font-600">Trouver</button>
+    </div>
+    <div id="map"></div>
+    <p id="found" class="text-sm text-slate-500 mt-2"></p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <!-- 2 · Top départements (validé — à mettre à côté des "nouveaux classés") -->
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-1"><span class="badge">2</span><h2 class="font-bold text-lg">Top départements</h2>
+        <span class="text-emerald-600 text-xs font-700 ml-1">✓ validé</span></div>
+      <p class="text-slate-500 text-sm mb-3">Joueurs classés par département (H/F). → à placer à côté des « nouveaux classés » (existant + évolution récente).</p>
+      <div class="cvwrap"><canvas id="c-dept"></canvas></div>
+    </div>
+
+    <!-- 5 · Efficacité, à l'échelle d'un club -->
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-1"><span class="badge">5</span><h2 class="font-bold text-lg">Efficacité — joueurs d'un club</h2></div>
+      <p class="text-slate-500 text-sm mb-3">Version resserrée : les membres d'<b id="cs-club">un club</b>. Chaque point = un joueur (points vs nb de tournois). À intégrer sur une fiche club / joueur.</p>
+      <div class="cvwrap"><canvas id="c-clubscatter"></canvas></div>
+    </div>
+
+    <!-- 7 · Top duos (option) -->
+    <div class="card p-5 md:col-span-2">
+      <div class="flex items-center gap-2 mb-1"><span class="badge">7</span><h2 class="font-bold text-lg">Top duos</h2>
+        <span class="text-slate-400 text-xs font-600 ml-1">option</span></div>
+      <p class="text-slate-500 text-sm mb-3">Les paires qui ont le plus joué ensemble. (Où l'intégrer ? page graphe, ou un « fun facts ».)</p>
+      <ol id="duos" class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm"></ol>
+    </div>
+  </div>
+
+  <p class="text-slate-400 text-xs mt-6">Abandonnés : #3 distribution, #4 niveaux, #6 évolution (déjà là), #8 percentile (déjà là).</p>
+</div>
+
+<script>
+const EM='#059669', BL='#6366F1', RS='#f43f5e';
+const fr=n=>(n==null?'—':n.toLocaleString('fr-FR'));
+const tc=s=>(s||'').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+
+async function main(){
+  let d;
+  try{ d=await fetch('/api/sandbox').then(r=>r.json()); }
+  catch(e){ status.textContent='Erreur /api/sandbox'; return; }
+  status.textContent='Données chargées ✓';
+
+  // 1 · Carte clubs (cluster + recherche)
+  const clubs=(d.clubs||[]).filter(c=>c.lat!=null&&c.lon!=null);
+  document.getElementById('nbclubs').textContent=fr(clubs.length);
+  const map=L.map('map',{scrollWheelZoom:true}).setView([46.6,2.4],6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
+  const cluster=L.markerClusterGroup({maxClusterRadius:45,spiderfyOnMaxZoom:true});
+  const idx=[];
+  clubs.forEach(c=>{
+    const col = c.classement_moyen==null?EM : (c.classement_moyen<15000?'#059669':c.classement_moyen<40000?'#f59e0b':'#94a3b8');
+    const mk=L.circleMarker([c.lat,c.lon],{radius:Math.max(4,Math.min(16,Math.sqrt(c.nb_membres)*1.3)),color:col,weight:1,fillColor:col,fillOpacity:.6})
+      .bindPopup(`<b>${tc(c.nom)}</b><br>${tc(c.ville||'')}<br>${fr(c.nb_membres)} joueurs classés`+(c.classement_moyen?`<br>Clt moyen ${fr(c.classement_moyen)}e`:''));
+    cluster.addLayer(mk); idx.push({name:(c.nom||'').toUpperCase(),mk});
+  });
+  map.addLayer(cluster);
+  function findClub(){
+    const q=(document.getElementById('search').value||'').toUpperCase().trim();
+    if(!q)return;
+    const hit=idx.find(x=>x.name.includes(q));
+    const f=document.getElementById('found');
+    if(!hit){ f.textContent='Aucun club trouvé pour « '+q+' ».'; return; }
+    f.textContent='Trouvé : '+tc(hit.name);
+    cluster.zoomToShowLayer(hit.mk,()=>hit.mk.openPopup());
+  }
+  document.getElementById('go').addEventListener('click',findClub);
+  document.getElementById('search').addEventListener('keydown',e=>{ if(e.key==='Enter')findClub(); });
+
+  // 2 · Top départements
+  const dept=[...(d.dept||[])].sort((a,b)=>b.nb_total-a.nb_total).slice(0,20);
+  new Chart(document.getElementById('c-dept'),{type:'bar',data:{labels:dept.map(x=>x.dept_num+' '+tc(x.comite)),
+    datasets:[{label:'Hommes',data:dept.map(x=>x.nb_h),backgroundColor:BL,stack:'s'},
+              {label:'Femmes',data:dept.map(x=>x.nb_f),backgroundColor:RS,stack:'s'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{font:{size:10}}}},plugins:{legend:{position:'bottom'}}}});
+
+  // 5 · Efficacité par club
+  const cs=d.club_scatter||{}; document.getElementById('cs-club').textContent=cs.club||'un club';
+  const js=(cs.joueurs||[]);
+  new Chart(document.getElementById('c-clubscatter'),{type:'scatter',data:{datasets:[
+    {label:'Hommes',data:js.filter(x=>x.sexe==='H').map(x=>({x:x.nt,y:x.points,nom:x.nom})),backgroundColor:BL},
+    {label:'Femmes',data:js.filter(x=>x.sexe==='F').map(x=>({x:x.nt,y:x.points,nom:x.nom})),backgroundColor:RS}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+      tooltip:{callbacks:{label:c=>`${c.raw.nom} · ${c.raw.y} pts · ${c.raw.x} tournois`}}},
+      scales:{x:{title:{display:true,text:'nb de tournois'}},y:{title:{display:true,text:'points'}}}}});
+
+  // 7 · Top duos
+  document.getElementById('duos').innerHTML=(d.duos||[]).map((x,i)=>
+    `<li class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-slate-50">
+      <span><span class="text-slate-400 font-700 mr-2">${i+1}</span>${tc(x.j1)} <span class="text-slate-400">&amp;</span> ${tc(x.j2)}</span>
+      <span class="badge" style="background:#0f172a">${x.n}</span></li>`).join('');
+}
+main();
+</script>
+</body>
+</html>

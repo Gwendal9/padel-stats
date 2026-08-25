@@ -126,6 +126,14 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </div>
     <div id="suggests" class="mt-3"></div>
+
+    <div class="card p-4 mt-3">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="lbl">Top 500 duos du padel français<span class="info" tabindex="0" data-tip="Les paires ayant disputé le plus de tournois ensemble, tous clubs confondus.">i</span></div>
+        <span id="duos-count" class="text-[11px] text-muted"></span>
+      </div>
+      <ol id="topduos" class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm max-h-96 overflow-y-auto pr-1"></ol>
+    </div>
   </main>
 </div>
 
@@ -203,6 +211,19 @@ async function loadSuggests(id){
     s.slice(0,9).map(x=>`<a href="/joueur/${x.id}" class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-line hover:bg-paper text-sm"><span class="font-500 truncate">${tc(x.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${x.classement??'—'}</span></a>`).join('')+
     `</div></div>`;
 }
+
+async function loadTopDuos(){
+  const el=document.getElementById('topduos'); if(!el)return;
+  let d={}; try{ d=await fetch('/api/duos?n=500').then(r=>r.json()); }catch(_){}
+  const top=d.top||[];
+  document.getElementById('duos-count').textContent=top.length?fr(top.length)+' duos affichés':'';
+  el.innerHTML=top.map((x,i)=>
+    `<li class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-paper">
+      <span class="truncate"><span class="text-muted font-700 mr-2">${i+1}</span><a href="/joueur/${x.id1}" class="hover:underline">${tc(x.j1)}</a> <span class="text-muted">&amp;</span> <a href="/joueur/${x.id2}" class="hover:underline">${tc(x.j2)}</a></span>
+      <span class="num text-[12px] text-muted shrink-0 font-700">${x.n} tournois</span></li>`).join('')
+    ||'<li class="text-sm text-muted px-2 py-3">—</li>';
+}
+loadTopDuos();
 
 /* ===== Moteur graphe (état persistant + dépliage) ===== */
 let sim=null,GNODES=[],GLINKS=[],BYID={},SVG=null,ROOT=null,ZOOM=null,LINKG=null,NODEG=null,LINK=null,NODE=null,WW=0,HH=0,wsum={},adj={},clickTimer=null,CENTERID=null,colorMode='com',LABELED=new Set();

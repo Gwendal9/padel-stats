@@ -171,10 +171,12 @@ class GraphEngine:
         return pid in self._anon_megahubs
 
     def _is_anonymous(self, pid: str) -> bool:
-        """Vrai si le joueur est un 'Joueur Anonyme' (petit ou mega-hub)."""
+        """Vrai si le joueur est anonyme : nom masqué (vide) ou placeholder FFT 'Joueur Anonyme'
+        (nom='Joueur', prenom='Anonyme')."""
         info = self.player_info.get(pid, {})
         nom = (info.get("nom", "") or "").upper().strip()
-        return nom == "ANONYME"
+        prenom = (info.get("prenom", "") or "").upper().strip()
+        return nom == "" or nom == "ANONYME" or (nom == "JOUEUR" and prenom == "ANONYME")
 
     def ego_graph(self, player_id: str, depth: int = 2) -> dict:
         self._ensure_loaded()
@@ -208,10 +210,14 @@ class GraphEngine:
         for pid, degree in visited.items():
             info = self.player_info.get(pid, {})
             is_anon = self._is_anonymous(pid)
-            # Pour les anonymes : label neutre avec le nb de tournois joués
+            # Pour les anonymes : label distinctif (club + rang) pour différencier 2 anonymes
             if is_anon:
-                nb_tournois_anon = self.graph.get(player_id, {}).get(pid, 1)
-                label = f"Partenaire inconnu ({nb_tournois_anon} tournoi{'s' if nb_tournois_anon > 1 else ''})"
+                _club = info.get("club", "")
+                _cl = info.get("classement")
+                _p = ["Anonyme"]
+                if _club: _p.append(_club)
+                if _cl:   _p.append(f"#{_cl}")
+                label = " · ".join(_p)
             else:
                 label = f"{info.get('prenom', '')} {info.get('nom', '')}".strip() or pid
             nodes.append({

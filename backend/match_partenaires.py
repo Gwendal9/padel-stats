@@ -12,7 +12,10 @@ Méthode :
         DD (Double Dames)     -> partenaire Femme
         DX (Mixte)            -> partenaire = sexe opposé au joueur
         (autre/inconnu)        -> on cherche dans les deux pools
-  - on n'assigne que si le candidat est UNIQUE dans le pool (sinon : homonyme ambigu, laissé vide)
+  - candidat unique -> assigné.
+  - homonymes -> DÉSAMBIGUÏSATION par proximité avec le joueur : même club, sinon même
+    comité (département), sinon même ligue (région). Un partenaire de padel est le plus
+    souvent du même club / secteur. Si ça ne tranche pas -> laissé vide.
 
 ⚠️ DRY-RUN par défaut (compte sans écrire). Ajoute --apply pour écrire les partenaire_id.
 
@@ -49,54 +52,78 @@ def partenaire_sexe(type_epreuve, sexe_joueur):
     return None  # inconnu -> les deux pools
 
 
+def pick(cands, pclub, pcom, plig):
+    """Choisit parmi des homonymes le candidat le plus proche du joueur.
+    cands = liste de dicts {id, club_id, comite, ligue}. Renvoie un id ou None si indécidable."""
+    if len(cands) == 1:
+        return cands[0]['id']
+    for field, val in (('club_id', pclub), ('comite', pcom), ('ligue', plig)):
+        if not val:
+            continue
+        sub = [c for c in cands if c[field] == val]
+        if len(sub) == 1:
+            return sub[0]['id']
+        if len(sub) > 1:
+            cands = sub  # on resserre et on tente le critère suivant
+    return None
+
+
 def main():
     c = sqlite3.connect(DB, isolation_level=None)
     print(f"=== match_partenaires — {'EXÉCUTION' if APPLY else 'SIMULATION (dry-run)'} ===\n")
 
-    # Index : (sexe, nom_normalisé) -> set d'id_fft  ;  et nom_normalisé -> set (tous sexes)
-    by_sexe_name = defaultdict(set)
-    by_name = defaultdict(set)
+    # Index : (sexe, nom_normalisé) -> liste de candidats {id, club_id, comite, ligue}
+    by_sexe_name = defaultdict(list)
+    by_name = defaultdict(list)
     n_j = 0
-    for idf, prenom, nom, sexe in c.execute("SELECT id_fft, prenom, nom, sexe FROM joueurs"):
+    for idf, prenom, nom, sexe, club_id, comite, ligue in c.execute(
+            "SELECT id_fft, prenom, nom, sexe, club_id, comite, ligue FROM joueurs"):
         key = norm(f"{prenom} {nom}")
-        if not key:
+        # Placeholder FFT des partenaires anonymisés → jamais identifiable, on l'exclut
+        # (sinon un seul nœud "Joueur Anonyme" devient un hub relié à des milliers de joueurs).
+        if not key or nom is None or key in ("JOUEUR ANONYME", "ANONYME JOUEUR"):
             continue
-        by_sexe_name[(sexe, key)].add(idf)
-        by_name[key].add(idf)
+        cand = {'id': idf, 'club_id': club_id, 'comite': comite, 'ligue': ligue}
+        by_sexe_name[(sexe, key)].append(cand)
+        by_name[key].append(cand)
         n_j += 1
     print(f"Index construit : {n_j:,} joueurs\n")
 
-    # Participations à résoudre (partenaire_id vide, partenaire_nom présent) + sexe du joueur + type
     rows = c.execute("""
-        SELECT p.id, p.partenaire_nom, p.type, j.sexe
+        SELECT p.id, p.partenaire_nom, p.type, j.sexe, j.club_id, j.comite, j.ligue
         FROM participations p JOIN joueurs j ON j.id_fft = p.id_joueur
         WHERE (p.partenaire_id IS NULL OR p.partenaire_id='')
           AND p.partenaire_nom IS NOT NULL AND p.partenaire_nom!=''""").fetchall()
 
-    matched, ambigu, absent = 0, 0, 0
-    updates = []
-    ex_ambigu, ex_absent = [], []
-    for pid, pnom, typ, sexe_j in rows:
+    uniq, desambig, ambigu, absent = 0, 0, 0, 0
+    updates, ex_ambigu, ex_absent = [], [], []
+    for pid, pnom, typ, sexe_j, pclub, pcom, plig in rows:
         key = norm(pnom)
         ps = partenaire_sexe(typ, sexe_j)
         cands = by_sexe_name.get((ps, key)) if ps else by_name.get(key)
         if not cands:
-            # fallback : si pool précis vide, tente tous sexes
-            cands = by_name.get(key)
+            cands = by_name.get(key)          # fallback tous sexes
         if not cands:
             absent += 1
             if len(ex_absent) < 5: ex_absent.append(pnom)
-        elif len(cands) == 1:
-            matched += 1
-            updates.append((next(iter(cands)), pid))
+            continue
+        if len(cands) == 1:
+            updates.append((cands[0]['id'], pid)); uniq += 1
+            continue
+        chosen = pick(cands, pclub, pcom, plig)   # homonymes -> désambiguïsation
+        if chosen:
+            updates.append((chosen, pid)); desambig += 1
         else:
             ambigu += 1
             if len(ex_ambigu) < 5: ex_ambigu.append(f"{pnom} ({len(cands)} candidats)")
 
     tot = len(rows)
+    resolus = uniq + desambig
     print(f"Participations à résoudre : {tot:,}")
-    print(f"  ✅ matchés (unique)      : {matched:,}  ({100*matched/max(tot,1):.1f}%)")
-    print(f"  ⚠️  ambigus (homonymes)  : {ambigu:,}  ({100*ambigu/max(tot,1):.1f}%)")
+    print(f"  ✅ résolus              : {resolus:,}  ({100*resolus/max(tot,1):.1f}%)")
+    print(f"       dont unique        : {uniq:,}")
+    print(f"       dont désambiguïsés : {desambig:,}  (par club/comité/ligue)")
+    print(f"  ⚠️  ambigus restants     : {ambigu:,}  ({100*ambigu/max(tot,1):.1f}%)")
     print(f"  ❌ introuvables          : {absent:,}  ({100*absent/max(tot,1):.1f}%)")
     if ex_ambigu: print(f"\n  ex. ambigus    : {ex_ambigu}")
     if ex_absent: print(f"  ex. introuvables: {ex_absent}")

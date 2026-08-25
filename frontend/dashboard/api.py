@@ -77,7 +77,7 @@ def _add_cache_headers(resp):
     try:
         if request.method == "GET":
             p = request.path or ""
-            if "/api/example" in p or p.endswith("/random") or "/api/admin" in p:
+            if "/api/example" in p or p.endswith("/random") or "/api/admin" in p or "/api/suggestions" in p:
                 resp.headers["Cache-Control"] = "no-store"
             elif resp.status_code == 200:
                 resp.headers.setdefault("Cache-Control", "public, max-age=300, stale-while-revalidate=86400")
@@ -128,7 +128,70 @@ def route_home_data():
                 deltas = {"h": _h[-1] - _h[-2], "f": _f[-1] - _f[-2], "mois": (_mo[-2] if len(_mo) >= 2 else "")}
     except Exception:
         deltas = {}
-    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F"), "examples": examples, "deltas": deltas})
+    _snap = fetchone("SELECT MAX(classement_date) AS m FROM joueurs WHERE classement_date IS NOT NULL")
+    snapshot_mois = (_snap or {}).get("m") or ""   # ex "2026-08" -> formaté côté client
+    return jsonify({"counts": dict(counts), "top_h": top("H"), "top_f": top("F"), "examples": examples,
+                    "deltas": deltas, "snapshot_mois": snapshot_mois})
+
+
+# ─────────────────────────── SANDBOX (prototypes de visuels) ───────────────────────────
+_SANDBOX_CACHE = None
+
+@app.get("/sandbox")
+def route_sandbox_page():
+    return send_file(os.path.join(os.path.dirname(__file__), "sandbox.html"))
+
+@app.get("/api/sandbox")
+def route_sandbox_data():
+    """Données consolidées pour la page sandbox. Mise en cache mémoire (le calcul des
+    top duos scanne 1,6M lignes ~9s) ; ?fresh=1 pour recalculer."""
+    global _SANDBOX_CACHE
+    if _SANDBOX_CACHE is not None and request.args.get("fresh") != "1":
+        return jsonify(_SANDBOX_CACHE)
+    from db import fetchall, fetchone
+    import json as _json
+    out = {}
+    out["dept"] = [dict(r) for r in fetchall(
+        "SELECT dept_num,comite,nb_total,nb_h,nb_f,classement_moyen "
+        "FROM stats_geo_departement WHERE dept_num IS NOT NULL ORDER BY dept_num")]
+    out["clubs"] = [dict(r) for r in fetchall(
+        "SELECT cl.nom,cl.ville,cl.lat,cl.lon,s.nb_membres,s.classement_moyen "
+        "FROM stats_geo_club s JOIN clubs cl ON cl.id=s.club_id "
+        "WHERE cl.lat IS NOT NULL ORDER BY s.nb_membres DESC")]  # tous les clubs géocodés
+    # #5 retravaillé : efficacité des joueurs d'UN club (démo TC Les Lilas, id 2048)
+    out["club_scatter"] = {"club": "TC Les Lilas", "joueurs": [dict(r) for r in fetchall(
+        "SELECT j.prenom||' '||j.nom AS nom, j.points AS points, j.sexe AS sexe, "
+        "(SELECT COUNT(*) FROM participations p WHERE p.id_joueur=j.id_fft) AS nt "
+        "FROM joueurs j WHERE j.club_id=2048 AND j.points IS NOT NULL ORDER BY j.points DESC")]}
+    out["distribution"] = [dict(r) for r in fetchall(
+        "SELECT CASE WHEN classement<=100 THEN '1-100' WHEN classement<=500 THEN '101-500' "
+        "WHEN classement<=1000 THEN '501-1k' WHEN classement<=5000 THEN '1k-5k' "
+        "WHEN classement<=20000 THEN '5k-20k' WHEN classement<=50000 THEN '20k-50k' ELSE '50k+' END AS bucket, "
+        "sexe, COUNT(*) AS n FROM joueurs WHERE classement IS NOT NULL GROUP BY bucket,sexe ORDER BY MIN(classement)")]
+    out["niveaux"] = [dict(r) for r in fetchall(
+        "SELECT niveau_points, COUNT(*) AS nb, CAST(AVG(classement_moyen) AS INT) AS force_moy "
+        "FROM tournois_stats WHERE niveau_points IS NOT NULL AND nb_joueurs>=4 "
+        "GROUP BY niveau_points ORDER BY niveau_points")]
+    out["scatter"] = [dict(r) for r in fetchall(
+        "SELECT j.points AS points, (SELECT COUNT(*) FROM participations p WHERE p.id_joueur=j.id_fft) AS nt, "
+        "j.sexe AS sexe FROM joueurs j WHERE j.points IS NOT NULL AND j.classement<=3000 "
+        "ORDER BY j.points DESC LIMIT 400")]
+    out["duos"] = [dict(r) for r in fetchall(
+        "SELECT a.prenom||' '||a.nom AS j1, b.prenom||' '||b.nom AS j2, x.n AS n FROM "
+        "(SELECT id_joueur,partenaire_id,COUNT(*) n FROM participations "
+        " WHERE partenaire_id!='' AND id_joueur<partenaire_id GROUP BY id_joueur,partenaire_id "
+        " ORDER BY n DESC LIMIT 12) x "
+        "JOIN joueurs a ON a.id_fft=x.id_joueur JOIN joueurs b ON b.id_fft=x.partenaire_id")]
+    try:
+        _tp = os.path.join(os.path.dirname(__file__), "timeline.json")
+        out["timeline"] = _json.load(open(_tp, encoding="utf-8")) if os.path.exists(_tp) else {}
+    except Exception:
+        out["timeline"] = {}
+    out["percentile"] = {"joueur": "Gwendal ROLLAND (démo)", "rows": [dict(r) for r in fetchall(
+        "SELECT environnement,rang,rang_bas FROM rangs_pyramide "
+        "WHERE id_fft='7633273415' AND mois=(SELECT MAX(mois) FROM rangs_pyramide) AND rang IS NOT NULL")]}
+    _SANDBOX_CACHE = out
+    return jsonify(out)
 
 
 @app.get("/api/example/<kind>")
@@ -2170,7 +2233,12 @@ def route_geo_filters():
         prev = seen.get(d)
         if prev is None or ("(L0)" in (prev["comite"] or "") and "(L0)" not in com):
             seen[d] = {"dept_num": d, "comite": com, "ligue": r.get("ligue") or ""}
-    departements = list(seen.values())
+    # Tri par NUMÉRO de département (01,02,…,2A,2B,…,95,971…) — plus logique qu'alphabétique.
+    # 2A/2B (Corse) mappés en 20A/20B pour tomber entre 19 et 21.
+    def _dnum_key(d):
+        n = d["dept_num"] or ""
+        return n.replace("2A", "20A").replace("2B", "20B")
+    departements = sorted(seen.values(), key=_dnum_key)
     ligues = sorted({d["ligue"] for d in departements if d["ligue"]})
     return jsonify({"ligues": ligues, "departements": departements})
 
@@ -2205,9 +2273,11 @@ def route_geo_departements():
         if a is None:
             a = agg[d] = {"dept_num": d, "comite": r.get("comite") or "",
                           "ligue": r.get("ligue") or "", "nb": 0, "nb_clubs": 0,
-                          "_cnum": 0.0, "_cden": 0, "_best": -1}
+                          "nb_h": 0, "nb_f": 0, "_cnum": 0.0, "_cden": 0, "_best": -1}
         a["nb"] += nb
         a["nb_clubs"] += r.get("nb_clubs") or 0
+        a["nb_h"] += r.get("nb_h") or 0
+        a["nb_f"] += r.get("nb_f") or 0
         if clt is not None and nb:
             a["_cnum"] += clt * nb
             a["_cden"] += nb
@@ -2215,8 +2285,9 @@ def route_geo_departements():
             a["_best"] = nb
             if r.get("comite"): a["comite"] = r["comite"]
             if r.get("ligue"):  a["ligue"]  = r["ligue"]
+    # nb_h/nb_f toujours fournis (indépendamment de ?sexe) pour les graphes H/F empilés.
     out = [{"dept_num": a["dept_num"], "comite": a["comite"], "ligue": a["ligue"],
-            "nb": a["nb"], "nb_clubs": a["nb_clubs"],
+            "nb": a["nb"], "nb_clubs": a["nb_clubs"], "nb_h": a["nb_h"], "nb_f": a["nb_f"],
             "classement_moyen": (round(a["_cnum"] / a["_cden"]) if a["_cden"] else None)}
            for a in agg.values()]
     return jsonify(out)
@@ -2224,26 +2295,93 @@ def route_geo_departements():
 
 @app.get("/api/geo/clubs")
 def route_geo_clubs():
-    """Clubs geolocalises (marqueurs carte). Filtre optionnel par departement."""
+    """Clubs geolocalises (marqueurs carte). Filtre optionnel par departement.
+    Inclut nb_membres/classement_moyen (via stats_geo_club) quand disponibles,
+    utilisé par la carte de tous les clubs (page /clubs)."""
     from db import fetchall
     dept = request.args.get("dept", "").strip()
-    conds = ["lat IS NOT NULL", "lon IS NOT NULL"]
+    conds = ["cl.lat IS NOT NULL", "cl.lon IS NOT NULL"]
     params = []
     if dept:
-        conds.append("dept_num = ?")
+        conds.append("cl.dept_num = ?")
         params.append(dept)
     try:
         rows = fetchall(
-            "SELECT id, nom, ville, dept_num, lat, lon FROM clubs WHERE "
+            "SELECT cl.id, cl.nom, cl.ville, cl.dept_num, cl.lat, cl.lon, "
+            "s.nb_membres, s.classement_moyen "
+            "FROM clubs cl LEFT JOIN stats_geo_club s ON s.club_id = cl.id WHERE "
             + " AND ".join(conds), tuple(params)
         )
     except Exception:
         rows = []
     return jsonify([
         {"id": r["id"], "nom": r["nom"] or "", "ville": r.get("ville") or "",
-         "dept_num": r.get("dept_num") or "", "lat": r["lat"], "lon": r["lon"]}
+         "dept_num": r.get("dept_num") or "", "lat": r["lat"], "lon": r["lon"],
+         "nb_membres": r.get("nb_membres"), "classement_moyen": r.get("classement_moyen")}
         for r in rows
     ])
+
+
+@app.get("/api/club_scatter")
+def route_club_scatter():
+    """Points vs nb de tournois pour les membres d'un club (nom résolu comme /api/club :
+    variantes du nom normalisé). Utilisé par la fiche club (section Efficacité)."""
+    from db import fetchall
+    nom = request.args.get("nom", "").strip()
+    if not nom:
+        return jsonify({"error": "nom requis"}), 400
+    from_key = _normalize_club(nom)
+    like_op = "ILIKE" if USE_POSTGRES else "LIKE"
+    cand_rows = fetchall(
+        f"SELECT DISTINCT club_nom FROM joueurs WHERE UPPER(club_nom) {like_op} ?",
+        (f"%{from_key}%",)
+    )
+    variants = [r["club_nom"] for r in cand_rows if _normalize_club(r["club_nom"]) == from_key]
+    if nom not in variants:
+        variants.append(nom)
+    ph = ','.join('?' * len(variants))
+    joueurs = [dict(r) for r in fetchall(
+        f"SELECT j.id_fft AS id, j.prenom||' '||j.nom AS nom, j.points AS points, j.sexe AS sexe, "
+        f"(SELECT COUNT(*) FROM participations p WHERE p.id_joueur=j.id_fft) AS nt "
+        f"FROM joueurs j WHERE j.club_nom IN ({ph}) AND j.points IS NOT NULL ORDER BY j.points DESC",
+        tuple(variants))]
+    return jsonify({"club": nom, "joueurs": joueurs})
+
+
+_DUOS_CACHE = None
+
+@app.get("/api/duos")
+def route_duos():
+    """Top duos (paires ayant le plus joué ensemble), tous clubs confondus.
+    Calcul en cache mémoire (scan large sur participations) ; ?fresh=1 pour recalculer."""
+    global _DUOS_CACHE
+    if _DUOS_CACHE is not None and request.args.get("fresh") != "1":
+        return jsonify(_DUOS_CACHE)
+    from db import fetchall
+    n_top = min(int(request.args.get("n", 500)), 1000)
+
+    all_rows = fetchall(
+        "SELECT id_joueur, partenaire_id, COUNT(*) n FROM participations "
+        "WHERE partenaire_id!='' AND id_joueur<partenaire_id GROUP BY id_joueur, partenaire_id"
+    )
+    top_pairs = sorted(all_rows, key=lambda r: -int(r["n"]))[:n_top]
+    ids = set()
+    for r in top_pairs:
+        ids.add(r["id_joueur"]); ids.add(r["partenaire_id"])
+    names = {}
+    if ids:
+        ph = ",".join("?" * len(ids))
+        for r in fetchall(f"SELECT id_fft, prenom, nom FROM joueurs WHERE id_fft IN ({ph})", tuple(ids)):
+            names[r["id_fft"]] = f"{(r.get('prenom') or '').strip()} {(r.get('nom') or '').strip()}".strip()
+    top = [
+        {"id1": r["id_joueur"], "j1": names.get(r["id_joueur"], "?"),
+         "id2": r["partenaire_id"], "j2": names.get(r["partenaire_id"], "?"),
+         "n": int(r["n"])}
+        for r in top_pairs
+    ]
+    out = {"top": top}
+    _DUOS_CACHE = out
+    return jsonify(out)
 
 
 @app.route("/classement")

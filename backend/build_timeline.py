@@ -53,9 +53,16 @@ def main():
         _rows = con.execute("SELECT j.dept_num, MAX(j.comite) AS nom, COUNT(*) AS n FROM _newp JOIN joueurs j ON j.id_fft=_newp.id_joueur WHERE j.dept_num IS NOT NULL AND j.dept_num!='' GROUP BY j.dept_num").fetchall()
         by_dept = {str(d): int(n) for d, nom, n in _rows}
         dept_names = {str(d): (nom or "") for d, nom, n in _rows}
+        # Découpage H/F par département (pour empiler les barres comme le graphe "Top départements")
+        _rows_sx = con.execute("SELECT j.dept_num, j.sexe, COUNT(*) AS n FROM _newp JOIN joueurs j ON j.id_fft=_newp.id_joueur WHERE j.dept_num IS NOT NULL AND j.dept_num!='' GROUP BY j.dept_num, j.sexe").fetchall()
+        by_dept_h = {str(d): 0 for d in by_dept}
+        by_dept_f = {str(d): 0 for d in by_dept}
+        for d, s, n in _rows_sx:
+            (by_dept_h if s == "H" else by_dept_f)[str(d)] = int(n)
         evo = {"updated": datetime.date.today().isoformat(), "mois": latest, "prev": prev,
                "total": int(tot_new), "h": int(sx.get("H", 0)), "f": int(sx.get("F", 0)),
-               "by_dept": by_dept, "dept_names": dept_names}
+               "by_dept": by_dept, "by_dept_h": by_dept_h, "by_dept_f": by_dept_f,
+               "dept_names": dept_names}
     except Exception as e:
         print("evolution: skip (", e, ")")
     con.close()

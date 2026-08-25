@@ -250,6 +250,15 @@ def ensure_indexes():
                     "CREATE INDEX IF NOT EXISTS idx_ts_cat ON tournois_summary(categorie)"
                 )
 
+                # ── Table de cache des réponses précalculées (rempli par precompute.py) ──
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS cache_responses (
+                        cache_key   TEXT PRIMARY KEY,
+                        body        TEXT NOT NULL,
+                        computed_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+
                 # ── Tables utilisateurs / profil / favoris ───────────────────
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS user_accounts (
