@@ -139,7 +139,8 @@ async function loadClubsMap(){
   $('cm-nb').textContent=fr(clubs.length);
   if(!clubs.length||typeof L==='undefined')return;
   const map=L.map('clubsmap',{scrollWheelZoom:true}).setView([46.6,2.4],6);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Fond de carte © Esri',maxZoom:18,maxNativeZoom:16}).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,maxNativeZoom:16}).addTo(map);
   const cluster=L.markerClusterGroup({maxClusterRadius:45,spiderfyOnMaxZoom:true});
   const idx=[];
   clubs.forEach(c=>{
