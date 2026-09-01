@@ -13,6 +13,7 @@ Routes :
   GET /api/clubs?top=100             → top clubs
   GET /api/health                    → santé
 """
+import io
 import os
 import re
 import sys
@@ -272,8 +273,65 @@ def index_legacy():
 
 @app.route("/joueur/<player_id>")
 def route_fiche_page(player_id: str):
-    """Sert la fiche joueur (v2). Les donnees sont chargees cote client via /api/player/<id>."""
-    return send_file(os.path.join(os.path.dirname(__file__), "fiche.html"))
+    """Sert la fiche joueur (v2). Les donnees sont chargees cote client via /api/player/<id>.
+
+    Injecte des balises <title>/Open Graph propres au joueur (lues directement en base,
+    sans passer par get_player_profile() qui est plus couteux) pour que le lien de la
+    fiche produise un apercu correct quand il est partage (WhatsApp, iMessage, etc.).
+    """
+    path = os.path.join(os.path.dirname(__file__), "fiche.html")
+    try:
+        j = fetchone(
+            "SELECT nom, prenom, classement, club_nom FROM joueurs WHERE id_fft = ?",
+            (player_id,),
+        )
+    except Exception:
+        j = None
+    if not j:
+        return send_file(path)
+
+    from markupsafe import escape
+
+    nom_complet = f"{(j.get('prenom') or '').strip()} {(j.get('nom') or '').strip()}".strip().title()
+    nom_complet = nom_complet or "Joueur"
+    if j.get("classement"):
+        titre = f"{nom_complet} · #{j['classement']} au classement national"
+        desc = f"Classement FFT, historique et tournois de {nom_complet}"
+        if j.get("club_nom"):
+            desc += f" ({j['club_nom']})"
+        desc += " sur Padel Repère."
+    else:
+        titre = nom_complet
+        desc = "Classement FFT, historique et tournois sur Padel Repère."
+
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    base = f"{scheme}://{request.host}"
+    page_url = f"{base}/joueur/{player_id}"
+    image_url = f"{base}/static/og-cover.png"
+
+    t = escape(f"{titre} · Padel Repère")
+    d = escape(desc)
+    u = escape(page_url)
+    img = escape(image_url)
+
+    meta_block = (
+        f"<title>{t}</title>\n"
+        f'<meta name="description" content="{d}">\n'
+        f'<meta property="og:type" content="profile">\n'
+        f'<meta property="og:site_name" content="Padel Repère">\n'
+        f'<meta property="og:title" content="{t}">\n'
+        f'<meta property="og:description" content="{d}">\n'
+        f'<meta property="og:image" content="{img}">\n'
+        f'<meta property="og:url" content="{u}">\n'
+        f'<meta name="twitter:card" content="summary_large_image">'
+    )
+
+    with io.open(path, "r", encoding="utf-8") as f:
+        html_text = f.read()
+    html_text = html_text.replace(
+        "<title>Fiche joueur · Padel Repère</title>", meta_block, 1
+    )
+    return html_text, 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
 @app.get("/api/search")

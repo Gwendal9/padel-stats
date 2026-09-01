@@ -112,6 +112,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
         <div class="flex items-center gap-3 flex-wrap">
           <h1 class="font-800 text-4xl sm:text-5xl leading-none tracking-tight" data-name2></h1>
           <button data-favbtn class="shrink-0 w-9 h-9 rounded-lg bg-white/12 border border-white/25 grid place-items-center hover:bg-white/20 transition" title="Ajouter aux favoris" aria-label="Favori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg></button>
+          <button data-sharebtn class="shrink-0 w-9 h-9 rounded-lg bg-white/12 border border-white/25 grid place-items-center hover:bg-white/20 transition" title="Partager ma fiche" aria-label="Partager"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></button>
           <span data-perc-wrap class="pct-font inline-flex flex-col items-start gap-0.5 px-3 py-1.5 rounded-xl bg-amber-300 text-amber-900">
             <span class="flex items-center gap-1.5 text-[15px] font-800 leading-none"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg><span data-perc></span></span>
             <span class="text-[10.5px] font-600 leading-none text-amber-800/90" data-perc-sub></span>
@@ -227,6 +228,16 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   </div>
 </div>
 
+<div id="shareModal" class="fixed inset-0 z-50 bg-black/50 items-center justify-center p-4" style="display:none">
+  <div class="bg-white rounded-2xl w-full max-w-md p-5 relative">
+    <div class="flex items-center justify-between mb-3"><h3 class="font-800 text-lg">Partager ma fiche</h3><button id="shareModalClose" class="w-8 h-8 rounded-lg grid place-items-center text-muted hover:bg-paper" aria-label="Fermer">✕</button></div>
+    <div class="rounded-xl overflow-hidden border border-line mb-4"><canvas id="shareCanvas" width="1080" height="1350" style="width:100%;height:auto;display:block"></canvas></div>
+    <button id="shareLink" class="w-full py-2.5 rounded-lg bg-brand text-white font-700 text-sm hover:bg-brand-dark transition mb-2">Partager le lien</button>
+    <button id="shareDownload" class="w-full py-2.5 rounded-lg bg-paper border border-line text-ink font-700 text-sm hover:bg-white transition">Telecharger l'image (PNG)</button>
+    <p class="text-[11px] text-muted text-center mt-3">Le lien ouvre directement cette fiche. L'image est utile pour Instagram ou une story.</p>
+  </div>
+</div>
+
 <script>
 const PLEVEL={25:'bg-gray-100 text-gray-500',100:'bg-gray-100 text-gray-600',250:'bg-sky-50 text-sky-700',500:'bg-brand-soft text-brand-dark',1000:'bg-indigo-50 text-indigo-700',1500:'bg-amber-50 text-amber-700',2000:'bg-amber-100 text-amber-800'};
 const diffChip=v=>{ if(v==null) return '<span class="text-muted text-xs">—</span>'; const x=Math.round(v); let c='bg-gray-100 text-gray-600'; if(v>=65)c='bg-amber-100 text-amber-800'; else if(v>=50)c='bg-indigo-50 text-indigo-700'; else if(v>=35)c='bg-brand-soft text-brand-dark'; else if(v>=22)c='bg-sky-50 text-sky-700'; return `<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${c}" title="Niveau du plateau /100">${x}</span>`; };
@@ -264,7 +275,7 @@ async function load(){
   render(prof);
 }
 
-let LAST_PV=null, modalChart=null;
+let LAST_PV=null, modalChart=null, LAST_PROFILE=null;
 function perfData(pv,big){
   const pd=s=>{const a=(s||'').split('/');return a.length===3?new Date(+a[2],+a[1]-1,+a[0]).getTime():null;};
   const mk=o=>{const x=pd(o.date); if(x==null||o.indice==null)return null; const pts=Math.round(o.points||0); const r=Math.max(3,Math.min(big?26:15,Math.sqrt(pts||1)*(big?1.5:0.95))); return {x,y:o.indice,r,nom:o.nom,id:o.id,date:o.date,points:pts,comptee:o.comptee,hb:o.hors_bilan};};
@@ -285,7 +296,132 @@ function makePerfChart(el,pv,big){
 }
 function openPerfModal(){ const m=document.getElementById('perfModal'); if(!m||!LAST_PV)return; m.style.display='flex'; if(modalChart)modalChart.destroy(); modalChart=makePerfChart(document.getElementById('perfModalChart'),LAST_PV,true); }
 (function(){ const m=document.getElementById('perfModal'); if(!m)return; const cb=document.getElementById('perfModalClose'); const cl=()=>{ m.style.display='none'; if(modalChart){modalChart.destroy();modalChart=null;} }; if(cb)cb.addEventListener('click',cl); m.addEventListener('click',e=>{ if(e.target===m) cl(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape') cl(); }); })();
+
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function tournois12Mois(p){
+  if(!p || !Array.isArray(p.parcours_detail)) return null;
+  const pd=s=>{ const a=(s||'').split('/'); return a.length===3 ? new Date(+a[2],+a[1]-1,+a[0]).getTime() : null; };
+  const now=Date.now(), YEAR_MS=365*24*3600*1000;
+  const seen=new Set();
+  p.parcours_detail.forEach(t=>{
+    const d=pd(t.date);
+    if(d==null || d>now || (now-d)>YEAR_MS) return;
+    seen.add(t.id_tournoi || (t.tournoi_nom+'|'+t.date));
+  });
+  return seen.size;
+}
+
+async function drawShareCard(p){
+  const cv=document.getElementById('shareCanvas'); if(!cv) return; const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=90;
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+  ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+  ctx.fillStyle='#FBFBFA'; ctx.fillRect(0,0,W,H);
+
+  try{
+    const img=new Image();
+    await new Promise((res)=>{ img.onload=res; img.onerror=res; img.src='/favicon.svg'; });
+    ctx.save(); roundRect(ctx,PAD,PAD,56,56,14); ctx.clip(); ctx.drawImage(img,PAD,PAD,56,56); ctx.restore();
+  }catch(e){}
+  ctx.fillStyle='#15191F'; ctx.font="600 34px 'Inter',sans-serif";
+  ctx.fillText('Padel',PAD+72,PAD+37);
+  const padelW=ctx.measureText('Padel').width;
+  ctx.fillStyle='#0A7766'; ctx.font="800 34px 'Inter',sans-serif";
+  ctx.fillText('Repère',PAD+72+padelW,PAD+37);
+
+  const labelY=PAD+170;
+  ctx.fillStyle='#9AA3AF'; ctx.font="700 24px 'Inter',sans-serif";
+  ctx.fillText('C L A S S E M E N T   N A T I O N A L',PAD,labelY);
+
+  const rankStr=p.classement!=null?String(p.classement):'—';
+  let rankFont=260;
+  ctx.font=`700 ${rankFont}px 'Outfit',sans-serif`;
+  while(ctx.measureText(rankStr).width>(W-2*PAD-110) && rankFont>110){
+    rankFont-=10; ctx.font=`700 ${rankFont}px 'Outfit',sans-serif`;
+  }
+  const rankY=labelY+300;
+  ctx.fillStyle='#15191F';
+  ctx.fillText(rankStr,PAD,rankY);
+  const rw=ctx.measureText(rankStr).width;
+  ctx.font=`700 ${Math.round(rankFont*0.3)}px 'Outfit',sans-serif`; ctx.fillStyle='#0E9C86';
+  ctx.fillText('e',PAD+rw+8,rankY-Math.round(rankFont*0.62));
+
+  const ruleY=rankY+55;
+  ctx.fillStyle='#0E9C86'; ctx.fillRect(PAD,ruleY,90,5);
+
+  let py=ruleY+90;
+  if(p.percentile!=null){
+    const genre=p.sexe==='F'?'des femmes':'des hommes';
+    const label='Top '+String(p.percentile).replace('.',',')+' % · parmi '+genre;
+    ctx.fillStyle='#0A7766'; ctx.font="600 38px 'Outfit',sans-serif";
+    ctx.fillText(label,PAD,py);
+  }
+  py+=76;
+  ctx.fillStyle='#15191F'; ctx.font="800 56px 'Inter',sans-serif";
+  ctx.fillText(tc(p.nom_complet||''),PAD,py);
+
+  py+=48;
+  const metaParts=[]; if(p.club) metaParts.push(tc(p.club)); if(p.ligue) metaParts.push(tc(p.ligue));
+  ctx.fillStyle='#697483'; ctx.font="500 28px 'Inter',sans-serif";
+  ctx.fillText(metaParts.join('  ·  '),PAD,py);
+
+  const n12=tournois12Mois(p);
+  if(n12!=null){
+    py+=54;
+    ctx.fillStyle='#9AA3AF'; ctx.font="600 26px 'Inter',sans-serif";
+    ctx.fillText((n12>1?n12+' tournois joués':(n12===1?'1 tournoi joué':'Aucun tournoi'))+' · 12 derniers mois',PAD,py);
+  }
+
+  const footY=H-90;
+  ctx.strokeStyle='#E7E9EC'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD,footY-40); ctx.lineTo(W-PAD,footY-40); ctx.stroke();
+  ctx.fillStyle='#9AA3AF'; ctx.font="600 26px 'Inter',sans-serif"; ctx.textAlign='left';
+  ctx.fillText('padel.gwendev.eu',PAD,footY);
+  ctx.textAlign='right';
+  ctx.fillText(new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'}),W-PAD,footY);
+  ctx.textAlign='left';
+}
+
+function openShareModal(){
+  if(!LAST_PROFILE) return;
+  const m=document.getElementById('shareModal'); if(!m) return;
+  m.style.display='flex';
+  drawShareCard(LAST_PROFILE);
+}
+(function(){
+  const m=document.getElementById('shareModal'); if(!m) return;
+  const cb=document.getElementById('shareModalClose');
+  const cl=()=>{ m.style.display='none'; };
+  if(cb) cb.addEventListener('click',cl);
+  m.addEventListener('click',e=>{ if(e.target===m) cl(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && m.style.display==='flex') cl(); });
+  const sl=document.getElementById('shareLink');
+  if(sl) sl.addEventListener('click',async ()=>{
+    const p=LAST_PROFILE||{};
+    const url=location.origin+'/joueur/'+(p.id||getId());
+    const title='Padel Repère · '+tc(p.nom_complet||'');
+    const text=p.classement!=null?`#${p.classement} au classement national sur Padel Repère`:'Ma fiche sur Padel Repère';
+    if(navigator.share){
+      try{ await navigator.share({title,text,url}); return; }catch(e){}
+    }
+    try{
+      await navigator.clipboard.writeText(url);
+      const old=sl.textContent; sl.textContent='Lien copié !';
+      setTimeout(()=>{ sl.textContent=old; },1800);
+    }catch(e){ prompt('Copie ce lien :',url); }
+  });
+  const dl=document.getElementById('shareDownload');
+  if(dl) dl.addEventListener('click',()=>{
+    const cv=document.getElementById('shareCanvas'); if(!cv) return;
+    const a=document.createElement('a');
+    a.download='padel-repere-'+(LAST_PROFILE&&LAST_PROFILE.id||'fiche')+'.png';
+    a.href=cv.toDataURL('image/png');
+    a.click();
+  });
+})();
 function render(p){
+  LAST_PROFILE=p;
   document.getElementById('loading').remove();
   const root=document.getElementById('root');
   root.appendChild(document.getElementById('tpl').content.cloneNode(true));
@@ -442,6 +578,7 @@ function render(p){
     <div class="min-w-0 flex-1"><div class="flex justify-between items-baseline"><span class="text-sm font-500 truncate">${tc(x.nom_complet)}</span><span class="num text-xs font-700 text-brand-dark ml-2">${fr(x.points)}</span></div>
     <div class="h-1.5 rounded-full bg-paper mt-1 overflow-hidden"><div class="h-full rounded-full bg-brand/70" style="width:${100*(x.points||0)/maxp}%"></div></div></div>
     <span class="text-[11px] text-muted shrink-0">${x.nb_tournois}×</span></div>`).join('');
+  const shareB=$('[data-sharebtn]'); if(shareB) shareB.addEventListener('click',openShareModal);
   const favB=$('[data-favbtn]');
   if(favB){
     const rec={id:p.id,nom:p.nom_complet,clt:p.classement,sexe:p.sexe};
