@@ -53,3 +53,6 @@ scraper_json.py
 backend/scraper_json.py
 DOC_SCRAPER_JSON.md
 N8N_WORKFLOW.md
+
+# Artefacts du montage FUSE (G:)
+.fuse_hidden*
