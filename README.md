@@ -1,4 +1,4 @@
-# 🎾 Padel Stats — Dashboard Analytics
+# 🧭 Padel Repère — Dashboard Analytics
 
 Dashboard analytics pour le padel français, construit à partir des classements officiels publics de la FFT.
 Projet personnel, sans lien officiel avec la FFT.

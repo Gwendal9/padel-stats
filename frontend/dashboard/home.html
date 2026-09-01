@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/static/mobile.css">
 <script src="/static/mobile-notice.js" defer></script>
-<title>Padel Stats</title>
+<title>Padel Repère</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -43,10 +43,10 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 </head>
 <body class="antialiased">
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
-  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32"><span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span></a>
+  <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3"><img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Repère" width="32" height="32"><span class="brand-txt font-700">Padel<span class="text-brand">Repère</span></span></a>
   <nav class="flex flex-col gap-1 text-sm">
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
-    <a href="/" class="nav active" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/" class="nav active" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.5 12 15 9.5 9.5 12 11.5z" stroke-linejoin="round"/></svg><span>Tableau de bord</span></a>
     <div class="h-px bg-white/10 mx-2 my-2"></div>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
     <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
@@ -68,7 +68,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 </aside>
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Stats est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <main class="px-5 lg:px-8 py-6">
@@ -76,7 +76,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       <svg class="absolute -right-10 -top-12 opacity-[0.08] pointer-events-none hidden sm:block" width="260" height="260" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1"><circle cx="12" cy="12" r="9.3"/><circle cx="12" cy="12" r="5"/><path d="M12 2.7v18.6M2.7 12h18.6"/></svg>
       <div class="p-7 sm:p-8 relative">
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/12 text-[11px] font-600 text-white/85 mb-2.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Données officielles FFT · <span id="hero-snapshot" class="font-800 ml-1">mise à jour mensuelle</span></div>
-        <h1 class="font-800 text-3xl sm:text-4xl tracking-tight">Padel Stats</h1>
+        <h1 class="font-800 text-3xl sm:text-4xl tracking-tight">Padel Repère</h1>
         <p class="text-white/80 mt-1.5 text-sm max-w-lg">Ton classement, ta forme du moment, tes tournois joués — décryptés à partir des données officielles de la FFT.</p>
         <div id="searchwrap" class="relative mt-4 max-w-xl">
           <div class="flex items-center gap-2.5 h-12 px-4 rounded-xl bg-white shadow-md">

@@ -1,5 +1,5 @@
 """
-auth.py — Authentification légère pour le dashboard Padel Stats.
+auth.py — Authentification légère pour le dashboard Padel Repère.
 
 Flow magic link :
   1. POST /api/auth/login  → génère un token, envoie email (ou retourne le lien en dev mode)
@@ -113,7 +113,7 @@ def _try_send_email(email: str, link: str) -> bool:
         from email.mime.multipart import MIMEMultipart
 
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Ton lien de connexion — Padel Stats"
+        msg["Subject"] = "Ton lien de connexion — Padel Repère"
         msg["From"]    = SMTP_FROM
         msg["To"]      = email
 
@@ -123,7 +123,7 @@ def _try_send_email(email: str, link: str) -> bool:
         )
         html = f"""
         <html><body style="font-family:system-ui,sans-serif;max-width:480px;margin:40px auto;color:#1e293b">
-          <h2 style="color:#6366f1">Padel Stats 🎾</h2>
+          <h2 style="color:#6366f1">Padel Repère 🧭</h2>
           <p>Clique sur ce bouton pour te connecter (valable {TOKEN_TTL_MINUTES} minutes) :</p>
           <p style="margin:24px 0">
             <a href="{link}"

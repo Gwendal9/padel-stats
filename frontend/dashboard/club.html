@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/static/mobile.css">
 <script src="/static/mobile-notice.js" defer></script>
-<title>Club · Padel Stats</title>
+<title>Club · Padel Repère</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -55,12 +55,12 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <aside class="w-14 lg:w-60 bg-ink text-white min-h-screen fixed left-0 top-0 flex flex-col p-2 lg:p-4 z-30">
   <a href="/" class="flex items-center gap-2 px-1 lg:px-2 py-2 mb-3">
-    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Stats" width="32" height="32">
-    <span class="brand-txt font-700">Padel<span class="text-brand">Stats</span></span>
+    <img src="/favicon.svg" class="w-8 h-8 rounded-lg shrink-0" alt="Padel Repère" width="32" height="32">
+    <span class="brand-txt font-700">Padel<span class="text-brand">Repère</span></span>
   </a>
   <nav class="flex flex-col gap-1 text-sm">
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Général</div>
-    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg><span>Tableau de bord</span></a>
+    <a href="/" class="nav" title="Tableau de bord"><svg viewBox="0 0 24 24" fill="none" stroke="#13C2A6" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.5 12 15 9.5 9.5 12 11.5z" stroke-linejoin="round"/></svg><span>Tableau de bord</span></a>
     <div class="h-px bg-white/10 mx-2 my-2"></div>
     <div class="side-lbl text-[10px] uppercase tracking-wider font-700 px-3 py-1.5 text-white/35">Classements</div>
     <a href="/classement" class="nav" title="Classement · Joueurs"><svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Joueurs</span></a>
@@ -83,7 +83,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Stats est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
@@ -179,7 +179,7 @@ async function load(){
   try{ [c,d]=await Promise.all([
     fetch('/api/club?nom='+encodeURIComponent(nom)).then(r=>r.json()),
     fetch('/api/club_detail?nom='+encodeURIComponent(nom)).then(r=>r.json())
-  ]); }catch(e){ document.getElementById('loading').textContent='Club introuvable.'; return; }
+  ]); }catch(e){ document.getElementById('loading').textContent='Club introuvable — hors de portée du repère.'; return; }
   render(nom,c,d);
 }
 

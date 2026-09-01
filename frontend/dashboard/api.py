@@ -1,5 +1,5 @@
 """
-api.py — API Flask pour le dashboard Padel Stats.
+api.py — API Flask pour le dashboard Padel Repère.
 Routes :
   GET /                              → sert le HTML
   GET /api/search?q=                 → recherche joueurs
@@ -2053,14 +2053,14 @@ def _notify_email(message: str, category: str, name: str, email: str):
         smtp_from = os.environ.get("SMTP_FROM", smtp_user)
         cat_label = CAT_LABEL_FR.get(category, category)
         body = (
-            f"Nouvelle suggestion ({cat_label}) sur Padel Stats :\n\n"
+            f"Nouvelle suggestion ({cat_label}) sur Padel Repère :\n\n"
             f"{message}\n\n"
             f"De : {name or 'Anonyme'}"
             + (f" ({email})" if email else "")
             + "\n\nA valider : /admin/suggestions"
         )
         msg = MIMEText(body, "plain")
-        msg["Subject"] = f"[Padel Stats] Nouvelle suggestion ({cat_label})"
+        msg["Subject"] = f"[Padel Repère] Nouvelle suggestion ({cat_label})"
         msg["From"] = smtp_from
         msg["To"] = admin_email
         with smtplib.SMTP(smtp_host, smtp_port) as srv:
