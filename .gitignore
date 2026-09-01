@@ -56,3 +56,6 @@ N8N_WORKFLOW.md
 
 # Artefacts du montage FUSE (G:)
 .fuse_hidden*
+
+# ── Caches / exports régénérables (ne pas versionner) ─────────────────────────
+backend/communes_geo.json

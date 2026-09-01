@@ -1,12 +1,11 @@
 # 🎾 Padel Stats — Dashboard Analytics
 
-Dashboard analytics pour le padel français, construit à partir des données publiques TenUp.
-Projet de portfolio Data Analyst.
+Dashboard analytics pour le padel français, construit à partir des classements officiels publics de la FFT.
+Projet personnel, sans lien officiel avec la FFT.
 
 🚀 **[Accéder au site → padel.gwendev.eu](https://padel.gwendev.eu)**
->>>>>>> Stashed changes
 
-**153 291 joueurs · 1 019 423 participations · 37 124 tournois**
+**185 000+ joueurs classés · 5 400+ clubs · 56 000+ tournois**
 
 ---
 
@@ -14,23 +13,25 @@ Projet de portfolio Data Analyst.
 
 | Couche | Techno |
 |--------|--------|
-| Scraping | Python (requests + Playwright) |
+| Scraping | Python (requests, cookies FFT) |
 | Stockage | SQLite |
-| API | Flask + Flask-CORS |
-| Frontend | HTML · Tailwind CSS · Chart.js · Leaflet |
-| Déploiement | VPS Hetzner (Docker) + Cloudflare Tunnel |
+| API | Flask |
+| Frontend | HTML · Tailwind CSS · Chart.js · Leaflet · D3.js |
+| Déploiement | VPS Hetzner (Docker + nginx) + Cloudflare Tunnel |
 
 ---
 
 ## Fonctionnalités
 
-- **Classement national** avec filtres région / club / âge / sexe
-- **Profil joueur** : stats, trophy shelf, parcours chronologique, top % percentile
-- **Suggesteur de partenaires** : recommandation basée sur le graphe de co-participations
-- **Degrés de séparation** : BFS sur le graphe de 153k joueurs (< 20ms)
-- **Graphe ego** : visualisation D3.js des 2 degrés de connexion d'un joueur
-- **Onglet tournoi** : podium top 5, distribution des paires, bracket
-- **Top progressions** : les plus grosses montées de classement (30j / 3 mois / 12 mois)
+- **Classements filtrables** — joueurs, clubs, tournois (région / département / club / sexe), avec évolution mensuelle
+- **Fiche joueur** — classement, forme du moment, points à défendre, parcours pondéré par la difficulté des tournois, partenaires, trajectoire mois par mois
+- **Historique « hors bilan »** — les performances de plus de 12 mois disparaissent du bilan FFT, mais restent visibles ici (données que la FFT elle-même ne montre plus)
+- **Fiche tournoi** — podium, difficulté réelle du plateau, reconstitution robuste des paires
+- **Fiche club** — meilleurs joueurs, niveau moyen, tournois organisés
+- **Carte de France** — choroplèthe par département (joueurs / clubs / classement moyen), zoom par commune
+- **Graphe de jeu** — degrés de séparation entre joueurs, suggesteur de partenaires (BFS sur le graphe de co-participations)
+- **Favoris** — stockés localement dans le navigateur, sans compte à créer
+- **Fiches au hasard** — pour explorer le site sans chercher un nom précis
 
 ---
 
@@ -39,108 +40,85 @@ Projet de portfolio Data Analyst.
 ### Prérequis
 ```bash
 python 3.11+
-pip install -r dashboard/requirements.txt
+pip install -r frontend/dashboard/requirements.txt
 ```
 
 ### Démarrage
 ```bash
-# Lance le serveur Flask (port 5000)
-cd dashboard && python api.py
-
-# Ouvre le dashboard
-open http://localhost:5000
+cd frontend/dashboard
+python api.py
 ```
 
-La base SQLite (`tenup.db`) est chargée automatiquement. Le graphe en mémoire (~3s au démarrage) permet des requêtes BFS < 20ms.
+Ouvre [http://localhost:5000](http://localhost:5000). La base SQLite (`tenup.db`, non versionnée) doit être présente dans `backend/`.
 
 ---
 
-## Déploiement sur VPS (Docker + Cloudflare Tunnel)
-
-### Prérequis
-- VPS avec Docker installé
-- Cloudflare Tunnel configuré (`cloudflared`)
-- DB SQLite disponible sur le VPS
-
-### 1. Copier la DB sur le VPS
+## Déploiement (VPS + Docker + Cloudflare Tunnel)
 
 ```bash
-scp backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
-```
-
-### 2. Déployer
-
-```bash
+# 1. Sur le VPS : cloner et builder
 ssh root@<vps-ip>
-git clone https://github.com/Gwendal9/padel-stats.git /opt/padel
-cd /opt/padel && git checkout dev
-docker compose up -d --build
+cd /opt/padel && git pull
+docker compose build
+docker compose up -d
+
+# 2. Mettre à jour la base après un nouveau scrape (depuis la machine locale)
+scp -C backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
 ```
 
-### 3. Cloudflare Tunnel (`/etc/cloudflared/config.yml`)
-
-```yaml
-ingress:
-  - hostname: padel.gwendev.eu
-    service: http://localhost:5000
-  - service: http_status:404
-```
-
-```bash
-systemctl restart cloudflared
-```
-
-### Mise à jour de la DB
-
-```bash
-scp backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
-# Pas besoin de redémarrer le container
-```
+Cloudflare Tunnel expose le service sans ouvrir de port public ; nginx sert de reverse-proxy devant les workers gunicorn.
 
 ---
 
 ## Structure du projet
 
 ```
-├── dashboard_mockup.html      ← Frontend (single-file)
-├── dashboard/
-│   ├── api.py                 ← Flask API (routes + serve HTML)
-│   ├── db.py                  ← Connexion DB duale SQLite/PostgreSQL
-│   ├── player_profile.py      ← Profil joueur & recherche
-│   ├── graph_engine.py        ← BFS + graphe ego (in-memory)
-│   ├── suggester.py           ← Suggesteur de partenaires
-│   ├── data_builder.py        ← Export JSON statiques (stats globales)
-│   ├── migrate_to_postgres.py ← Migration SQLite → PostgreSQL
-│   └── requirements.txt
-├── render.yaml                ← Config déploiement Render
-├── Procfile                   ← Commande de démarrage
-└── .env.example               ← Template variables d'environnement
+├── backend/
+│   ├── scraper_json.py        ← Scraper FFT (privé, non versionné)
+│   ├── cleanup_db.py          ← Dédoublonnage des participations
+│   ├── build_timeline.py      ← Séries temporelles (courbe d'évolution, nouveaux classés)
+│   ├── build_geo.py / geocode_villes.py  ← Couche géographique (carte)
+│   ├── tournois_rating.py     ← Difficulté réelle des tournois
+│   └── match_partenaires.py   ← Détection des binômes
+├── frontend/dashboard/
+│   ├── api.py                 ← API Flask (routes + pages)
+│   ├── player_profile.py      ← Profil joueur (forme, parcours, hors bilan…)
+│   ├── db.py                  ← Connexion DB (SQLite, lecture seule)
+│   ├── home.html, fiche.html, carte.html, classement.html,
+│   │   club.html, tournoi.html, clubs.html, tournois.html, graphe.html
+│   └── static/                ← CSS/JS partagés
+├── docker-compose.yml
+├── Dockerfile
+└── nginx.conf
 ```
 
 ---
 
 ## Variables d'environnement
 
-| Variable | Description | Défaut |
-|----------|-------------|--------|
-| `DATABASE_URL` | URL PostgreSQL. Si vide → SQLite local | *(vide = SQLite)* |
-| `FLASK_ENV` | `development` ou `production` | `development` |
-| `PORT` | Port d'écoute du serveur | `5000` |
+| Variable | Description |
+|----------|-------------|
+| `ADMIN_KEY` | Clé pour les routes d'administration (`/api/admin/*`) |
+| `DISCORD_WEBHOOK_URL` | Notification Discord pour les suggestions utilisateurs |
+
+Chargées depuis un fichier `.env` sur le VPS (voir `.env.example`), jamais versionnées.
 
 ---
 
-## API endpoints
+## Principaux endpoints API
 
 | Route | Description |
 |-------|-------------|
-| `GET /` | Dashboard HTML |
-| `GET /api/search?q=ROLLAND` | Recherche joueurs |
+| `GET /api/search?q=...` | Recherche joueurs |
 | `GET /api/player/<id>` | Profil complet joueur |
-| `GET /api/suggest/<id>` | Suggestions partenaires |
+| `GET /api/tournoi/<id>` | Détail d'un tournoi (paires, podium, difficulté) |
+| `GET /api/club?nom=...` | Détail d'un club |
+| `GET /api/leaderboard` | Classement filtrable |
+| `GET /api/geo/departements` | Données pour la carte de France |
+| `GET /api/suggest/<id>` | Suggestions de partenaires |
 | `GET /api/path/<src>/<tgt>` | Degrés de séparation (BFS) |
-| `GET /api/ego/<id>?depth=2` | Graphe ego (nœuds + liens) |
 | `GET /api/health` | Statut de l'API |
 
 ---
 
-*Données issues de TenUp (fédération française de padel). Usage personnel / portfolio.*
+*Données issues des classements publics de la Fédération Française de Tennis (padel). Usage personnel, non commercial — voir les [mentions légales](https://padel.gwendev.eu/mentions).*
