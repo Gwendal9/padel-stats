@@ -19,7 +19,7 @@ CHAMP_KEYWORDS = ["Championnat", "Epreuve par Equipes"]
 
 
 def _is_champ(categorie: str) -> bool:
-    return any(k in categorie for k in CHAMP_KEYWORDS)
+    return any(k in (categorie or "") for k in CHAMP_KEYWORDS)
 
 
 # ── Recherche joueur ──────────────────────────────────────────────────────────
