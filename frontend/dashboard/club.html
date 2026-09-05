@@ -83,7 +83,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur. L'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
@@ -179,7 +179,7 @@ async function load(){
   try{ [c,d]=await Promise.all([
     fetch('/api/club?nom='+encodeURIComponent(nom)).then(r=>r.json()),
     fetch('/api/club_detail?nom='+encodeURIComponent(nom)).then(r=>r.json())
-  ]); }catch(e){ document.getElementById('loading').textContent='Club introuvable — hors de portée du repère.'; return; }
+  ]); }catch(e){ document.getElementById('loading').textContent='Club introuvable. Hors de portée du repère.'; return; }
   render(nom,c,d);
 }
 

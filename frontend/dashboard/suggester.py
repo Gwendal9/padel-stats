@@ -136,7 +136,7 @@ def suggest_partners(player_id: str, n: int = 10) -> list[dict]:
             "id":          cid,
             "nom":         c["nom"] or "",
             "prenom":      c["prenom"] or "",
-            "nom_complet": f"{c.get('prenom','')} {c.get('nom','')}".strip(),
+            "nom_complet": f"{c.get('prenom') or ''} {c.get('nom') or ''}".strip(),
             "classement":  c["classement"],
             "club":        c["club_nom"] or "",
             "ville":       c["ville"] or "",

@@ -76,7 +76,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur. L'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
@@ -160,7 +160,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <section class="mt-4 grid lg:grid-cols-3 gap-4">
   <div class="card p-5 lg:col-span-2">
-    <h2 class="font-700 text-base mb-3">Pyramide — rang par environnement<span class="info" tabindex="0" data-tip="Ton rang parmi les joueurs de ton club, ton département, ta région et la France entière.">i</span></h2>
+    <h2 class="font-700 text-base mb-3">Pyramide : rang par environnement<span class="info" tabindex="0" data-tip="Ton rang parmi les joueurs de ton club, ton département, ta région et la France entière.">i</span></h2>
     <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3" data-pyr></div>
   </div>
   <div class="card p-5">
@@ -171,7 +171,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 </section>
 
 <section class="mt-4" data-shelf-wrap>
-  <div class="flex items-center gap-2 mb-3"><h2 class="font-700 text-base">Meilleures performances</h2><span class="text-xs text-muted">— comptées au classement</span></div>
+  <div class="flex items-center gap-2 mb-3"><h2 class="font-700 text-base">Meilleures performances</h2><span class="text-xs text-muted">(comptées au classement)</span></div>
   <div class="grid sm:grid-cols-3 gap-3" data-shelf></div>
 </section>
 
@@ -199,7 +199,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <section class="mt-4 card p-5" data-hist-wrap style="display:none">
   <button type="button" class="flex items-center justify-between w-full text-left" data-hist-toggle>
-    <h2 class="font-700 text-base flex items-center gap-2 flex-wrap"><span class="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-700">HORS BILAN</span>Historique <span class="text-[11px] font-500 text-muted">— <span data-hist-count>0</span> tournois expirés (+12 mois), que la FFT ne montre plus</span></h2>
+    <h2 class="font-700 text-base flex items-center gap-2 flex-wrap"><span class="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-700">HORS BILAN</span>Historique <span class="text-[11px] font-500 text-muted">: <span data-hist-count>0</span> tournois expirés (+12 mois), que la FFT ne montre plus</span></h2>
     <svg data-hist-chev width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#697483" stroke-width="2" class="transition-transform shrink-0"><path d="m6 9 6 6 6-6"/></svg>
   </button>
   <div data-hist-body class="hidden mt-3 overflow-hidden rounded-lg border border-line"><div class="overflow-x-auto">
@@ -271,7 +271,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.c
 async function load(){
   let prof;
   try{ const r=await fetch('/api/player/'+encodeURIComponent(getId())); if(!r.ok) throw 0; prof=await r.json(); }
-  catch(e){ document.getElementById('loading').textContent='Joueur introuvable — hors de portée du repère.'; return; }
+  catch(e){ document.getElementById('loading').textContent='Joueur introuvable. Hors de portée du repère.'; return; }
   render(prof);
 }
 

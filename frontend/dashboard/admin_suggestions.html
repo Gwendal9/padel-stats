@@ -26,7 +26,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',
     <a href="/" class="text-muted hover:text-ink text-sm">← Padel Repère</a>
   </div>
   <h1 class="font-800 text-2xl tracking-tight mt-2">Modération des suggestions</h1>
-  <p class="text-sm text-muted mt-1">Page privée — pas de lien dans le menu. Les suggestions envoyées via <a href="/suggestions" class="underline hover:text-ink">/suggestions</a> arrivent ici en attente ; rien n'apparaît publiquement tant que tu ne valides pas.</p>
+  <p class="text-sm text-muted mt-1">Page privée, pas de lien dans le menu. Les suggestions envoyées via <a href="/suggestions" class="underline hover:text-ink">/suggestions</a> arrivent ici en attente ; rien n'apparaît publiquement tant que tu ne valides pas.</p>
 
   <div id="keyGate" class="card p-4 mt-5">
     <div class="lbl text-[10.5px] uppercase tracking-wider font-600 text-muted mb-1">Clé admin (ADMIN_KEY)</div>
@@ -119,7 +119,7 @@ async function setStatus(id, status){
     });
     if(!r.ok) throw new Error();
     await load();
-  }catch(_){ alert("Échec de la mise à jour — vérifie ta clé admin."); }
+  }catch(_){ alert("Échec de la mise à jour, vérifie ta clé admin."); }
 }
 
 async function deleteSuggestion(id){
@@ -128,7 +128,7 @@ async function deleteSuggestion(id){
     const r=await fetch(`/api/admin/suggestions/${id}?key=${encodeURIComponent(KEY)}`,{ method:'DELETE' });
     if(!r.ok) throw new Error();
     await load();
-  }catch(_){ alert("Échec de la suppression — vérifie ta clé admin."); }
+  }catch(_){ alert("Échec de la suppression, vérifie ta clé admin."); }
 }
 
 async function load(){

@@ -102,6 +102,16 @@ dt = c.execute("DELETE FROM tournois WHERE NOT EXISTS "
                "(SELECT 1 FROM participations p WHERE p.id_tournoi=tournois.id_tournoi)").rowcount
 print(f"Tournois orphelins supprimés : {dt:,}")
 
+# tables derivees (tournois_rating / tournois_stats) : purge les lignes qui pointent
+# vers un id_tournoi qui n'existe plus dans `tournois` (sinon "Un tournoi au hasard"
+# peut tomber sur un id mort -> page "Tournoi introuvable").
+dtr = c.execute("DELETE FROM tournois_rating WHERE NOT EXISTS "
+                "(SELECT 1 FROM tournois t WHERE t.id_tournoi=tournois_rating.id_tournoi)").rowcount
+print(f"tournois_rating orphelins supprimés : {dtr:,}")
+dts = c.execute("DELETE FROM tournois_stats WHERE NOT EXISTS "
+                "(SELECT 1 FROM tournois t WHERE t.id_tournoi=tournois_stats.id_tournoi)").rowcount
+print(f"tournois_stats orphelins supprimés : {dts:,}")
+
 if VACUUM:
     print("\n⏳ VACUUM (compactage du fichier)…")
     c.execute("VACUUM")

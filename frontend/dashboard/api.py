@@ -238,7 +238,13 @@ def route_random_tournoi():
     """Redirige vers une fiche tournoi au hasard."""
     from flask import redirect
     from db import fetchone
-    r = fetchone("SELECT tr.id_tournoi FROM tournois_rating tr WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
+    # INNER JOIN sur tournois : évite de tomber sur un id_tournoi de tournois_rating
+    # devenu orphelin (tournoi supprimé depuis par cleanup_db.py) -> page "introuvable".
+    r = fetchone(
+        "SELECT tr.id_tournoi FROM tournois_rating tr JOIN tournois t ON t.id_tournoi=tr.id_tournoi "
+        "WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 "
+        "ORDER BY RANDOM() LIMIT 1"
+    )
     return redirect(f"/tournoi/{r['id_tournoi']}" if r else "/tournois")
 
 

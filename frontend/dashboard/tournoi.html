@@ -74,7 +74,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur. L'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
@@ -118,7 +118,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('#searchwrap')) sr.c
 
 async function load(){
   let d; try{ const r=await fetch('/api/tournoi/'+encodeURIComponent(getId())); if(!r.ok) throw 0; d=await r.json(); }
-  catch(e){ document.getElementById('loading').textContent='Tournoi introuvable — hors de portée du repère.'; return; }
+  catch(e){ document.getElementById('loading').textContent='Tournoi introuvable. Hors de portée du repère.'; return; }
   render(d);
 }
 
@@ -157,7 +157,7 @@ function render(d){
         </div>
         <h1 class="font-800 text-3xl sm:text-4xl leading-tight tracking-tight">${i.nom||'Tournoi'}</h1>
         <div class="mt-3 text-[13px] text-white/85 font-500">${fr(d.nb_paires_reelles)} paires classées${i.classement_meilleur?` · meilleure paire ~#${i.classement_meilleur}`:''}</div>
-        ${_hb?`<div class="mt-2 text-[12px] text-amber-100/90 font-500">Tournoi de plus de 12 mois : ses points ne comptent plus dans le bilan FFT actuel — donnée d'archive qu'on conserve ici.</div>`:''}
+        ${_hb?`<div class="mt-2 text-[12px] text-amber-100/90 font-500">Tournoi de plus de 12 mois : ses points ne comptent plus dans le bilan FFT actuel, on la garde ici pour archive.</div>`:''}
       </div>
       <div class="shrink-0 lg:border-l lg:border-white/15 lg:pl-6">
         ${team?`<div class="lbl text-white/55">Format</div><div class="font-800 text-2xl mt-1 leading-tight">${i.multi_board&&!i.equipes?'Tournoi multi-tableaux':'Épreuve par équipes'}</div><div class="text-white/60 text-[12px] mt-1.5 max-w-[210px]">${i.multi_board&&!i.equipes?'Tableaux H et D combinés : la difficulté est calculée par tableau, pas globalement.':'Difficulté de plateau non pertinente pour un interclub / championnat.'}</div>`:`<div class="lbl text-white/55">Difficulté du plateau (/100)</div>

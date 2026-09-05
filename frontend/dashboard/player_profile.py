@@ -68,7 +68,7 @@ def _fmt_joueur(r: dict) -> dict:
         "id":                    r["id_fft"],
         "nom":                   r["nom"] or "",
         "prenom":                r["prenom"] or "",
-        "nom_complet":           f"{r.get('prenom','')} {r.get('nom','')}".strip(),
+        "nom_complet":           f"{r.get('prenom') or ''} {r.get('nom') or ''}".strip() or "Joueur anonyme",
         "classement":            r["classement"],
         "meilleur_classement":   r["meilleur_classement"],
         "variation_classement":  r.get("variation_classement"),  # delta mensuel FFT
@@ -250,7 +250,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "pos_moyenne":  pos_moy,
             "points":       round(data["points"]),
             "classement":   partner_info.get("classement"),
-            "club":         partner_info.get("club_nom", ""),
+            "club":         partner_info.get("club_nom") or "",
         })
 
     top_partners = top_partners[:10]

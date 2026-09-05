@@ -77,7 +77,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
 
 <div class="ml-14 lg:ml-60 min-w-0">
 <div id="mobile-notice" class="items-center justify-between gap-3 px-4 py-2 text-[12.5px] bg-amber-50 text-amber-900 border-b border-amber-200">
-  <span>💻 Padel Repère est pensé pour un écran d'ordinateur — l'affichage mobile est encore limité.</span>
+  <span>💻 Padel Repère est pensé pour un écran d'ordinateur. L'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
   <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-line">
@@ -92,7 +92,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
     </div>
   </header>
   <main class="px-5 lg:px-8 py-6">
-    <div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#818CF81f;color:#818CF8"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Tournois — classement par difficulté</h1></div>
+    <div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#818CF81f;color:#818CF8"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Tournois · classement par difficulté</h1></div>
     <p class="text-sm text-muted mt-0.5" id="subtitle">Les tournois dont le plateau était le plus relevé.</p>
 
     <details class="card mt-3 px-4 py-3">
@@ -100,7 +100,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       <div class="text-[13px] text-muted mt-3 space-y-1.5 leading-relaxed">
         <div>1. Chaque joueur du tableau : son rang devient un score de niveau <span class="num">s = ln(N / rang)</span> (N = nb de classés du pool H ou F). Échelle logarithmique → un 2000<sup>e</sup> pèse bien plus qu'un 40000<sup>e</sup>.</div>
         <div>2. Chaque paire = <b class="text-ink">0,6 × le plus fort + 0,4 × le moins fort</b> (un joueur fort tire la paire).</div>
-        <div>3. Force du plateau = <b class="text-ink">0,6 × plafond + 0,4 × profondeur</b> — plafond = moyenne des 25 % meilleures paires (dur à gagner), profondeur = médiane (niveau général).</div>
+        <div>3. Force du plateau = <b class="text-ink">0,6 × plafond + 0,4 × profondeur</b> : plafond = moyenne des 25 % meilleures paires (dur à gagner), profondeur = médiane (niveau général).</div>
         <div>4. <b class="text-ink">Indice /100</b> = force ramenée sur 100, comparable entre tous les tournois.</div>
         <div>5. <b class="text-ink">Surcote</b> = écart-type (z-score) vs les tournois du <b>même niveau P et même sexe</b> → « relevé pour un P100 ».</div>
         <div class="text-[12px] pt-1">Multi-tableaux et épreuves par équipes exclus du classement. H et F jamais mélangés.</div>
@@ -171,7 +171,7 @@ async function fetchPage(append){
   const tb=$('rows'); const html=d.tournois.map((t,i)=>rowHtml(t,state.offset+i+1)).join('');
   if(append) tb.insertAdjacentHTML('beforeend',html); else tb.innerHTML=html||'<tr><td class="px-4 py-6 text-muted text-sm" colspan="6">Aucun tournoi (as-tu lancé tournois_rating.py ?).</td></tr>';
   const shown=state.offset+d.tournois.length;
-  $('subtitle').textContent=`${fr(state.total)} tournois ${state.sexe==='F'?'(Dames)':'(Messieurs)'}${state.niveau?' · P'+state.niveau:''} — triés par ${state.sort==='categorie'?'indice dans leur catégorie (P)':'indice absolu (toutes catégories)'}.`;
+  $('subtitle').textContent=`${fr(state.total)} tournois ${state.sexe==='F'?'(Dames)':'(Messieurs)'}${state.niveau?' · P'+state.niveau:''}, triés par ${state.sort==='categorie'?'indice dans leur catégorie (P)':'indice absolu (toutes catégories)'}.`;
   $('more').classList.toggle('hidden',shown>=state.total);
 }
 function reload(){ state.offset=0; fetchPage(false); }
