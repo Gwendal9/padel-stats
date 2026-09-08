@@ -271,12 +271,6 @@ def index():
     return send_file(os.path.join(os.path.dirname(__file__), "home.html"))
 
 
-@app.route("/legacy")
-def index_legacy():
-    html_path = os.path.join(os.path.dirname(__file__), "..", "dashboard_mockup.html")
-    return send_file(os.path.abspath(html_path))
-
-
 @app.route("/joueur/<player_id>")
 def route_fiche_page(player_id: str):
     """Sert la fiche joueur (v2). Les donnees sont chargees cote client via /api/player/<id>.
