@@ -35,40 +35,7 @@ Projet personnel, sans lien officiel avec la FFT.
 
 ---
 
-## Lancer en local
 
-### Prérequis
-```bash
-python 3.11+
-pip install -r frontend/dashboard/requirements.txt
-```
-
-### Démarrage
-```bash
-cd frontend/dashboard
-python api.py
-```
-
-Ouvre [http://localhost:5000](http://localhost:5000). La base SQLite (`tenup.db`, non versionnée) doit être présente dans `backend/`.
-
----
-
-## Déploiement (VPS + Docker + Cloudflare Tunnel)
-
-```bash
-# 1. Sur le VPS : cloner et builder
-ssh root@<vps-ip>
-cd /opt/padel && git pull
-docker compose build
-docker compose up -d
-
-# 2. Mettre à jour la base après un nouveau scrape (depuis la machine locale)
-scp -C backend/tenup.db root@<vps-ip>:/opt/padel-data/tenup.db
-```
-
-Cloudflare Tunnel expose le service sans ouvrir de port public ; nginx sert de reverse-proxy devant les workers gunicorn.
-
----
 
 ## Structure du projet
 
