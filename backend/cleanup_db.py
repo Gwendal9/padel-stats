@@ -3,9 +3,16 @@ cleanup_db.py — Nettoyage de la base après un scrape mensuel.
 
 Supprime :
   1. les participations orphelines (id_joueur absent de la table joueurs)
-  2. les vieilles participations non rafraîchies ce cycle : pour les joueurs vus
-     dans la liste de ce mois, les participations écrites par l'ANCIEN scraper HTML
-     (reconnaissables car pris_en_compte IS NULL — le scraper JSON met toujours 0 ou 1).
+  3. les artefacts "None None" (partenaire anonyme mal stocké)
+  4. les doublons exacts ancien/nouveau système (même tournoi + même résultat)
+
+Ne supprime PLUS (décision Gwendal, 09/2026) :
+  2. les "vieilles participations non rafraîchies" (pris_en_compte IS NULL, écrites
+     par l'ANCIEN scraper HTML) — avant, ce script les supprimait dès que le joueur
+     était re-scrapé ce mois-ci, même quand le tournoi était juste trop vieux pour
+     réapparaître dans son bilan JSON. Ça faisait fondre l'historique des tournois
+     hors fenêtre de bilan FFT (~140k participations perdues entre juin et sept 2026).
+     Elles sont désormais conservées comme archive (juste comptées, pour info).
 
 ⚠️ DRY-RUN par défaut : affiche ce qui SERAIT supprimé, sans rien toucher.
    Ajoute --apply pour exécuter réellement (fais un backup avant).
@@ -39,7 +46,7 @@ stale = n("""SELECT COUNT(*) FROM participations p
              WHERE p.pris_en_compte IS NULL
                AND EXISTS (SELECT 1 FROM joueurs j WHERE j.id_fft=p.id_joueur
                            AND j.dernier_mois_vu=? AND j.points IS NOT NULL)""", MOIS)
-print(f"2) Vieilles participations non rafraîchies (joueurs {MOIS}) : {stale:,}")
+print(f"2) Vieilles participations non rafraîchies (joueurs {MOIS}) — CONSERVÉES depuis 09/2026, compte informatif : {stale:,}")
 
 # 3) artefacts "None None" (partenaire anonyme mal stocké) -> à vider
 nonenone = n("SELECT COUNT(*) FROM participations WHERE partenaire_nom IN ('None None','None','none none')")
@@ -55,7 +62,7 @@ dup = n("""SELECT COUNT(*) FROM participations p JOIN tournois tp ON tp.id_tourn
                            AND d.points_num IS p.points_num AND d.position_num IS p.position_num)""")
 print(f"4) Doublons ancien systeme (meme tournoi + resultat) : {dup:,}")
 
-print(f"\nTotal à supprimer : {orphan + stale + dup:,}")
+print(f"\nTotal à supprimer (orphelines + doublons ; vieilles participations conservées) : {orphan + dup:,}")
 print(f"Participations avant : {n('SELECT COUNT(*) FROM participations'):,}")
 
 if not APPLY:
@@ -65,12 +72,13 @@ if not APPLY:
 print("\n⏳ Suppression…")
 d1 = c.execute("DELETE FROM participations WHERE NOT EXISTS "
                "(SELECT 1 FROM joueurs j WHERE j.id_fft=participations.id_joueur)").rowcount
-d2 = c.execute("""DELETE FROM participations
-                  WHERE pris_en_compte IS NULL
-                    AND id_joueur IN (SELECT id_fft FROM joueurs
-                                      WHERE dernier_mois_vu=? AND points IS NOT NULL)""", (MOIS,)).rowcount
+# Décision Gwendal (09/2026) : on NE supprime plus ces lignes -> elles restent en
+# base comme archive historique (elles ne seront jamais rafraîchies par le scraper
+# JSON, mais c'est la seule trace qui reste de tournois sortis de la fenêtre de
+# bilan FFT). d2 reste à 0, gardé uniquement pour l'affichage ci-dessous.
+d2 = 0
 print(f"  orphelines supprimées : {d1:,}")
-print(f"  vieilles supprimées   : {d2:,}")
+print(f"  vieilles conservées (archive historique, plus supprimées) : {stale:,}")
 c.execute("""CREATE TEMP TABLE _newkeys AS SELECT DISTINCT p.id_joueur AS jid, t.nom AS nom, p.points_num AS pts, p.position_num AS pos
              FROM participations p JOIN tournois t ON t.id_tournoi=p.id_tournoi WHERE length(p.id_tournoi) >= 8""")
 c.execute("CREATE INDEX _idx_nk ON _newkeys(jid, nom)")

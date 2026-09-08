@@ -19,7 +19,8 @@ Copie-colle la console à Claude (le token sera tronqué pour la sécurité).
 """
 import asyncio, json, os, sys, argparse
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Ce script vit dans archive/, mais cookie_header.txt / cookies.json sont un niveau au-dessus, dans backend/ -> BASE_DIR pointe sur le parent, pas sur archive/.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COOKIES_FILE = os.path.join(BASE_DIR, 'cookies.json')
 OUT_FILE = os.path.join(BASE_DIR, 'api_capture.json')
 TENUP = 'https://tenup.fft.fr'
@@ -28,7 +29,27 @@ if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 
+COOKIE_HEADER_FILE = os.path.join(BASE_DIR, 'cookie_header.txt')
+
+
 def load_cookies_pw():
+    """Priorite a cookie_header.txt (celui que tu rafraichis regulierement via
+    Firefox DevTools pour scraper_json.py) -> plus fiable que l'ancien cookies.json
+    qui traine sans etre remis a jour. Fallback sur cookies.json si absent."""
+    if os.path.exists(COOKIE_HEADER_FILE):
+        header = open(COOKIE_HEADER_FILE, encoding='utf-8').read().strip()
+        out = []
+        for part in header.split(';'):
+            part = part.strip()
+            if not part or '=' not in part:
+                continue
+            name, value = part.split('=', 1)
+            out.append({'name': name.strip(), 'value': value.strip(),
+                        'domain': '.fft.fr', 'path': '/'})
+        if out:
+            print(f"✅ Cookies chargés depuis cookie_header.txt ({len(out)} cookies)")
+            return out
+    print("⚠️  cookie_header.txt absent/vide, repli sur cookies.json (peut-être périmé)")
     raw = json.load(open(COOKIES_FILE, encoding='utf-8'))
     out = []
     items = raw if isinstance(raw, list) else [{'name': k, 'value': v} for k, v in raw.items()]
@@ -93,13 +114,24 @@ async def main():
                         break
         page.on('response', lambda r: asyncio.create_task(on_response(r)))
 
-        for url in [f'{TENUP}/fichejoueur/{a.id}', f'{TENUP}/classement/{a.id}/padel']:
-            print(f"\n📄 Navigation : {url}")
-            try:
-                await page.goto(url, wait_until='networkidle', timeout=45000)
-            except Exception as e:
-                print(f"   (timeout/erreur navigation : {e})")
-            await asyncio.sleep(4)
+        # /classement/{id}/padel et /joueur/{id} bouclent en redirection (ERR_TOO_MANY_REDIRECTS)
+        # quand on y va en navigation directe -> on ne charge plus que /fichejoueur/{id},
+        # puis on laisse la fenetre ouverte pour cliquer nous-memes sur les onglets
+        # (Palmares / Bilan classement), qui sont du routing cote client (JS), pas des URLs
+        # devinables depuis l'exterieur.
+        url = f'{TENUP}/fichejoueur/{a.id}'
+        print(f"\n📄 Navigation : {url}")
+        try:
+            await page.goto(url, wait_until='networkidle', timeout=45000)
+        except Exception as e:
+            print(f"   (timeout/erreur navigation : {e})")
+        await asyncio.sleep(2)
+
+        if not a.headless:
+            print("\n👉 La fenêtre reste ouverte. Bascule sur 'Padel' si besoin, puis clique sur "
+                  "l'onglet 'Bilan classement' (et 'Palmarès' si tu veux) dans la fenêtre Chromium.")
+            print("   Chaque appel /back/ déclenché sera capturé en direct.")
+            await asyncio.to_thread(input, "   Appuie sur Entrée ici QUAND T'AS FINI de naviguer... ")
 
         await ctx.close()
         await browser.close()
