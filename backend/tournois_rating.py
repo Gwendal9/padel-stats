@@ -56,10 +56,13 @@ def main():
     c = sqlite3.connect(DB, isolation_level=None)
 
     # Mois présents dans les tournois (via participations) -> on ne charge que ceux-là
+    # date_effective = date_tournoi réelle si connue, sinon estimée (expiration-365j) —
+    # la FFT ne fournit plus date_tournoi depuis 03/2026 (cf NOTE_date_tournoi_et_pipeline.md) ;
+    # sans ce fallback, tous les tournois récents perdaient leur classement d'époque.
     mois_set = set()
     for (ym,) in c.execute(
-        "SELECT DISTINCT SUBSTR(date_tournoi,7,4)||'-'||SUBSTR(date_tournoi,4,2) "
-        "FROM participations WHERE LENGTH(date_tournoi)>=10"):
+        "SELECT DISTINCT SUBSTR(date_effective,7,4)||'-'||SUBSTR(date_effective,4,2) "
+        "FROM participations WHERE LENGTH(date_effective)>=10"):
         if ym and len(ym) == 7:
             mois_set.add(ym)
     if not mois_set:
@@ -147,7 +150,7 @@ def main():
     print("⏳ Lecture des participations (joueur + partenaire)…")
     cur = c.execute('''
         SELECT p.id_tournoi, p.id_joueur, j.classement, j.sexe,
-               p.partenaire_id, jp.classement AS prank, jp.sexe AS psexe, p.type, p.date_tournoi
+               p.partenaire_id, jp.classement AS prank, jp.sexe AS psexe, p.type, p.date_effective
         FROM participations p
         JOIN joueurs  j  ON j.id_fft  = p.id_joueur
         LEFT JOIN joueurs jp ON jp.id_fft = p.partenaire_id

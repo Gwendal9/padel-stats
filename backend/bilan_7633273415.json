@@ -1,0 +1,310 @@
+{
+  "referentiels": {
+    "datesClassement": [
+      "2026-09-02",
+      "2026-08-05",
+      "2026-07-07",
+      "2026-06-03",
+      "2026-05-05"
+    ],
+    "sexe": [
+      {
+        "code": "F",
+        "libelle": "Femme"
+      },
+      {
+        "code": "H",
+        "libelle": "Homme"
+      }
+    ]
+  },
+  "dernierRang": {
+    "dateCalcul": "2026-09-02T00:00:00",
+    "rang": 25000,
+    "evolution": null,
+    "points": 70.0
+  },
+  "calculs": [
+    {
+      "saison": 2027,
+      "rang": 25000,
+      "dateCalcul": "2026-09-02T00:00:00",
+      "evolution": null
+    },
+    {
+      "saison": 2026,
+      "rang": 20000,
+      "dateCalcul": "2026-08-05T00:00:00",
+      "evolution": null
+    },
+    {
+      "saison": 2026,
+      "rang": 20000,
+      "dateCalcul": "2026-07-07T00:00:00",
+      "evolution": null
+    },
+    {
+      "saison": 2026,
+      "rang": 16652,
+      "dateCalcul": "2026-06-03T00:00:00",
+      "evolution": -1826
+    },
+    {
+      "saison": 2026,
+      "rang": 14826,
+      "dateCalcul": "2026-05-05T00:00:00",
+      "evolution": -491
+    },
+    {
+      "saison": 2026,
+      "rang": 14335,
+      "dateCalcul": "2026-04-08T00:00:00",
+      "evolution": -401
+    },
+    {
+      "saison": 2026,
+      "rang": 13934,
+      "dateCalcul": "2026-03-04T00:00:00",
+      "evolution": -305
+    },
+    {
+      "saison": 2026,
+      "rang": 13629,
+      "dateCalcul": "2026-02-03T00:00:00",
+      "evolution": -351
+    },
+    {
+      "saison": 2026,
+      "rang": 13278,
+      "dateCalcul": "2026-01-07T00:00:00",
+      "evolution": -279
+    },
+    {
+      "saison": 2026,
+      "rang": 12999,
+      "dateCalcul": "2025-12-03T00:00:00",
+      "evolution": -295
+    },
+    {
+      "saison": 2026,
+      "rang": 12704,
+      "dateCalcul": "2025-11-04T00:00:00",
+      "evolution": -49
+    },
+    {
+      "saison": 2026,
+      "rang": 12655,
+      "dateCalcul": "2025-10-07T00:00:00",
+      "evolution": 9
+    },
+    {
+      "saison": 2026,
+      "rang": 12664,
+      "dateCalcul": "2025-09-02T00:00:00",
+      "evolution": 892
+    },
+    {
+      "saison": 2025,
+      "rang": 13556,
+      "dateCalcul": "2025-08-05T00:00:00",
+      "evolution": 5346
+    },
+    {
+      "saison": 2025,
+      "rang": 18902,
+      "dateCalcul": "2025-07-01T00:00:00",
+      "evolution": 4397
+    },
+    {
+      "saison": 2025,
+      "rang": 23299,
+      "dateCalcul": "2025-06-03T00:00:00",
+      "evolution": 3327
+    },
+    {
+      "saison": 2025,
+      "rang": 26626,
+      "dateCalcul": "2025-05-07T00:00:00",
+      "evolution": 7491
+    },
+    {
+      "saison": 2025,
+      "rang": 34117,
+      "dateCalcul": "2025-04-03T00:00:00",
+      "evolution": 5133
+    },
+    {
+      "saison": 2025,
+      "rang": 39250,
+      "dateCalcul": "2025-03-04T00:00:00",
+      "evolution": 3813
+    },
+    {
+      "saison": 2025,
+      "rang": 43063,
+      "dateCalcul": "2025-02-04T00:00:00",
+      "evolution": -1690
+    },
+    {
+      "saison": 2025,
+      "rang": 41373,
+      "dateCalcul": "2025-01-07T00:00:00",
+      "evolution": 494
+    },
+    {
+      "saison": 2025,
+      "rang": 41867,
+      "dateCalcul": "2024-12-03T00:00:00",
+      "evolution": 1237
+    },
+    {
+      "saison": 2025,
+      "rang": 43104,
+      "dateCalcul": "2024-11-05T00:00:00",
+      "evolution": -1466
+    },
+    {
+      "saison": 2025,
+      "rang": 41638,
+      "dateCalcul": "2024-10-01T00:00:00",
+      "evolution": -1610
+    },
+    {
+      "saison": 2025,
+      "rang": 40028,
+      "dateCalcul": "2024-09-03T00:00:00",
+      "evolution": -1210
+    },
+    {
+      "saison": 2024,
+      "rang": 38818,
+      "dateCalcul": "2024-08-06T00:00:00",
+      "evolution": -1208
+    },
+    {
+      "saison": 2024,
+      "rang": 37610,
+      "dateCalcul": "2024-07-02T00:00:00",
+      "evolution": 10729
+    },
+    {
+      "saison": 2024,
+      "rang": 48339,
+      "dateCalcul": "2024-06-04T00:00:00",
+      "evolution": null
+    }
+  ],
+  "competitions": [
+    {
+      "dateFinPEC": "2026-10-15T00:00:00",
+      "id": 82568902,
+      "libelle": "P100 journée TC Les Lilas",
+      "natureEpreuve": {
+        "code": "DM",
+        "libelle": "Double Messieurs"
+      },
+      "typeEpreuve": {
+        "code": "P100",
+        "libelle": "P100"
+      },
+      "partenaire": {
+        "nom": "TAMISIER",
+        "prenom": "Mathis"
+      },
+      "rangPaire": 5,
+      "pointsMarques": 35.0,
+      "prisEnCompte": true
+    },
+    {
+      "dateFinPEC": "2026-10-15T00:00:00",
+      "id": 82568895,
+      "libelle": "P100 journée TC Les Lilas",
+      "natureEpreuve": {
+        "code": "DM",
+        "libelle": "Double Messieurs"
+      },
+      "typeEpreuve": {
+        "code": "P100",
+        "libelle": "P100"
+      },
+      "partenaire": {
+        "nom": "TAMISIER",
+        "prenom": "Mathis"
+      },
+      "rangPaire": 7,
+      "pointsMarques": 35.0,
+      "prisEnCompte": true
+    }
+  ],
+  "totalPoints": 70.0,
+  "pyramides": [
+    {
+      "environnement": "comite",
+      "rangBas": 2130,
+      "rangHaut": 1,
+      "dessous": {
+        "nombreJoueurs": 1735,
+        "pourcentage": 81
+      },
+      "dessus": {
+        "nombreJoueurs": 394,
+        "pourcentage": 19
+      },
+      "egal": {
+        "nombreJoueurs": 0,
+        "pourcentage": 0
+      }
+    },
+    {
+      "environnement": "club",
+      "rangBas": 58,
+      "rangHaut": 1,
+      "dessous": {
+        "nombreJoueurs": 54,
+        "pourcentage": 95
+      },
+      "dessus": {
+        "nombreJoueurs": 3,
+        "pourcentage": 5
+      },
+      "egal": {
+        "nombreJoueurs": 0,
+        "pourcentage": 0
+      }
+    },
+    {
+      "environnement": "national",
+      "rangBas": 131446,
+      "rangHaut": 1,
+      "dessous": {
+        "nombreJoueurs": 106394,
+        "pourcentage": 81
+      },
+      "dessus": {
+        "nombreJoueurs": 25051,
+        "pourcentage": 19
+      },
+      "egal": {
+        "nombreJoueurs": 0,
+        "pourcentage": 0
+      }
+    },
+    {
+      "environnement": "ligue",
+      "rangBas": 15560,
+      "rangHaut": 1,
+      "dessous": {
+        "nombreJoueurs": 12627,
+        "pourcentage": 81
+      },
+      "dessus": {
+        "nombreJoueurs": 2932,
+        "pourcentage": 19
+      },
+      "egal": {
+        "nombreJoueurs": 0,
+        "pourcentage": 0
+      }
+    }
+  ]
+}

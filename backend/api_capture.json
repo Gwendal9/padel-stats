@@ -1,0 +1,40 @@
+{
+  "captured": [
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/public/maintenance?environment=web_prod",
+      "authorization": "",
+      "status": 200,
+      "preview": "{\"maintenance\":false}"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/v1/personnes/7633273415/profil-joueur",
+      "authorization": "",
+      "status": 200,
+      "preview": "{\"prenom\":\"Gwendal\",\"nom\":\"ROLLAND\",\"sexe\":\"H\",\"age\":25,\"photo\":null,\"club\":null,\"ville\":\"LES LILAS\",\"pratique\":{\"code\":\"PADEL\",\"libelle\":\"Padel\"},\"numeroLicence\":\"6007584G\",\"millesimeLicence\":2026,\"consentementContact\":false,\"estAmi\":false,\"eligibleMatchLibre\":false,\"classementTennis\":{\"dernierClas"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/v1/profil/notifications",
+      "authorization": "",
+      "status": 200,
+      "preview": "{\"demandes\":[]}"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/v1/personnes/7633273415/fiche-joueur",
+      "authorization": "",
+      "status": 200,
+      "preview": "{\"pratiquePrincipale\":{\"code\":\"PADEL\",\"libelle\":\"Padel\"},\"niveauPratiquePrincipale\":null,\"lateralite\":null,\"coupFavori\":null,\"typeJeu\":null,\"typeRevers\":null,\"surfacePreferee\":null,\"pratiquesSecondaires\":[]}"
+    },
+    {
+      "method": "GET",
+      "url": "https://tenup.fft.fr/back/public/v1/partenaires",
+      "authorization": "",
+      "status": 200,
+      "preview": "[{\"alt\":\"BNP Paribas\",\"redirection\":\"https://www.wearetennis.com/fr_FR/\",\"src\":\"https://images.prismic.io/fft-fed-hublicencie/40344d9c-ec90-4be2-84ce-a7cbb04d5bfc_bnp-paribas.avif?auto=compress,format&rect=0,0,130,130&w=400&h=400\"},{\"alt\":\"Intersport\",\"redirection\":\"https://www.intersport.fr/\",\"src\""
+    }
+  ],
+  "tokens": []
+}

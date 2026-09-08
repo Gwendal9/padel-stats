@@ -278,7 +278,7 @@ async function load(){
 let LAST_PV=null, modalChart=null, LAST_PROFILE=null;
 function perfData(pv,big){
   const pd=s=>{const a=(s||'').split('/');return a.length===3?new Date(+a[2],+a[1]-1,+a[0]).getTime():null;};
-  const mk=o=>{const x=pd(o.date); if(x==null||o.indice==null)return null; const pts=Math.round(o.points||0); const r=Math.max(3,Math.min(big?26:15,Math.sqrt(pts||1)*(big?1.5:0.95))); return {x,y:o.indice,r,nom:o.nom,id:o.id,date:o.date,points:pts,comptee:o.comptee,hb:o.hors_bilan};};
+  const mk=o=>{const x=pd(o.date); if(x==null||o.indice==null)return null; const pts=Math.round(o.points||0); const r=Math.max(3,Math.min(big?26:15,Math.sqrt(pts||1)*(big?1.5:0.95))); return {x,y:o.indice,r,nom:o.nom,id:o.id,date:o.date,de:o.date_estimee,points:pts,comptee:o.comptee,hb:o.hors_bilan};};
   const c=[],a=[],hb=[]; (pv.points||[]).forEach(o=>{const m=mk(o); if(!m)return; if(o.hors_bilan) hb.push(m); else if(o.comptee) c.push(m); else a.push(m);}); return {c,a,hb};
 }
 function makePerfChart(el,pv,big){
@@ -290,7 +290,7 @@ function makePerfChart(el,pv,big){
     onClick:(e,els,ch)=>{ if(els.length){ const it=ch.data.datasets[els[0].datasetIndex].data[els[0].index]; if(it&&it.id) location.href='/tournoi/'+it.id; } },
     onHover:(e,els)=>{ if(e.native&&e.native.target) e.native.target.style.cursor=els.length?'pointer':'default'; },
     plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,usePointStyle:true,font:{size:big?12:10}}},
-      tooltip:{callbacks:{title:c=>c.length?c[0].raw.date:'',label:c=>{const r=c.raw;return `${tc(String(r.nom||'')).slice(0,30)} · plateau ${r.y} · ${r.points} pts · ${r.hb?'hors bilan':(r.comptee?'comptée':'non comptée')}`;}}}},
+      tooltip:{callbacks:{title:c=>c.length?(c[0].raw.date+(c[0].raw.de?' (estimée)':'')):'',label:c=>{const r=c.raw;return `${tc(String(r.nom||'')).slice(0,30)} · plateau ${r.y} · ${r.points} pts · ${r.hb?'hors bilan':(r.comptee?'comptée':'non comptée')}`;}}}},
     scales:{x:{type:'linear',title:{display:true,text:'Date du tournoi',font:{size:10}},grid:{color:'#eef0f2'},ticks:{font:{size:10},maxTicksLimit:big?10:6,callback:v=>{const t=new Date(v);return ('0'+(t.getMonth()+1)).slice(-2)+'/'+String(t.getFullYear()).slice(2);}}},
       y:{title:{display:true,text:'Difficulté',font:{size:10}},beginAtZero:true,grid:{color:'#eef0f2'}}}}});
 }
@@ -567,7 +567,7 @@ function render(p){
   if(_hw){
     if(_hist.length){
       $('[data-hist-count]').textContent=_hist.length;
-      $('[data-hist]').innerHTML=_hist.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'"><td class="px-3 py-2 text-[12px] text-muted num">${r.date?r.date.slice(3):'—'}</td><td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td><td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td><td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td><td class="px-3 py-2 text-right num font-700 text-muted">${Math.round(r.points||0)}</td></tr>`).join('');
+      $('[data-hist]').innerHTML=_hist.map(r=>`<tr class="hover:bg-paper cursor-pointer" onclick="location.href='/tournoi/${r.id_tournoi}'"><td class="px-3 py-2 text-[12px] text-muted num">${r.date?r.date.slice(3)+(r.date_estimee?' <span class="opacity-70" title="Date estimée : la FFT ne fournit plus la date exacte depuis mars 2026.">~</span>':''):'—'}</td><td class="px-3 py-2">${r.niveau_points?`<span class="num font-700 text-[11px] px-1.5 py-0.5 rounded ${PLEVEL[r.niveau_points]||'bg-gray-100 text-gray-600'}">P${r.niveau_points}</span>`:'<span class="text-muted text-xs">—</span>'}</td><td class="px-3 py-2 font-500">${r.tournoi_nom||'—'}${r.club?`<a href="/club?nom=${encodeURIComponent(r.club)}" onclick="event.stopPropagation()" class="block text-[11px] text-muted font-400 hover:text-brand-dark hover:underline">${tc(r.club)}</a>`:''}</td><td class="px-3 py-2 text-center num font-600">${r.position||'—'}${r.position?'e':''}</td><td class="px-3 py-2 text-right num font-700 text-muted">${Math.round(r.points||0)}</td></tr>`).join('');
       _hw.style.display='';
       const _ht=$('[data-hist-toggle]'); if(_ht) _ht.onclick=()=>{ const b=$('[data-hist-body]'), cv=$('[data-hist-chev]'); const hid=b.classList.toggle('hidden'); if(cv) cv.style.transform=hid?'':'rotate(180deg)'; };
     } else _hw.style.display='none';

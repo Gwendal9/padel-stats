@@ -151,7 +151,7 @@ function render(d){
       <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap mb-2">
           ${nivP?`<span class="num font-700 text-[11px] px-2 py-0.5 rounded bg-white/15">P${nivP}</span>`:''}
-          ${d.date?`<span class="text-[11px] text-white/75">${d.date}</span>`:''}
+          ${d.date?`<span class="text-[11px] text-white/75">${d.date}${d.date_estimee?' <span class="opacity-70" title="La FFT ne fournit plus la date exacte du tournoi depuis mars 2026 : date estimée à partir de l’expiration des points.">(estimée)</span>':''}</span>`:''}
           ${_hb?`<span class="text-[10.5px] font-700 px-2 py-0.5 rounded bg-amber-400/20 text-amber-100 border border-amber-300/30" title="Plus de 12 mois : points expirés du bilan FFT, donnée d'archive conservée ici.">Hors bilan · +12 mois</span>`:''}
           ${tags.join('')}
         </div>

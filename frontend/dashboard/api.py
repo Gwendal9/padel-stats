@@ -566,16 +566,19 @@ def route_stats():
             '01':'Jan','02':'Fév','03':'Mar','04':'Avr','05':'Mai','06':'Jun',
             '07':'Jul','08':'Aoû','09':'Sep','10':'Oct','11':'Nov','12':'Déc'
         }
+        # NB: date_effective = date_tournoi reelle si connue, sinon estimee (expiration-365j) —
+        # depuis mars 2026 la FFT ne fournit plus date_tournoi (cf NOTE_date_tournoi_et_pipeline.md),
+        # donc filtrer sur date_tournoi seul faisait disparaitre ~50% des tournois recents ici.
         if USE_POSTGRES:
             month_rows = fetchall("""
-                SELECT TO_CHAR(DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')), 'Mon YYYY') AS mois,
-                       DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')) AS mois_sort,
+                SELECT TO_CHAR(DATE_TRUNC('month', TO_DATE(date_effective, 'DD/MM/YYYY')), 'Mon YYYY') AS mois,
+                       DATE_TRUNC('month', TO_DATE(date_effective, 'DD/MM/YYYY')) AS mois_sort,
                        COUNT(DISTINCT id_tournoi) AS nb
                 FROM participations
-                WHERE date_tournoi IS NOT NULL
-                  AND date_tournoi ~ '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-                GROUP BY DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY'))
-                ORDER BY DATE_TRUNC('month', TO_DATE(date_tournoi, 'DD/MM/YYYY')) DESC
+                WHERE date_effective IS NOT NULL
+                  AND date_effective ~ '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                GROUP BY DATE_TRUNC('month', TO_DATE(date_effective, 'DD/MM/YYYY'))
+                ORDER BY DATE_TRUNC('month', TO_DATE(date_effective, 'DD/MM/YYYY')) DESC
                 LIMIT 12
             """)
             last_12 = [(r["mois"], r["nb"]) for r in reversed(month_rows)]
@@ -583,12 +586,12 @@ def route_stats():
             # Aggregate entirely in SQLite — avoids loading 650k rows into Python
             month_rows = fetchall("""
                 SELECT
-                  SUBSTR(date_tournoi,4,2) || '/' || SUBSTR(date_tournoi,7,4) AS mois,
+                  SUBSTR(date_effective,4,2) || '/' || SUBSTR(date_effective,7,4) AS mois,
                   COUNT(DISTINCT id_tournoi) AS nb
                 FROM participations
-                WHERE date_tournoi IS NOT NULL AND LENGTH(date_tournoi) = 10
+                WHERE date_effective IS NOT NULL AND LENGTH(date_effective) = 10
                 GROUP BY mois
-                ORDER BY SUBSTR(date_tournoi,7,4) || SUBSTR(date_tournoi,4,2) DESC
+                ORDER BY SUBSTR(date_effective,7,4) || SUBSTR(date_effective,4,2) DESC
                 LIMIT 12
             """)
             last_12 = [
@@ -963,6 +966,7 @@ def route_tournaments():
             rows = fetchall(f"""
                 SELECT id_tournoi, nom, categorie,
                        date_min AS date_tournoi,
+                       date_estimee,
                        nb_joueurs
                 FROM tournois_summary
                 WHERE nom {_lk} ?
@@ -974,6 +978,7 @@ def route_tournaments():
             rows = fetchall(f"""
                 SELECT id_tournoi, nom, categorie,
                        date_min AS date_tournoi,
+                       date_estimee,
                        nb_joueurs
                 FROM tournois_summary
                 WHERE {_excl}
@@ -982,10 +987,12 @@ def route_tournaments():
             """, (limit,))
     else:
         # Fallback : requête lourde originale (avant première exécution de precompute)
+        # date_effective = date_tournoi reelle si connue, sinon estimee (expiration-365j) —
+        # cf NOTE_date_tournoi_et_pipeline.md (la FFT ne fournit plus date_tournoi depuis 03/2026)
         _date_sort = (
-            "TO_DATE(MIN(p.date_tournoi), 'DD/MM/YYYY') DESC" if USE_POSTGRES else
-            "SUBSTR(MIN(p.date_tournoi),7,4)||SUBSTR(MIN(p.date_tournoi),4,2)"
-            "||SUBSTR(MIN(p.date_tournoi),1,2) DESC"
+            "TO_DATE(MIN(p.date_effective), 'DD/MM/YYYY') DESC" if USE_POSTGRES else
+            "SUBSTR(MIN(p.date_effective),7,4)||SUBSTR(MIN(p.date_effective),4,2)"
+            "||SUBSTR(MIN(p.date_effective),1,2) DESC"
         )
         _excl_t = (
             f"t.nom NOT {_lk} '%CHAMPIONNAT%' AND t.nom NOT {_lk} '%EPREUVE%'"
@@ -995,7 +1002,8 @@ def route_tournaments():
         if q:
             rows = fetchall(f"""
                 SELECT t.id_tournoi, t.nom, t.categorie,
-                       MIN(p.date_tournoi) AS date_tournoi,
+                       MIN(p.date_effective) AS date_tournoi,
+                       MAX(p.date_estimee) AS date_estimee,
                        COUNT(DISTINCT p.id_joueur) AS nb_joueurs
                 FROM tournois t
                 JOIN participations p ON p.id_tournoi = t.id_tournoi
@@ -1006,7 +1014,8 @@ def route_tournaments():
         else:
             rows = fetchall(f"""
                 SELECT t.id_tournoi, t.nom, t.categorie,
-                       MIN(p.date_tournoi) AS date_tournoi,
+                       MIN(p.date_effective) AS date_tournoi,
+                       MAX(p.date_estimee) AS date_estimee,
                        COUNT(DISTINCT p.id_joueur) AS nb_joueurs
                 FROM tournois t
                 JOIN participations p ON p.id_tournoi = t.id_tournoi
@@ -1017,7 +1026,8 @@ def route_tournaments():
 
     resp = jsonify([{
         "id": r["id_tournoi"], "nom": r["nom"] or "", "categorie": r["categorie"] or "",
-        "date": r["date_tournoi"] or "", "nb_joueurs": r["nb_joueurs"] or 0,
+        "date": r["date_tournoi"] or "", "date_estimee": bool(r.get("date_estimee")),
+        "nb_joueurs": r["nb_joueurs"] or 0,
     } for r in rows])
     if _cache_key:
         try: _store_in_mem(_cache_key, resp.get_data())
@@ -1030,7 +1040,8 @@ def route_tournament(tid: str):
     from db import fetchall, fetchone
     info = fetchone("""
         SELECT t.id_tournoi, t.nom, t.categorie,
-               MIN(p.date_tournoi) AS date_tournoi,
+               MIN(p.date_effective) AS date_tournoi,
+               MAX(p.date_estimee) AS date_estimee,
                COUNT(DISTINCT p.id_joueur) AS nb_joueurs,
                COUNT(DISTINCT p.partenaire_id) AS nb_paires_raw
         FROM tournois t
@@ -1101,6 +1112,7 @@ def route_tournament(tid: str):
         "nom":         info["nom"] or "",
         "categorie":   info["categorie"] or "",
         "date":        info["date_tournoi"] or "",
+        "date_estimee": bool(info.get("date_estimee")),
         "nb_joueurs":  info["nb_joueurs"] or 0,
         "nb_paires":   len(pairs),
         "pairs":       pairs[:64],
@@ -1169,12 +1181,12 @@ def route_club():
     else:
         _start_12m = f"01/{(_cm+1):02d}/{_cy-1}"
     if USE_POSTGRES:
-        _date_filter_12m = f"p.date_tournoi >= TO_DATE('{_start_12m}', 'DD/MM/YYYY')"
+        _date_filter_12m = f"p.date_effective >= TO_DATE('{_start_12m}', 'DD/MM/YYYY')"
     else:
         _yy, _mm, _dd = _start_12m[6:10], _start_12m[3:5], _start_12m[0:2]
         _start_lex = f"{_yy}/{_mm}/{_dd}"
         _date_filter_12m = (
-            f"SUBSTR(p.date_tournoi,7,4)||'/'||SUBSTR(p.date_tournoi,4,2)||'/'||SUBSTR(p.date_tournoi,1,2)"
+            f"SUBSTR(p.date_effective,7,4)||'/'||SUBSTR(p.date_effective,4,2)||'/'||SUBSTR(p.date_effective,1,2)"
             f" >= '{_start_lex}'"
         )
     nb_tournois_row = fetchone(f"""
@@ -1540,13 +1552,13 @@ def route_club_rankings():
         start_12m = f"01/{m}/{current_year - 1}"
 
     if USE_POSTGRES:
-        date_filter = f"p.date_tournoi >= TO_DATE('{start_12m}', 'DD/MM/YYYY')"
+        date_filter = f"p.date_effective >= TO_DATE('{start_12m}', 'DD/MM/YYYY')"
     else:
         # SQLite: convertir DD/MM/YYYY → YYYY/MM/DD pour comparaison lexicographique
         yy, mm, dd = start_12m[6:10], start_12m[3:5], start_12m[0:2]
         start_lex = f"{yy}/{mm}/{dd}"
         date_filter = (
-            f"SUBSTR(p.date_tournoi,7,4)||'/'||SUBSTR(p.date_tournoi,4,2)||'/'||SUBSTR(p.date_tournoi,1,2) "
+            f"SUBSTR(p.date_effective,7,4)||'/'||SUBSTR(p.date_effective,4,2)||'/'||SUBSTR(p.date_effective,1,2) "
             f">= '{start_lex}'"
         )
 
@@ -1682,7 +1694,7 @@ def route_stats_shared_positions():
             t.nom        AS tournoi_nom,
             t.categorie,
             p.position,
-            p.date_tournoi,
+            p.date_effective AS date_tournoi,
             p.id_joueur,
             p.partenaire_id,
             p.partenaire_nom,
@@ -1712,7 +1724,7 @@ def route_stats_shared_positions():
           AND LENGTH(TRIM(p.position)) <= 3
           AND TRIM(p.position) GLOB '[0-9]*'
           {cat_clause}
-        ORDER BY p.date_tournoi DESC, p.id_tournoi, CAST(p.position AS INT) ASC
+        ORDER BY p.date_effective DESC, p.id_tournoi, CAST(p.position AS INT) ASC
         LIMIT 10000
     """, params)
 
@@ -2478,7 +2490,7 @@ def route_tournoi_api(tid: str):
         SELECT p.id_joueur, j.nom, j.prenom, j.classement, j.sexe, j.club_nom AS club,
                p.partenaire_id, p.partenaire_nom,
                jp.nom AS pnom, jp.prenom AS pprenom, jp.classement AS pclt, jp.club_nom AS pclub, jp.sexe AS psexe,
-               p.position, p.position_num, p.points_num, p.date_tournoi, p.type
+               p.position, p.position_num, p.points_num, p.date_effective AS date_tournoi, p.date_estimee, p.type
         FROM participations p
         JOIN joueurs j ON j.id_fft = p.id_joueur
         LEFT JOIN joueurs jp ON jp.id_fft = p.partenaire_id
@@ -2488,6 +2500,7 @@ def route_tournoi_api(tid: str):
     )
 
     date = next((r["date_tournoi"] for r in rows if r["date_tournoi"]), None)
+    date_estimee = next((bool(r["date_estimee"]) for r in rows if r["date_tournoi"]), False)
     tmonth = (date[6:10] + "-" + date[3:5]) if date and len(date) >= 10 else None
     # Classement de chaque joueur AU MOMENT du tournoi (snapshot mensuel) ; fallback = classement actuel
     hist = {}
@@ -2602,7 +2615,7 @@ def route_tournoi_api(tid: str):
                 "points": rep["points_num"], "type": rep["type"], "membres": membres, "sexe": psexe,
             })
     pairs.sort(key=lambda x: (x["position_num"] is None, x["position_num"] or 99999))
-    return jsonify({"info": dict(info), "date": date, "mois": tmonth, "nb_paires_reelles": len(pairs), "pairs": pairs})
+    return jsonify({"info": dict(info), "date": date, "date_estimee": date_estimee, "mois": tmonth, "nb_paires_reelles": len(pairs), "pairs": pairs})
 
 
 @app.get("/api/tournois/ranking")
@@ -2951,9 +2964,9 @@ def route_club_detail():
     # Renouvellement : année de 1re participation
     ren = fetchall(
         f"""SELECT annee, COUNT(*) AS n FROM (
-              SELECT j.id_fft, MIN(SUBSTR(p.date_tournoi,7,4)) AS annee
+              SELECT j.id_fft, MIN(SUBSTR(p.date_effective,7,4)) AS annee
               FROM joueurs j JOIN participations p ON p.id_joueur=j.id_fft
-              WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_tournoi)>=10
+              WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_effective)>=10
               GROUP BY j.id_fft) GROUP BY annee""", vt)
     by_year = {r["annee"]: int(r["n"] or 0) for r in ren if r["annee"]}
     avec = sum(by_year.values())
@@ -3032,9 +3045,9 @@ def route_club_detail():
 
     # --- Activité mensuelle (participations des membres) ---
     activite = [{"mois": r["ym"], "n": int(r["n"] or 0)} for r in fetchall(
-        f"""SELECT SUBSTR(p.date_tournoi,7,4)||'-'||SUBSTR(p.date_tournoi,4,2) AS ym, COUNT(*) AS n
+        f"""SELECT SUBSTR(p.date_effective,7,4)||'-'||SUBSTR(p.date_effective,4,2) AS ym, COUNT(*) AS n
             FROM participations p JOIN joueurs j ON j.id_fft=p.id_joueur
-            WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_tournoi)>=10
+            WHERE j.club_nom IN ({ph}) AND LENGTH(p.date_effective)>=10
             GROUP BY ym ORDER BY ym""", vt)]
 
     # --- Progression RELATIVE (variation du club vs moyenne nationale = neutralise l'inflation) ---

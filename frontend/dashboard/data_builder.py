@@ -295,14 +295,16 @@ def build_bareme_points():
 
 
 def build_saisonnalite():
-    """Nombre de tournois et participations par mois (sur toute la base)."""
+    """Nombre de tournois et participations par mois (sur toute la base).
+    date_effective = date_tournoi réelle si connue, sinon estimée (expiration-365j) —
+    la FFT ne fournit plus date_tournoi depuis 03/2026 (cf NOTE_date_tournoi_et_pipeline.md)."""
     with get_conn() as conn:
         rows = conn.execute("""
-            SELECT p.date_tournoi, t.categorie, COUNT(*) as nb
+            SELECT p.date_effective, t.categorie, COUNT(*) as nb
             FROM participations p
             JOIN tournois t ON p.id_tournoi = t.id_tournoi
-            WHERE p.date_tournoi IS NOT NULL AND p.date_tournoi != ''
-            GROUP BY p.date_tournoi, t.categorie
+            WHERE p.date_effective IS NOT NULL AND p.date_effective != ''
+            GROUP BY p.date_effective, t.categorie
         """).fetchall()
 
     mois_data = defaultdict(lambda: {"participations": 0, "nb_cat": defaultdict(int)})

@@ -40,6 +40,11 @@ python scraper_json.py --bilans-only --workers 8 --cookie-source firefox
 Step "4/11" "Nettoyage de la base..."
 if ($NoVacuum) { python cleanup_db.py --apply } else { python cleanup_db.py --apply --vacuum }
 
+# 4b) Date effective par participation (date_tournoi reelle, ou estimee via expiration-365j
+#     depuis que la FFT ne fournit plus la date dans le bilan JSON, cf NOTE_date_tournoi_et_pipeline.md)
+Step "4b" "Date effective des tournois (date_effective / date_estimee)..."
+python backfill_date_effective.py --apply
+
 # 5) Partenaires -> debloque graphe + suggesteur
 Step "5/11" "Matching des partenaires..."
 python match_partenaires.py --apply
@@ -68,6 +73,10 @@ python geocode_villes.py
 # 10b) Series temporelles (courbe "explosion du padel" sur le tableau de bord)
 Step "10b" "build_timeline (courbe licencies/mois)..."
 python build_timeline.py
+
+# 10c) Statut d'activite des joueurs (actif / en_pause / en_retraite)
+Step "10c" "compute_activite (statut actif/en_pause/en_retraite)..."
+python compute_activite.py --apply
 
 # 11) Verification finale
 Step "11/11" "Verification des donnees..."

@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 def main():
     # Import tardif : DATABASE_URL doit être set avant d'importer db
     import api  # charge l'app Flask + toutes les routes
-    from db import set_cached_body, USE_POSTGRES, ensure_indexes, set_statement_timeout
+    from db import set_cached_body, delete_cached_body, USE_POSTGRES, ensure_indexes, set_statement_timeout
 
     # Job batch : pas de timeout SQL (les requêtes peuvent prendre plusieurs minutes)
     set_statement_timeout("0")  # 0 = illimité en PostgreSQL
@@ -71,6 +71,15 @@ def main():
         t0 = time.time()
         print(f"⏳ [{key}] calcul en cours…", flush=True)
         try:
+            # CRITIQUE : les routes ci-dessus font elles-mêmes un _try_precomputed(key)
+            # en tout début de fonction (cache_responses + cache mémoire). Sans ce nettoyage
+            # préalable, la route se re-sert son PROPRE ancien cache au lieu de recalculer,
+            # et set_cached_body() ci-dessous ne fait que re-timestamper la même donnée
+            # figée à l'infini — precompute.py avait donc l'air de tourner (✅ OK) sans
+            # jamais rien recalculer depuis la toute première fois. Purge les deux caches
+            # (table + mémoire du process) avant d'appeler la route.
+            delete_cached_body(key)
+            api._MEM_CACHE.pop(key, None)
             with api.app.test_request_context():
                 resp = fn()
             # resp peut être Response Flask ou tuple (resp, status)
@@ -103,12 +112,17 @@ def _build_tournois_summary():
 
     # ── 1. Calculer les agrégats (requête lourde — pas de timeout ici) ────────
     print("     → agrégats tournois×participations…", flush=True)
+    # date_effective = date_tournoi réelle si connue, sinon estimée (expiration-365j) —
+    # la FFT ne fournit plus date_tournoi depuis 03/2026 (cf NOTE_date_tournoi_et_pipeline.md),
+    # rempli par backend/backfill_date_effective.py. date_estimee=1 si au moins une des
+    # participations du tournoi a une date estimée (en pratique elles le sont toutes ou aucune).
     rows = fetchall("""
         SELECT
           t.id_tournoi,
           t.nom,
           t.categorie,
-          MIN(p.date_tournoi)         AS date_min,
+          MIN(p.date_effective)       AS date_min,
+          MAX(p.date_estimee)         AS date_estimee,
           COUNT(DISTINCT p.id_joueur) AS nb_joueurs
         FROM tournois t
         JOIN participations p ON p.id_tournoi = t.id_tournoi
@@ -129,6 +143,7 @@ def _build_tournois_summary():
             r["categorie"],
             r["date_min"],
             _to_sort_key(r["date_min"] or ""),
+            int(r["date_estimee"]) if r["date_estimee"] is not None else None,
             r["nb_joueurs"],
         )
         for r in rows
@@ -146,11 +161,11 @@ def _build_tournois_summary():
             psycopg2.extras.execute_values(
                 cur,
                 """INSERT INTO tournois_summary
-                     (id_tournoi, nom, categorie, date_min, date_sort, nb_joueurs, computed_at)
+                     (id_tournoi, nom, categorie, date_min, date_sort, date_estimee, nb_joueurs, computed_at)
                    VALUES %s""",
-                # Les données ont 6 colonnes — computed_at est injecté par NOW() dans le template
-                [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in tuples],
-                template="(%s, %s, %s, %s, %s, %s, NOW())",
+                # Les données ont 7 colonnes — computed_at est injecté par NOW() dans le template
+                [(t[0], t[1], t[2], t[3], t[4], t[5], t[6]) for t in tuples],
+                template="(%s, %s, %s, %s, %s, %s, %s, NOW())",
             )
         conn.commit()
         conn.close()
@@ -160,9 +175,9 @@ def _build_tournois_summary():
         conn.execute("DELETE FROM tournois_summary")
         conn.executemany(
             """INSERT OR REPLACE INTO tournois_summary
-                 (id_tournoi, nom, categorie, date_min, date_sort, nb_joueurs)
-               VALUES (?,?,?,?,?,?)""",
-            [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in tuples],
+                 (id_tournoi, nom, categorie, date_min, date_sort, date_estimee, nb_joueurs)
+               VALUES (?,?,?,?,?,?,?)""",
+            [(t[0], t[1], t[2], t[3], t[4], t[5], t[6]) for t in tuples],
         )
         conn.commit()
         conn.close()

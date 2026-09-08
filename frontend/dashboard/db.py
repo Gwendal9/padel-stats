@@ -114,6 +114,11 @@ def ensure_indexes():
             "CREATE INDEX IF NOT EXISTS idx_parts_joueur ON participations(id_joueur)",
             "CREATE INDEX IF NOT EXISTS idx_parts_tournoi ON participations(id_tournoi)",
             "CREATE INDEX IF NOT EXISTS idx_parts_date ON participations(date_tournoi) WHERE date_tournoi IS NOT NULL",
+            # date_effective/date_estimee : la FFT ne fournit plus date_tournoi depuis 03/2026
+            # (cf NOTE_date_tournoi_et_pipeline.md) — remplies par backfill_date_effective.py
+            "ALTER TABLE participations ADD COLUMN IF NOT EXISTS date_effective TEXT",
+            "ALTER TABLE participations ADD COLUMN IF NOT EXISTS date_estimee INTEGER",
+            "CREATE INDEX IF NOT EXISTS idx_parts_date_eff ON participations(date_effective) WHERE date_effective IS NOT NULL",
             # Tournois
             "CREATE INDEX IF NOT EXISTS idx_tournois_nom ON tournois(nom)",
             "CREATE INDEX IF NOT EXISTS idx_tournois_nom_trgm ON tournois USING gin(nom gin_trgm_ops)",
@@ -121,14 +126,16 @@ def ensure_indexes():
             # Évite le gros JOIN tournois×participations GROUP BY dans route_tournaments
             # et route_stats_categories (~800k lignes → 3k lignes).
             """CREATE TABLE IF NOT EXISTS tournois_summary (
-                id_tournoi  TEXT PRIMARY KEY,
-                nom         TEXT,
-                categorie   TEXT,
-                date_min    TEXT,      -- DD/MM/YYYY (format natif des données)
-                date_sort   TEXT,      -- YYYYMMDD   (pour ORDER BY lexicographique)
-                nb_joueurs  INTEGER,
-                computed_at TIMESTAMPTZ DEFAULT NOW()
+                id_tournoi   TEXT PRIMARY KEY,
+                nom          TEXT,
+                categorie    TEXT,
+                date_min     TEXT,      -- DD/MM/YYYY (date_effective : réelle ou estimée)
+                date_sort    TEXT,      -- YYYYMMDD   (pour ORDER BY lexicographique)
+                date_estimee INTEGER,   -- 1 si date_min est une estimation (expiration-365j)
+                nb_joueurs   INTEGER,
+                computed_at  TIMESTAMPTZ DEFAULT NOW()
             )""",
+            "ALTER TABLE tournois_summary ADD COLUMN IF NOT EXISTS date_estimee INTEGER",
             "CREATE INDEX IF NOT EXISTS idx_ts_date ON tournois_summary(date_sort)",
             "CREATE INDEX IF NOT EXISTS idx_ts_cat  ON tournois_summary(categorie)",
             # Snapshots mensuels des classements (rempli par le scraper mensuel)
@@ -206,11 +213,20 @@ def ensure_indexes():
                     "ALTER TABLE joueurs ADD COLUMN classement_date TEXT",
                     # classements_historique : colonne variation ajoutée après création initiale
                     "ALTER TABLE classements_historique ADD COLUMN variation INTEGER",
+                    # date_effective/date_estimee : la FFT ne fournit plus date_tournoi depuis
+                    # 03/2026 (cf NOTE_date_tournoi_et_pipeline.md) — remplies par
+                    # backend/backfill_date_effective.py, lu par les endroits qui triaient/
+                    # filtraient auparavant sur date_tournoi.
+                    "ALTER TABLE participations ADD COLUMN date_effective TEXT",
+                    "ALTER TABLE participations ADD COLUMN date_estimee INTEGER",
                 ]:
                     try:
                         conn.execute(migration)
                     except Exception:
                         pass  # Colonne déjà présente
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_parts_date_eff ON participations(date_effective)"
+                )
                 # Table historique mensuel (snapshots)
                 # Schéma réel DB : id_joueur (pas id_fft), colonnes echelon + variation
                 conn.execute("""
@@ -234,15 +250,21 @@ def ensure_indexes():
                 # ── Table matérialisée des résumés de tournois ───────────────
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS tournois_summary (
-                        id_tournoi  TEXT PRIMARY KEY,
-                        nom         TEXT,
-                        categorie   TEXT,
-                        date_min    TEXT,
-                        date_sort   TEXT,
-                        nb_joueurs  INTEGER,
-                        computed_at TEXT DEFAULT CURRENT_TIMESTAMP
+                        id_tournoi   TEXT PRIMARY KEY,
+                        nom          TEXT,
+                        categorie    TEXT,
+                        date_min     TEXT,
+                        date_sort    TEXT,
+                        date_estimee INTEGER,
+                        nb_joueurs   INTEGER,
+                        computed_at  TEXT DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+                # Migration douce si la table existait déjà sans cette colonne (avant 09/2026)
+                try:
+                    conn.execute("ALTER TABLE tournois_summary ADD COLUMN date_estimee INTEGER")
+                except Exception:
+                    pass
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_ts_date ON tournois_summary(date_sort)"
                 )
@@ -337,6 +359,29 @@ def get_cached_body(key: str) -> str | None:
         return row["body"] if row else None
     except Exception:
         return None  # table pas encore créée ou autre
+
+
+def delete_cached_body(key: str) -> None:
+    """Supprime l'entrée cache_responses pour ce key — à appeler AVANT de rappeler
+    une route pour la recalculer, sinon la route se re-sert elle-même son propre
+    cache (via _try_precomputed) et ne recalcule jamais rien : set_cached_body()
+    finirait par juste re-timestamper la même donnée figée indéfiniment.
+    Utilisé par precompute.py juste avant chaque job."""
+    try:
+        if USE_POSTGRES:
+            conn = psycopg2.connect(DATABASE_URL)
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM cache_responses WHERE cache_key = %s", (key,))
+                conn.commit()
+            finally:
+                conn.close()
+        else:
+            with get_conn(readonly=False) as conn:
+                conn.execute("DELETE FROM cache_responses WHERE cache_key = ?", (key,))
+                conn.commit()
+    except Exception:
+        pass  # table pas encore créée ou autre — non bloquant
 
 
 def set_cached_body(key: str, body: str) -> None:

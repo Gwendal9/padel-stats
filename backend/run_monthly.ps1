@@ -37,6 +37,11 @@ python scraper_json.py --bilans-only --workers 8 --cookie-source firefox
 Write-Host "`n[4/7] Nettoyage de la base..." -ForegroundColor Yellow
 python cleanup_db.py --apply
 
+# 4b) Date effective par participation (date_tournoi reelle, ou estimee via expiration-365j
+#     depuis que la FFT ne fournit plus la date dans le bilan JSON, cf NOTE_date_tournoi_et_pipeline.md)
+Write-Host "`n[4b] Date effective des tournois (date_effective / date_estimee)..." -ForegroundColor Yellow
+python backfill_date_effective.py --apply
+
 # 5) Reconstruction de la couche donnees derivee (un script a la fois)
 Write-Host "`n[5/7] Reconstruction couche donnees (partenaires / tournois / geo)..." -ForegroundColor Yellow
 python match_partenaires.py --apply
@@ -44,6 +49,7 @@ python tournois_stats.py
 python build_geo.py
 python geocode_villes.py
 python build_timeline.py     # timeline.json (courbes + delta mensuel H/F "vs mois precedent")
+python compute_activite.py --apply   # statut_activite (actif/en_pause/en_retraite) sur joueurs
 
 # 6) Verif finale
 Write-Host "`n[6/7] Verification..." -ForegroundColor Green

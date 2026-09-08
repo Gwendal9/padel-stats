@@ -128,7 +128,10 @@ def get_player_profile(player_id: str) -> dict | None:
     # ── Toutes ses participations ─────────────────────────────────────────
     # Tri chronologique : DD/MM/YYYY → YYYYMMDD via SUBSTR, safe sur PG et SQLite.
     # TO_DATE() est évité car il crashe sur les dates vides/malformées en PG.
-    _date_order = "SUBSTR(p.date_tournoi,7,4)||SUBSTR(p.date_tournoi,4,2)||SUBSTR(p.date_tournoi,1,2)"
+    # date_effective = date_tournoi réelle si connue, sinon estimée (expiration-365j) —
+    # la FFT ne fournit plus date_tournoi depuis 03/2026 (cf NOTE_date_tournoi_et_pipeline.md) ;
+    # sans ce fallback, tout le parcours récent d'un joueur perdait sa date et son tri.
+    _date_order = "SUBSTR(p.date_effective,7,4)||SUBSTR(p.date_effective,4,2)||SUBSTR(p.date_effective,1,2)"
     # Anti-doublons : masquer une participation de l'ancien système (id 6 ch.) si le MÊME
     # tournoi (par nom) existe aussi en nouveau chez ce joueur. On garde les vieilles perfs
     # dont le tournoi n'est plus au bilan actuel (données historiques).
@@ -139,7 +142,7 @@ def get_player_profile(player_id: str) -> dict | None:
     parts = fetchall(
         f"""
         SELECT p.position, p.points, p.partenaire_id, p.partenaire_nom,
-               p.date_tournoi, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi,
+               p.date_effective AS date_tournoi, p.date_estimee, p.type, t.categorie, t.nom as tournoi_nom, p.id_tournoi,
                p.pris_en_compte, p.points_num, p.position_num, p.expiration_date,
                ts.niveau_points, ts.classement_meilleur AS tableau_meilleur,
                ts.nb_joueurs AS tableau_nb_joueurs
@@ -271,6 +274,7 @@ def get_player_profile(player_id: str) -> dict | None:
                 "position":    pos,
                 "tournoi_nom": p["tournoi_nom"] or "",
                 "date":        p["date_tournoi"] or "",
+                "date_estimee": bool(p.get("date_estimee")),
                 "partenaire":  p["partenaire_nom"] or "",
                 "points":      p["points"],
                 "tour":        f"R{tour_match.group(1)}" if tour_match else None,
@@ -289,6 +293,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "tournoi_nom":  p["tournoi_nom"] or "",
             "categorie":    p["categorie"],
             "date":         p["date_tournoi"] or "",
+            "date_estimee": bool(p.get("date_estimee")),
             "position":     p["position"],
             "points":       p["points"],
             "partenaire":   p["partenaire_nom"] or "",
@@ -299,6 +304,7 @@ def get_player_profile(player_id: str) -> dict | None:
     parcours = [
         {
             "date":        p["date_tournoi"] or "",
+            "date_estimee": bool(p.get("date_estimee")),
             "position":    p["position"],
             "categorie":   p["categorie"],
             "tournoi_nom": p["tournoi_nom"] or "",
@@ -310,6 +316,8 @@ def get_player_profile(player_id: str) -> dict | None:
     ]
 
     # ── Dates d'activité pour heatmap ────────────────────────────────────
+    # NB: inclut les dates estimées (expiration-365j) faute de mieux — la heatmap
+    # reste indicative pour les tournois récents (post 03/2026, cf date_estimee).
     date_activities = sorted(set(
         p["date_tournoi"] for p in parts if p["date_tournoi"]
     ))
@@ -417,6 +425,7 @@ def get_player_profile(player_id: str) -> dict | None:
             "categorie":      p["categorie"],
             "niveau_points":  p.get("niveau_points"),
             "date":           p["date_tournoi"] or "",
+            "date_estimee":   bool(p.get("date_estimee")),
             "type":           p["type"] or "",
             "position":       p["position"],
             "position_num":   p.get("position_num"),
@@ -546,7 +555,8 @@ def get_player_profile(player_id: str) -> dict | None:
         if ind is None:
             continue
         _pd.append({"indice": round(float(ind), 1), "points": float(p.get("points") or 0),
-                    "date": p.get("date") or "", "id": p.get("id_tournoi"),
+                    "date": p.get("date") or "", "date_estimee": bool(p.get("date_estimee")),
+                    "id": p.get("id_tournoi"),
                     "nom": p["tournoi_nom"], "comptee": p["pris_en_compte"],
                     "hors_bilan": p.get("hors_bilan")})
     _cand = [p for p in parcours_detail if p.get("indice_niveau") is not None
