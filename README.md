@@ -35,8 +35,6 @@ Projet personnel, sans lien officiel avec la FFT.
 
 ---
 
-
-
 ## Structure du projet
 
 ```
