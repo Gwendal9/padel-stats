@@ -138,7 +138,7 @@ def main():
                    CAST(AVG(CASE WHEN sexe='H' THEN classement END) AS INT) AS classement_moyen_h,
                    CAST(AVG(CASE WHEN sexe='F' THEN classement END) AS INT) AS classement_moyen_f
             FROM joueurs
-            WHERE dernier_mois_vu IS NOT NULL {where_extra}
+            WHERE classement IS NOT NULL {where_extra}
             GROUP BY {cols_sel}""")
         n = c.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         print(f"  {table}: {n:,} lignes")
@@ -157,7 +157,7 @@ def main():
                CAST(AVG(j.classement) AS INT) AS classement_moyen,
                MIN(j.classement) AS meilleur_classement
         FROM joueurs j LEFT JOIN clubs cl ON cl.id = j.club_id
-        WHERE j.club_id IS NOT NULL AND j.dernier_mois_vu IS NOT NULL
+        WHERE j.club_id IS NOT NULL AND j.classement IS NOT NULL
         GROUP BY j.club_id""")
     print(f"  stats_geo_club: {c.execute('SELECT COUNT(*) FROM stats_geo_club').fetchone()[0]:,} lignes")
 

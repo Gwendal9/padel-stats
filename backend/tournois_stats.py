@@ -52,7 +52,7 @@ def main():
     rows = c.execute('''
         SELECT p.id_tournoi, t.nom, t.categorie,
                COUNT(DISTINCT p.id_joueur) nb,
-               AVG(j.classement) cl_moy, MIN(j.classement) cl_best,
+               AVG(COALESCE(j.classement, j.classement_perime)) cl_moy, MIN(COALESCE(j.classement, j.classement_perime)) cl_best,
                SUM(p.points_num) pts_tot, MAX(p.points_num) pts_max
         FROM participations p
         JOIN tournois t ON t.id_tournoi = p.id_tournoi

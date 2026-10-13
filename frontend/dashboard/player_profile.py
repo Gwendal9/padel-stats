@@ -45,19 +45,27 @@ def search_players(q: str, limit: int = 20, sexe: str | None = None) -> list[dic
     params = params + (limit,)
     rows = fetchall(
         f"""
-        SELECT id_fft, nom, prenom, classement, meilleur_classement,
+        SELECT id_fft, nom, prenom, classement, classement_perime, meilleur_classement,
                variation_classement, classement_date,
                club_nom, ville, sexe, naissance
         FROM joueurs
         WHERE (nom LIKE ? OR prenom LIKE ? OR (nom || ' ' || prenom) LIKE ? OR (prenom || ' ' || nom) LIKE ?)
-          AND classement IS NOT NULL
+          AND (classement IS NOT NULL OR classement_perime IS NOT NULL)
           {sexe_clause}
-        ORDER BY classement ASC
+        ORDER BY (classement IS NULL), COALESCE(classement, classement_perime) ASC
         LIMIT ?
         """,
         params,
     )
-    return [_fmt_joueur(r) for r in rows]
+    out = []
+    for r in rows:
+        j = _fmt_joueur(r)
+        if r["classement"] is None:
+            # joueur sorti du classement : on affiche son dernier rang connu, marqué périmé
+            j["classement"] = r.get("classement_perime")
+            j["perime"] = True
+        out.append(j)
+    return out
 
 
 def _fmt_joueur(r: dict) -> dict:
@@ -102,7 +110,7 @@ def get_player_profile(player_id: str) -> dict | None:
                variation_classement, classement_date,
                club_nom, ville, sexe, naissance, scraped_at,
                points, ligue, comite, dept_num, age, nationalite,
-               actif, categorie_age, niveau_galaxie
+               actif, categorie_age, niveau_galaxie, classement_perime
         FROM joueurs WHERE id_fft = ?
         """,
         (player_id,),
@@ -111,6 +119,8 @@ def get_player_profile(player_id: str) -> dict | None:
         return None
 
     joueur = _fmt_joueur(base)
+    # Classement périmé : plus dans la liste FFT du mois, on garde le dernier rang connu
+    joueur["classement_perime"] = base.get("classement_perime") if base.get("classement") is None else None
     # scraped_at NULL = joueur connu via CSV uniquement, sans historique de participations
     joueur["scraped_at"]   = base.get("scraped_at")
     joueur["csv_only"]     = base.get("scraped_at") is None
@@ -231,7 +241,7 @@ def get_player_profile(player_id: str) -> dict | None:
     if all_partner_ids:
         placeholders = ",".join(["?" for _ in all_partner_ids])
         partner_rows = fetchall(
-            f"SELECT id_fft, classement, club_nom FROM joueurs WHERE id_fft IN ({placeholders})",
+            f"SELECT id_fft, COALESCE(classement, classement_perime) AS classement, club_nom FROM joueurs WHERE id_fft IN ({placeholders})",
             tuple(all_partner_ids),
         )
         partner_info_map = {r["id_fft"]: r for r in partner_rows}

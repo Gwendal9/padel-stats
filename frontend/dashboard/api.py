@@ -109,7 +109,7 @@ def route_home_data():
         except Exception:
             return None
     ex_j = _one("SELECT j.id_fft AS id_fft, j.nom AS nom, j.prenom AS prenom, j.classement AS classement, j.sexe AS sexe FROM joueurs j JOIN (SELECT id_joueur, COUNT(*) AS n FROM participations GROUP BY id_joueur HAVING COUNT(*)>=5) cnt ON cnt.id_joueur=j.id_fft WHERE j.classement IS NOT NULL AND j.classement<=20000 ORDER BY RANDOM() LIMIT 1")
-    ex_c = _one("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+    ex_c = _one("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE classement IS NOT NULL AND club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
     ex_t = _one("SELECT tr.id_tournoi, t.nom, tr.niveau_effectif AS niv, ROUND(tr.indice_niveau) AS ind, tr.sexe FROM tournois_rating tr JOIN tournois t ON t.id_tournoi=tr.id_tournoi WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
     examples = {
         "joueur": ({"id": ex_j["id_fft"], "nom_complet": f"{(ex_j.get('prenom') or '').strip()} {(ex_j.get('nom') or '').strip()}".strip(),
@@ -204,7 +204,7 @@ def route_example(kind):
             r = fetchone("SELECT j.id_fft AS id_fft, j.nom AS nom, j.prenom AS prenom, j.classement AS classement, j.sexe AS sexe FROM joueurs j JOIN (SELECT id_joueur, COUNT(*) AS n FROM participations GROUP BY id_joueur HAVING COUNT(*)>=5) cnt ON cnt.id_joueur=j.id_fft WHERE j.classement IS NOT NULL AND j.classement<=20000 ORDER BY RANDOM() LIMIT 1")
             return jsonify({"id": r["id_fft"], "nom_complet": f"{(r.get('prenom') or '').strip()} {(r.get('nom') or '').strip()}".strip(), "classement": r["classement"], "sexe": r["sexe"]} if r else None)
         if kind == "club":
-            r = fetchone("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+            r = fetchone("SELECT club_nom, COUNT(*) AS n FROM joueurs WHERE classement IS NOT NULL AND club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
             return jsonify({"nom": r["club_nom"], "nb": int(r["n"] or 0)} if r else None)
         if kind == "tournoi":
             r = fetchone("SELECT tr.id_tournoi, t.nom, tr.niveau_effectif AS niv, ROUND(tr.indice_niveau) AS ind, tr.sexe FROM tournois_rating tr JOIN tournois t ON t.id_tournoi=tr.id_tournoi WHERE tr.equipes=0 AND tr.multi_board=0 AND tr.nb_paires>=12 AND tr.niveau_effectif>=250 ORDER BY RANDOM() LIMIT 1")
@@ -229,7 +229,7 @@ def route_random_club():
     from flask import redirect
     from db import fetchone
     from urllib.parse import quote
-    r = fetchone("SELECT club_nom FROM joueurs WHERE club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
+    r = fetchone("SELECT club_nom FROM joueurs WHERE classement IS NOT NULL AND club_nom IS NOT NULL AND club_nom!='' GROUP BY club_nom HAVING COUNT(*)>=15 ORDER BY RANDOM() LIMIT 1")
     return redirect(f"/club?nom={quote(r['club_nom'])}" if r else "/clubs")
 
 
@@ -699,7 +699,14 @@ def route_leaderboard():
     offset        = max(0, int(request.args.get("offset", 0)))
     limit         = min(int(request.args.get("limit", 50)), 100)
 
-    conditions = ["j.classement IS NOT NULL"]
+    # perime=1 : joueurs sortis du classement (points expirés, plus dans la liste FFT du mois)
+    perime = request.args.get("perime", "") in ("1", "true")
+    if perime:
+        conditions = ["j.classement IS NULL AND j.classement_perime IS NOT NULL"]
+        order_col = "j.classement_perime"
+    else:
+        conditions = ["j.classement IS NOT NULL"]
+        order_col = "j.classement"
     params = []
 
     if sexe in ("H", "F"):
@@ -760,13 +767,13 @@ def route_leaderboard():
     total = total_row["n"] if total_row else 0
 
     rows = fetchall(
-        "SELECT j.id_fft, j.nom, j.prenom, j.classement, j.meilleur_classement,"
-        " j.variation_classement, j.classement_date,"
+        "SELECT j.id_fft, j.nom, j.prenom, j.classement, j.classement_perime, j.meilleur_classement,"
+        " j.variation_classement, j.classement_date, j.dernier_tournoi_date,"
         " j.club_nom, j.ville, j.sexe, j.naissance,"
         " j.ligue, j.comite, j.dept_num, j.points,"
         " (SELECT COUNT(*) FROM participations p WHERE p.id_joueur = j.id_fft) AS nb_tournois"
         " FROM joueurs j WHERE " + where +
-        " ORDER BY j.classement ASC LIMIT ? OFFSET ?",
+        " ORDER BY " + order_col + " ASC LIMIT ? OFFSET ?",
         tuple(params) + (limit, offset),
     )
 
@@ -784,7 +791,9 @@ def route_leaderboard():
             "nom":                   nom,
             "prenom":                prenom,
             "nom_complet":           (prenom + " " + nom).strip(),
-            "classement":            r["classement"],
+            "classement":            r["classement"] if r["classement"] is not None else r.get("classement_perime"),
+            "perime":                r["classement"] is None,
+            "dernier_tournoi_date":  r.get("dernier_tournoi_date"),
             "meilleur_classement":   r["meilleur_classement"],
             "variation_classement":  r.get("variation_classement"),  # delta mensuel FFT
             "classement_date":       r.get("classement_date"),       # mois du snapshot
@@ -879,6 +888,7 @@ def route_clubs():
               COUNT(*) AS nb_joueurs
             FROM joueurs j
             WHERE club_nom IS NOT NULL AND club_nom != ''
+              AND classement IS NOT NULL
               AND club_nom {like_op} ?
             GROUP BY club_nom
             ORDER BY nb_joueurs DESC LIMIT ?
@@ -892,6 +902,7 @@ def route_clubs():
               COUNT(*) AS nb_joueurs
             FROM joueurs j
             WHERE club_nom IS NOT NULL AND club_nom != ''
+              AND classement IS NOT NULL
             GROUP BY club_nom
             ORDER BY nb_joueurs DESC LIMIT ?
         """, (top * 4,))
@@ -1050,11 +1061,11 @@ def route_tournament(tid: str):
     results = fetchall("""
         SELECT p.id_joueur, p.partenaire_id, p.partenaire_nom,
                p.position, p.points,
-               j.nom, j.prenom, j.classement
+               j.nom, j.prenom, COALESCE(j.classement, j.classement_perime) AS classement
         FROM participations p
         JOIN joueurs j ON j.id_fft = p.id_joueur
         WHERE p.id_tournoi = ?
-        ORDER BY CAST(p.position AS INTEGER) ASC, j.classement ASC
+        ORDER BY CAST(p.position AS INTEGER) ASC, COALESCE(j.classement, j.classement_perime) ASC
     """, (tid,))
 
     # Deduplicate pairs (same pair appears twice: once per player)
@@ -1153,13 +1164,13 @@ def route_club():
           SUM(CASE WHEN sexe='H' AND classement IS NOT NULL AND classement <= 10000 THEN 1 ELSE 0 END) AS top10000_h,
           SUM(CASE WHEN sexe='F' AND classement IS NOT NULL AND classement <= 10000 THEN 1 ELSE 0 END) AS top10000_f
         FROM joueurs
-        WHERE club_nom IN ({ph})
+        WHERE club_nom IN ({ph}) AND classement IS NOT NULL
     """, vt) or {}
 
     ville_row = fetchone(f"""
         SELECT ville, COUNT(*) AS cnt
         FROM joueurs
-        WHERE club_nom IN ({ph}) AND ville IS NOT NULL AND ville != ''
+        WHERE club_nom IN ({ph}) AND classement IS NOT NULL AND ville IS NOT NULL AND ville != ''
         GROUP BY ville
         ORDER BY cnt DESC
         LIMIT 1
@@ -1592,7 +1603,7 @@ def route_club_rankings():
                 ROUND(AVG(CASE WHEN j.sexe='H' THEN j.classement END))                    AS avg_rank_h,
                 ROUND(AVG(CASE WHEN j.sexe='F' THEN j.classement END))                    AS avg_rank_f
               FROM joueurs j
-              WHERE j.club_nom IS NOT NULL AND j.club_nom != ''
+              WHERE j.club_nom IS NOT NULL AND j.club_nom != '' AND j.classement IS NOT NULL
               GROUP BY j.club_nom
               HAVING COUNT(*) >= 3
             ),
@@ -1629,7 +1640,7 @@ def route_club_rankings():
                 ROUND(AVG(CASE WHEN j.sexe='F' THEN j.classement END))                    AS avg_rank_f,
                 0                                                                          AS nb_tournois_12m
               FROM joueurs j
-              WHERE j.club_nom IS NOT NULL AND j.club_nom != ''
+              WHERE j.club_nom IS NOT NULL AND j.club_nom != '' AND j.classement IS NOT NULL
               GROUP BY j.club_nom
               HAVING COUNT(*) >= 3
             ) sub
@@ -2481,9 +2492,9 @@ def route_tournoi_api(tid: str):
         return jsonify({"error": "Tournoi introuvable"}), 404
     rows = fetchall(
         """
-        SELECT p.id_joueur, j.nom, j.prenom, j.classement, j.sexe, j.club_nom AS club,
+        SELECT p.id_joueur, j.nom, j.prenom, COALESCE(j.classement, j.classement_perime) AS classement, j.sexe, j.club_nom AS club,
                p.partenaire_id, p.partenaire_nom,
-               jp.nom AS pnom, jp.prenom AS pprenom, jp.classement AS pclt, jp.club_nom AS pclub, jp.sexe AS psexe,
+               jp.nom AS pnom, jp.prenom AS pprenom, COALESCE(jp.classement, jp.classement_perime) AS pclt, jp.club_nom AS pclub, jp.sexe AS psexe,
                p.position, p.position_num, p.points_num, p.date_effective AS date_tournoi, p.date_estimee, p.type
         FROM participations p
         JOIN joueurs j ON j.id_fft = p.id_joueur
@@ -2936,7 +2947,7 @@ def route_club_detail():
         f"""SELECT ROUND(AVG(age),1) AS age_moyen,
                    SUM(CASE WHEN actif=1 THEN 1 ELSE 0 END) AS nb_actifs,
                    COUNT(*) AS tot
-            FROM joueurs WHERE club_nom IN ({ph})""", vt) or {}
+            FROM joueurs WHERE club_nom IN ({ph}) AND classement IS NOT NULL""", vt) or {}
     tot = int(agg.get("tot") or 0)
 
     # Pools H/F (classés) -> seuils top 10 %, et nb de membres du club dans le top 10 %

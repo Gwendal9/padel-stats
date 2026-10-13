@@ -30,7 +30,7 @@ class GraphEngine:
 
         # Infos joueurs
         rows = fetchall("""
-            SELECT id_fft, nom, prenom, classement, meilleur_classement,
+            SELECT id_fft, nom, prenom, COALESCE(classement, classement_perime) AS classement, meilleur_classement,
                    club_nom, sexe, ville, naissance
             FROM joueurs
         """)

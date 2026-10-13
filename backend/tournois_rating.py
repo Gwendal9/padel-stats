@@ -149,8 +149,8 @@ def main():
 
     print("⏳ Lecture des participations (joueur + partenaire)…")
     cur = c.execute('''
-        SELECT p.id_tournoi, p.id_joueur, j.classement, j.sexe,
-               p.partenaire_id, jp.classement AS prank, jp.sexe AS psexe, p.type, p.date_effective
+        SELECT p.id_tournoi, p.id_joueur, COALESCE(j.classement, j.classement_perime), j.sexe,
+               p.partenaire_id, COALESCE(jp.classement, jp.classement_perime) AS prank, jp.sexe AS psexe, p.type, p.date_effective
         FROM participations p
         JOIN joueurs  j  ON j.id_fft  = p.id_joueur
         LEFT JOIN joueurs jp ON jp.id_fft = p.partenaire_id

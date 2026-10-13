@@ -157,7 +157,7 @@ function attachSearch(inp,res,onPick){
     if(q.length<2){res.classList.add('hidden');return;}
     let r=[]; try{r=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8').then(x=>x.json());}catch(_){}
     if(!r.length){res.classList.add('hidden');return;}
-    res.innerHTML=r.map(p=>`<a data-id="${p.id}" data-n="${(p.nom_complet||'').replace(/"/g,'')}"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement} · ${p.sexe}</span></a>`).join('');
+    res.innerHTML=r.map(p=>`<a data-id="${p.id}" data-n="${(p.nom_complet||'').replace(/"/g,'')}"><span class="font-500 truncate">${tc(p.nom_complet)}</span><span class="text-[11px] text-muted num shrink-0">#${p.classement}${p.perime?' périmé':''} · ${p.sexe}</span></a>`).join('');
     res.classList.remove('hidden');
     res.querySelectorAll('a').forEach(a=>a.addEventListener('click',ev=>{ev.preventDefault();onPick({id:a.dataset.id,name:a.dataset.n});inp.value=tc(a.dataset.n);res.classList.add('hidden');}));
   }));
