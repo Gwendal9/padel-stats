@@ -40,6 +40,13 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .seg{padding:0 14px;height:34px;border-radius:8px;font-size:13px;font-weight:600}
   .lrow{cursor:pointer;border-radius:9px}.lrow:hover,.lrow.hi{background:#F0F4F3}
   #side{max-height:72vh;overflow:auto}
+  @media(max-width:767px){
+    #map{height:56vh;min-height:340px}
+    #side{max-height:none;overflow:visible}
+    #legend{left:8px !important;bottom:8px !important;padding:8px !important;min-width:0 !important;font-size:11px}
+    #hint{display:none}
+    .seg{height:38px}
+  }
   .leaflet-tooltip.club-lbl{background:rgba(255,255,255,.93);border:1px solid #E7E9EC;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.12);font-size:11px;font-weight:600;color:#15191F;padding:1px 6px}
   .leaflet-tooltip.club-lbl::before{display:none}
   .info{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:9.5px;font-weight:700;font-style:normal;cursor:help;position:relative;margin-left:4px;vertical-align:middle;text-transform:none;letter-spacing:normal}
@@ -113,9 +120,9 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </div>
   </header>
-  <main class="px-5 lg:px-8 py-6">
+  <main class="px-4 sm:px-5 lg:px-8 py-4 sm:py-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <div><div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#60A5FA1f;color:#60A5FA"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg></span><h1 class="font-800 text-2xl tracking-tight">Carte de France<span class="info" tabindex="0" data-tip="Chaque commune est colorée selon le niveau moyen de ses joueurs classés.">i</span></h1></div><p class="text-sm text-muted mt-0.5" id="subtitle">Répartition par département · clique sur un département pour voir ses clubs par commune.</p></div>
+      <div><div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:#60A5FA1f;color:#60A5FA"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg></span><h1 class="font-800 text-xl sm:text-2xl tracking-tight">Carte de France<span class="info" tabindex="0" data-tip="Chaque commune est colorée selon le niveau moyen de ses joueurs classés.">i</span></h1></div><p class="text-sm text-muted mt-0.5" id="subtitle">Répartition par département · clique sur un département pour voir ses clubs par commune.</p></div>
       <div class="flex items-center gap-2 flex-wrap">
         <div class="inline-flex p-1 rounded-xl bg-white border border-line"><button data-sexe="H" class="seg">Messieurs</button><button data-sexe="F" class="seg">Dames</button></div>
         <select id="metric" class="h-9 px-3 rounded-lg border border-line bg-white text-sm font-500"><option value="nb">Nombre de joueurs</option><option value="classement_moyen">Classement moyen</option><option value="nb_clubs">Nombre de clubs</option></select>

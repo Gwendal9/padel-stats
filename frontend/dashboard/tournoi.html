@@ -96,7 +96,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
       </div>
     </div>
   </header>
-  <main class="px-5 lg:px-8 pb-20" id="root">
+  <main class="px-4 sm:px-5 lg:px-8 pb-20" id="root">
     <div class="mt-10 text-center text-muted text-sm" id="loading"><svg class="pdl" width="40" height="52" viewBox="0 0 48 62" aria-label="Chargement"><ellipse class="pdl-e" cx="24" cy="20" rx="15" ry="16" fill="none" stroke="#0E9C86" stroke-width="3"/><line class="pdl-h" x1="24" y1="35" x2="24" y2="56" stroke="#0E9C86" stroke-width="4" stroke-linecap="round"/><g class="pdl-d" fill="#0E9C86"><circle cx="18" cy="16" r="1.5"/><circle cx="24" cy="13" r="1.5"/><circle cx="30" cy="16" r="1.5"/><circle cx="18" cy="23" r="1.5"/><circle cx="24" cy="20" r="1.5"/><circle cx="30" cy="23" r="1.5"/></g></svg>Chargement du tournoi…</div>
   </main>
 </div>
@@ -155,7 +155,7 @@ function render(d){
   <div class="mt-5 text-xs text-muted flex items-center gap-1.5"><a href="/tournois" class="hover:text-ink">Tournois</a><span>/</span><span class="text-ink font-500 truncate">${i.nom||'Tournoi'}</span></div>
 
   <section class="mt-3 rounded-2xl overflow-hidden text-white" style="background:linear-gradient(120deg,#0a2e29 0%,#0e7c66 56%,#13b89e 100%)">
-    <div class="p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-6">
+    <div class="p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-5 sm:gap-6">
       <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap mb-2">
           ${nivP?`<span class="num font-700 text-[11px] px-2 py-0.5 rounded bg-white/15">P${nivP}</span>`:''}
@@ -163,11 +163,11 @@ function render(d){
           ${_hb?`<span class="text-[10.5px] font-700 px-2 py-0.5 rounded bg-amber-400/20 text-amber-100 border border-amber-300/30" title="Plus de 12 mois : points expirés du bilan FFT, donnée d'archive conservée ici.">Hors bilan · +12 mois</span>`:''}
           ${tags.join('')}
         </div>
-        <h1 class="font-800 text-3xl sm:text-4xl leading-tight tracking-tight">${i.nom||'Tournoi'}</h1>
+        <h1 class="font-800 text-2xl sm:text-4xl leading-tight tracking-tight">${i.nom||'Tournoi'}</h1>
         <div class="mt-3 text-[13px] text-white/85 font-500">${fr(d.nb_paires_reelles)} paires classées${i.classement_meilleur?` · meilleure paire ~#${i.classement_meilleur}`:''}</div>
         ${_hb?`<div class="mt-2 text-[12px] text-amber-100/90 font-500">Tournoi de plus de 12 mois : ses points ne comptent plus dans le bilan FFT actuel, on la garde ici pour archive.</div>`:''}
       </div>
-      <div class="shrink-0 lg:border-l lg:border-white/15 lg:pl-6">
+      <div class="shrink-0 border-t border-white/15 pt-4 lg:border-t-0 lg:pt-0 lg:border-l lg:border-white/15 lg:pl-6">
         ${team?`<div class="lbl text-white/55">Format</div><div class="font-800 text-2xl mt-1 leading-tight">${i.multi_board&&!i.equipes?'Tournoi multi-tableaux':'Épreuve par équipes'}</div><div class="text-white/60 text-[12px] mt-1.5 max-w-[210px]">${i.multi_board&&!i.equipes?'Tableaux H et D combinés : la difficulté est calculée par tableau, pas globalement.':'Difficulté de plateau non pertinente pour un interclub / championnat.'}</div>`:`<div class="lbl text-white/55">Difficulté du plateau (/100)</div>
         <div class="flex items-end gap-2 mt-1">
           <span class="pct-font font-800 text-6xl leading-none" style="color:#fff">${i.indice_niveau!=null?Math.round(i.indice_niveau):'—'}</span>

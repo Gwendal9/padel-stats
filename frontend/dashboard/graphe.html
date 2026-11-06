@@ -35,6 +35,12 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   .inp{height:38px;border:1px solid #E7E9EC;border-radius:9px;background:#fff;padding:0 11px;font-size:13px;width:100%}
   .inp:focus{outline:none;border-color:#0E9C86;box-shadow:0 0 0 3px rgba(14,156,134,.12)}
   #graph{height:72vh;min-height:460px}
+  @media(max-width:767px){
+    #graph{height:62vh;min-height:400px}
+    #ginfo{left:8px !important;right:8px !important;top:8px !important}
+    #glegend{top:auto !important;bottom:46px !important;left:8px !important;right:8px !important;max-width:none !important}
+    #gsearch{width:140px !important}
+  }
   .res{position:absolute;margin-top:2px;width:100%;background:#fff;border:1px solid #E7E9EC;border-radius:9px;overflow:hidden;z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.08)}
   .res a{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;font-size:13px}
   .res a:hover{background:#F5F6F7}
@@ -93,7 +99,7 @@ tailwind.config={theme:{extend:{colors:{ink:'#0F141B',panel:'#1A222C',
   <span>💻 Padel Repère est pensé pour un écran d'ordinateur. L'affichage mobile est encore limité.</span>
   <button id="mobile-notice-close" type="button" class="shrink-0 text-amber-700 hover:text-amber-900 font-700 text-base leading-none" aria-label="Fermer">✕</button>
 </div>
-  <main class="px-5 lg:px-8 py-6">
+  <main class="px-4 sm:px-5 lg:px-8 py-4 sm:py-6">
     <h1 class="font-800 text-2xl tracking-tight">Graphe de jeu</h1>
     <p class="text-sm text-muted mt-0.5">Réseau de partenaires et degrés de séparation (H et F séparés).</p>
 
